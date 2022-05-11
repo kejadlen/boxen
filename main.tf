@@ -20,7 +20,7 @@ module "google_image_nixos" {
 }
 
 resource "google_compute_instance" "imperishable_night" {
-  name         = "Imperishable Night"
+  name         = "imperishable-night"
   machine_type = "e2-standard-2"
   zone         = "us-west1-a"
 
