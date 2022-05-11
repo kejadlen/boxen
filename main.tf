@@ -10,7 +10,7 @@ terraform {
 variable "GOOGLE_CREDENTIALS" {}
 
 provider "google" {
-  project = "arbitrary-definitions-349923"
+  project = "kejadlen"
   region  = "us-west1"
 }
 
