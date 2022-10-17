@@ -1,0 +1,38 @@
+- hosts: all
+  tasks:
+
+  - file: path=~/Library/KeyBindings state=directory
+  - name: Symlink Emacs-style keybindings for OS X
+    file:
+      src: ~/.dotfiles/macos/DefaultKeyBinding.dict
+      dest: ~/Library/KeyBindings/DefaultKeyBinding.dict
+      state: link
+
+  - file: path=~/Library/Colors state=directory
+  - name: symlink OS X colors palettes
+    file: src={{ item }} dest=~/Library/Colors/{{ item | basename }} state=link
+    with_fileglob: ~/.dotfiles/macos/colors/*
+
+  - file: path=~/Library/Dictionaries state=directory
+  - name: Install Webster's 1913 dictionary
+    copy:
+      src: ~/.dotfiles/macos/websters-1913.dictionary/
+      dest: ~/Library/Dictionaries/websters-1913.dictionary
+
+  - name: Enable Touch ID for sudo
+    block:
+    - lineinfile:
+        path: /etc/pam.d/sudo
+        insertafter: '^auth\s+sufficient'
+        regexp: '^auth\s+sufficient\s+pam_tid.so$'
+        line: "auth\tsufficient\tpam_tid.so"
+
+    # tmux
+    - shell: brew --prefix
+      register: brew_prefix
+    - lineinfile:
+        path: /etc/pam.d/sudo
+        insertbefore: '^auth\tsufficient\tpam_tid.so'
+        regexp: '^auth\s+optional\s+.*pam_reattach.so$'
+        line: "auth\toptional\t{{ brew_prefix.stdout | trim }}/lib/pam/pam_reattach.so"
+    become: yes

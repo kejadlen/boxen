@@ -1,0 +1,29 @@
+- hosts: all
+  tasks:
+
+  - name: Symlink dotfiles
+    file:
+      src: ~/.dotfiles/{{ item }}
+      dest: ~/{{ item }}
+      state: link
+    loop:
+      - .config
+      - .gitconfig
+      - .hammerspoon
+      - .local
+      - .ssh
+      - .tmux.conf
+      - .zsh
+
+  - name: Symlink Prezto
+    file:
+      src: ~/.dotfiles/.zprezto
+      dest: ~/.zprezto
+      state: link
+
+  - name: Symlink Prezto runcoms
+    file:
+      src: "{{ item }}"
+      dest: ~/.{{ item | basename }}
+      state: link
+    with_fileglob: "~/.zprezto/runcoms/z*"

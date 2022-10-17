@@ -1,0 +1,49 @@
+- hosts: all
+  tasks:
+
+  - community.general.homebrew:
+      name: "{{ item }}"
+    loop:
+    - chruby
+    - difftastic
+    - direnv
+    - efm-langserver
+    - entr
+    - exa
+    - fasd
+    - fd
+    - fzf
+    - git
+    - git-lfs
+    - jq
+    - luarocks
+    - neovim
+    - ripgrep
+    - ruby-install
+    - shellcheck
+    - svn # required for source code pro
+    - tmux
+    - tree
+    - zsh
+
+    - fabianishere/personal/pam_reattach
+
+  - community.general.homebrew_cask:
+      name: "{{ item }}"
+    loop:
+    - alfred
+    - bartender
+    - dash
+    - fantastical
+    - firefox
+    - google-chrome
+    - hammerspoon
+    - mailmate
+    - obsidian
+    - slack
+    - topnotch
+    - zoom
+
+    # - homebrew/cask-fonts/font-source-code-pro
+    - homebrew/cask-fonts/font-sauce-code-pro-nerd-font
+    - homebrew/cask-versions/firefox-developer-edition
