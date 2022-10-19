@@ -1,25 +1,16 @@
 - hosts: all
   tasks:
 
+  - name: List dotfiles
+    shell: ls -A ~/.dotfiles | grep '^\.'
+    register: ls_dotfiles
+
   - name: Symlink dotfiles
     file:
       src: ~/.dotfiles/{{ item }}
       dest: ~/{{ item }}
       state: link
-    loop:
-      - .config
-      - .gitconfig
-      - .hammerspoon
-      - .local
-      - .ssh
-      - .tmux.conf
-      - .zsh
-
-  - name: Symlink Prezto
-    file:
-      src: ~/.dotfiles/.zprezto
-      dest: ~/.zprezto
-      state: link
+    loop:  "{{ ls_dotfiles.stdout_lines | difference(['.git', '.gitmodules']) }}"
 
   - name: Symlink Prezto runcoms
     file:
