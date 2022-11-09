@@ -20,12 +20,11 @@
       dest: ~/Library/Dictionaries/websters-1913.dictionary
 
   - name: Enable Touch ID for sudo
-    block:
-    - lineinfile:
-        path: /etc/pam.d/sudo
-        insertafter: '^auth\s+sufficient'
-        regexp: '^auth\s+sufficient\s+pam_tid.so$'
-        line: "auth\tsufficient\tpam_tid.so"
+    lineinfile:
+      path: /etc/pam.d/sudo
+      insertafter: '^auth\s+sufficient'
+      regexp: '^auth\s+sufficient\s+pam_tid.so$'
+      line: "auth\tsufficient\tpam_tid.so"
 
     # tmux
     - shell: brew --prefix
@@ -35,4 +34,4 @@
         insertbefore: '^auth\tsufficient\tpam_tid.so'
         regexp: '^auth\s+optional\s+.*pam_reattach.so$'
         line: "auth\toptional\t{{ brew_prefix.stdout | trim }}/lib/pam/pam_reattach.so"
-    become: yes
+    become: true

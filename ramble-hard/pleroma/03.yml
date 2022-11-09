@@ -1,0 +1,89 @@
+# https://docs.pleroma.social/backend/installation/otp_en/
+---
+- hosts: ramble-hard
+  become: true
+  vars_files:
+    - ../vars.private
+  tasks:
+
+    - package:
+        name:
+        - certbot
+        - nginx
+
+    - service:
+        name: nginx
+        state: stopped
+
+    # certbot certonly --standalone --preferred-challenges http -d yourinstance.tld
+    - command: >
+        certbot certonly --standalone --preferred-challenges http
+        -n --agree-tos -m {{ lets_encrypt.email }}
+        -d {{ pleroma.tld }}
+
+    - service:
+        name: nginx
+        state: started
+
+    # cp /opt/pleroma/installation/pleroma.nginx /etc/nginx/sites-available/pleroma.conf
+    # ln -s /etc/nginx/sites-available/pleroma.conf /etc/nginx/sites-enabled/pleroma.conf
+    - copy:
+        src: /opt/pleroma/installation/pleroma.nginx
+        dest: /etc/nginx/sites-available/pleroma.conf
+        remote_src: true
+      notify: Restart nginx
+    - file:
+        src: /etc/nginx/sites-available/pleroma.conf
+        dest: /etc/nginx/sites-enabled/pleroma.conf
+        state: link
+      notify: Restart nginx
+
+    - replace:
+        path: /etc/nginx/sites-available/pleroma.conf
+        regexp: 'example\.tld'
+        replace: "{{ pleroma.tld }}"
+      notify: Restart nginx
+
+    # Copy the service into a proper directory
+    # cp /opt/pleroma/installation/pleroma.service /etc/systemd/system/pleroma.service
+    - copy:
+        src: /opt/pleroma/installation/pleroma.service
+        dest: /etc/systemd/system/pleroma.service
+        remote_src: true
+      # Start pleroma and enable it on boot
+      # systemctl start pleroma
+      # systemctl enable pleroma
+      notify: Restart pleroma
+
+    # Create the directory for webroot challenges
+    # mkdir -p /var/lib/letsencrypt
+    - file:
+        path: /var/lib/letsencrypt
+        state: directory
+
+    # Add it to the daily cron
+    # echo '#!/bin/sh
+    # certbot renew --cert-name yourinstance.tld --webroot -w /var/lib/letsencrypt/ --post-hook "systemctl reload nginx"
+    # ' > /etc/cron.daily/renew-pleroma-cert
+    # chmod +x /etc/cron.daily/renew-pleroma-cert
+    - ansible.builtin.copy:
+        content: |
+          \#!/bin/sh
+          certbot renew --cert-name {{ pleroma.tld }} --webroot -w /var/lib/letsencrypt/ --post-hook "systemctl reload nginx"
+        dest: /etc/cron.daily/renew-pleroma-cert
+        mode: +x
+    # - template:
+    #     src: renew-pleroma-cert
+    #     dest: /etc/cron.daily/renew-pleroma-cert
+    #     mode: +x
+
+  handlers:
+    - name: Restart nginx
+      service:
+        name: nginx
+        state: restarted
+    - name: Restart pleroma
+      service:
+        name: pleroma
+        enabled: true
+        state: restarted

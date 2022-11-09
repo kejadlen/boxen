@@ -1,0 +1,65 @@
+---
+
+- name: Set up Lets Encrypt
+  hosts: ramble-hard
+  vars_files:
+    - ../vars.private
+  tasks:
+
+  - apt:
+      update_cache: yes
+
+  - package:
+      name:
+      - certbot
+      - nginx
+
+  - service:
+      name: nginx
+      state: stopped
+
+  - command: >
+      certbot certonly --standalone --preferred-challenges http
+      -n --agree-tos -m {{ lets_encrypt.email }}
+      -d {{ tld }}
+    vars:
+      tld: "{{ item.value['subdomain'] | default(item.key) }}.{{ domain }}"
+    loop: "{{ apps | dict2items }}"
+
+  - service:
+      name: nginx
+      state: started
+
+  - template:
+      src: renew-certs
+      dest: /etc/cron.daily/renew-certs
+      mode: +x
+
+# - name: Set up nginx proxies
+#   hosts: ramble-hard
+#   vars_files:
+#     - ../vars.private
+#   tasks:
+
+#   - template:
+#       src: nginx.conf
+#       dest: /etc/nginx/sites-available/{{ item.key }}.conf
+#     vars:
+#       server_name: "{{ item.value['subdomain'] | default(item.key) }}.{{ domain }}"
+#       port: "{{ item.value['port'] }}"
+#     loop: "{{ apps | dict2items }}"
+#     notify: Restart nginx
+
+#   - file:
+#       src: /etc/nginx/sites-available/{{ item.key }}.conf
+#       dest: /etc/nginx/sites-enabled/{{ item.key }}.conf
+#       state: link
+#     loop: "{{ apps | dict2items }}"
+#     notify: Restart nginx
+
+  # handlers:
+
+  #   - name: Restart nginx
+  #     service:
+  #       name: nginx
+  #       state: restarted

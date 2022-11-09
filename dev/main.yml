@@ -33,5 +33,4 @@
 - hosts: all
   tasks:
 
-  - ansible.builtin.command: "luarocks install fennel"
-
+    - ansible.builtin.command: "luarocks install fennel"
