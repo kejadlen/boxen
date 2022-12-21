@@ -1,0 +1,36 @@
+# https://tailscale.com/download/linux/rpi
+
+- name: Install Tailscale
+  hosts: on-fire-within
+  become: true
+  tasks:
+
+    # sudo apt-get install apt-transport-https
+    - name: Install apt-transport-https
+      ansible.builtin.package:
+        name: apt-transport-https
+        state: present
+
+    # curl -fsSL https://pkgs.tailscale.com/stable/raspbian/buster.gpg | sudo apt-key add -
+    - name: Add Tailscale signing key
+      ansible.builtin.apt_key:
+        url: https://pkgs.tailscale.com/stable/raspbian/buster.gpg
+        state: present
+
+    # curl -fsSL https://pkgs.tailscale.com/stable/raspbian/buster.list | sudo tee /etc/apt/sources.list.d/tailscale.list
+    - name: Add Tailsale apt repo
+      ansible.builtin.apt_repository:
+        repo: deb https://pkgs.tailscale.com/stable/raspbian buster main
+        state: present
+        filename: tailscale
+
+    # sudo apt-get update
+    - name: Update apt-get
+      ansible.builtin.apt:
+        update_cache: true
+
+    # sudo apt-get install tailscale
+    - name: Install Tailscale
+      ansible.builtin.package:
+        name: tailscale
+        state: present
