@@ -3,6 +3,8 @@
 
 - hosts: on-fire-within
   become: yes
+  vars_files:
+    - vars.private
   tasks:
 
     - name: Set authorized keys from GitHub
@@ -227,7 +229,7 @@
                 - traefik.http.services.syncthing.loadbalancer.server.port=8384
               restart: unless-stopped
             traefik:
-              image: traefik:v2.5
+              image: traefik:v2.9.6
               container_name: traefik
               ports:
                 - 80:80
