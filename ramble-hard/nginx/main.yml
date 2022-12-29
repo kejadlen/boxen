@@ -35,31 +35,31 @@
       dest: /etc/cron.daily/renew-certs
       mode: +x
 
-# - name: Set up nginx proxies
-#   hosts: ramble-hard
-#   vars_files:
-#     - ../vars.private
-#   tasks:
+- name: Set up nginx proxies
+  hosts: ramble-hard
+  vars_files:
+    - ../vars.private
+  tasks:
 
-#   - template:
-#       src: nginx.conf
-#       dest: /etc/nginx/sites-available/{{ item.key }}.conf
-#     vars:
-#       server_name: "{{ item.value['subdomain'] | default(item.key) }}.{{ domain }}"
-#       port: "{{ item.value['port'] }}"
-#     loop: "{{ apps | dict2items }}"
-#     notify: Restart nginx
+  - template:
+      src: nginx.conf
+      dest: /etc/nginx/sites-available/{{ item.key }}.conf
+    vars:
+      server_name: "{{ item.value['subdomain'] | default(item.key) }}.{{ domain }}"
+      port: "{{ item.value['port'] }}"
+    loop: "{{ apps | dict2items }}"
+    notify: Restart nginx
 
-#   - file:
-#       src: /etc/nginx/sites-available/{{ item.key }}.conf
-#       dest: /etc/nginx/sites-enabled/{{ item.key }}.conf
-#       state: link
-#     loop: "{{ apps | dict2items }}"
-#     notify: Restart nginx
+  - file:
+      src: /etc/nginx/sites-available/{{ item.key }}.conf
+      dest: /etc/nginx/sites-enabled/{{ item.key }}.conf
+      state: link
+    loop: "{{ apps | dict2items }}"
+    notify: Restart nginx
 
-  # handlers:
+  handlers:
 
-  #   - name: Restart nginx
-  #     service:
-  #       name: nginx
-  #       state: restarted
+    - name: Restart nginx
+      service:
+        name: nginx
+        state: restarted

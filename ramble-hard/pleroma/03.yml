@@ -32,6 +32,7 @@
         dest: /etc/nginx/sites-available/pleroma.conf
         remote_src: true
       notify: Restart nginx
+    # TODO: https://mastodon.bawue.social/@ixs/109514849935951693
     - file:
         src: /etc/nginx/sites-available/pleroma.conf
         dest: /etc/nginx/sites-enabled/pleroma.conf
