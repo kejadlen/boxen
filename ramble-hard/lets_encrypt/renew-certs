@@ -1,0 +1,2 @@
+#!/bin/sh
+certbot renew -w /var/lib/letsencrypt/ --pre-hook "systemctl stop nginx" --post-hook "systemctl start nginx"

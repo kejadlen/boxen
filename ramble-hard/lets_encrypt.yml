@@ -1,0 +1,27 @@
+- hosts: ramble-hard
+  tasks:
+
+  - name: install certbot
+    package:
+      name:
+        - certbot
+
+  - name: stop nginx
+    service:
+      name: nginx
+      state: stopped
+
+  - command: >
+      certbot certonly --standalone --preferred-challenges http
+      -n --agree-tos -m {{ lets_encrypt_email }}
+      -d {{ item }}
+    loop: "{{ lets_encrypt_tlds }}"
+
+  - service:
+      name: nginx
+      state: started
+
+  - template:
+      src: lets_encrypt/renew-certs
+      dest: /etc/cron.daily/renew-certs
+      mode: +x
