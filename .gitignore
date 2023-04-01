@@ -2,3 +2,5 @@
 terraform.tfvars
 
 domain_records.tf
+
+host_vars
