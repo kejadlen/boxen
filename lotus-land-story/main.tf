@@ -17,7 +17,7 @@ data "http" "github_keys" {
 }
 
 resource "linode_instance" "lotus_land_story" {
-    label = "lotus_land_story"
+    label = "lotus-land-story"
     image = "linode/debian11"
     region = "us-west"
     type = "g6-nanode-1"
