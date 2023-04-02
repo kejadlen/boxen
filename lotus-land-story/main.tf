@@ -30,8 +30,6 @@ resource "linode_instance" "lotus_land_story" {
 }
 
 resource "linode_volume" "lotus_land_story" {
-  # count = 0
-
   label     = "lotus-land-story"
   region    = "us-west"
   linode_id = linode_instance.lotus_land_story.id
