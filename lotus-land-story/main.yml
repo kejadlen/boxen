@@ -2,6 +2,11 @@
   hosts: lotus-land-story
   tasks:
 
+    - name: Set facts from environment variables
+      ansible.builtin.set_fact:
+        domain: "{{ lookup('ansible.builtin.env', 'TF_VAR_domain') }}"
+        miniflux_password: "{{ lookup('ansible.builtin.env', 'MINIFLUX_PASSWORD') }}"
+
     # https://wiki.debian.org/PostgreSql
     - name: Install postgres
       ansible.builtin.apt:
@@ -9,6 +14,24 @@
           - postgresql
           - postgresql-client
         state: present
+
+    - name: Always mount the lotus-land-story volume
+      ansible.builtin.lineinfile:
+        dest: /etc/fstab
+        line: /dev/disk/by-id/scsi-0Linode_Volume_lotus-land-story /mnt/lotus-land-story ext4 defaults,noatime,nofail 0 2
+        state: present
+    - name: Make /mnt/lotus-land-story/postgresql
+      file:
+        path: /mnt/lotus-land-story/postgresql
+        state: directory
+        owner: postgres
+    - name: Set data directory to volume
+      ansible.builtin.lineinfile:
+        dest: "/etc/postgresql/13/main/postgresql.conf"
+        regexp: '^#?data_directory ='
+        line: "data_directory = '/mnt/lotus-land-story/postgresql'"
+        state: present
+      notify: Restart postgres
 
     - name: Install ansible requirements
       ansible.builtin.apt:
@@ -60,17 +83,6 @@
       become_user: postgres
       block:
 
-        # https://miniflux.app/docs/installation.html#docker
-        - name: Create a miniflux db
-          community.postgresql.postgresql_db:
-            name: miniflux
-          notify: Restart postgres
-        - name: Create a miniflux db user
-          community.postgresql.postgresql_user:
-            db: miniflux
-            name: miniflux
-            password: miniflux
-          notify: Restart postgres
         - name: Get docker0 IP address
           ansible.builtin.shell: ip -4 -o addr show docker0 | awk '{print $4}'
           register: docker_ip
@@ -82,6 +94,23 @@
             state: present
             create: true
           notify: Restart postgres
+
+    - name: Set up postgres for miniflux
+      become: true
+      become_user: postgres
+      block:
+
+        # https://miniflux.app/docs/installation.html#docker
+        - name: Create a miniflux db
+          community.postgresql.postgresql_db:
+            name: miniflux
+          notify: Restart postgres
+        - name: Create a miniflux db user
+          community.postgresql.postgresql_user:
+            db: miniflux
+            name: miniflux
+            password: miniflux
+          notify: Restart postgres
         - name: Grant miniflux access
           community.postgresql.postgresql_pg_hba:
             dest: /etc/postgresql/13/main/pg_hba.conf
@@ -91,8 +120,7 @@
             databases: miniflux
             create: true
           notify: Restart postgres
-
-        - name: Install extensions
+        - name: Install hstore
           community.postgresql.postgresql_ext:
             name: hstore
             db: miniflux
@@ -107,13 +135,45 @@
             miniflux:
               image: miniflux/miniflux:latest
               ports:
-                - "80:8080"
+                - "8080:8080"
               environment:
                 - DATABASE_URL=postgres://miniflux:miniflux@host.docker.internal/miniflux
                 - RUN_MIGRATIONS=1
                 - CREATE_ADMIN=1
-                - ADMIN_USERNAME=admin
-                - ADMIN_PASSWORD=test123
+                - ADMIN_USERNAME=alpha
+                - ADMIN_PASSWORD={{ miniflux_password }}
+                - BASE_URL=https://rss.{{ domain }}
+              extra_hosts:
+                - "host.docker.internal:host-gateway"
+
+    - name: Make /mnt/lotus-land-story/caddy
+      file:
+        path: /mnt/lotus-land-story/{{ item }}
+        state: directory
+      loop:
+         - caddy
+         - caddy/data
+         - caddy/config
+    - name: Set up Caddyfile
+      ansible.builtin.template:
+        src: templates/Caddyfile
+        dest: /mnt/lotus-land-story/caddy/Caddyfile
+    - name: Run caddy
+      community.docker.docker_compose:
+        project_name: caddy
+        definition:
+          version: "3.3"
+          services:
+            caddy:
+              image: caddy:2
+              container_name: caddy
+              ports:
+                - "80:80"
+                - "443:443"
+              volumes:
+                - /mnt/lotus-land-story/caddy/Caddyfile:/etc/caddy/Caddyfile
+                - /mnt/lotus-land-story/caddy/data:/data
+                - /mnt/lotus-land-story/caddy/config:/config
               extra_hosts:
                 - "host.docker.internal:host-gateway"
 

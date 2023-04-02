@@ -1,0 +1,2 @@
+rss.{{ domain }}
+reverse_proxy host.docker.internal:8080
