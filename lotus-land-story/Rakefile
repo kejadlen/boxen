@@ -1,0 +1,25 @@
+require "yaml"
+
+DOMAIN = ENV.fetch("LOTUS_LAND_STORY_DOMAIN")
+
+task terraform: "terraform.tfvars" do
+  sh "terraform apply"
+end
+
+task ansible: "vars.yml" do
+  sh "ansible-playbook main.yml"
+end
+
+task "terraform.tfvars" do |t|
+  File.write(t.name, "domain = \"#{DOMAIN}\"")
+end
+
+task "vars.yml" do |t|
+  miniflux_password = `op read op://Private/Miniflux/password`.strip
+  File.write(t.name, YAML.dump({
+    "domain" => DOMAIN,
+    "miniflux_password" => miniflux_password,
+  }))
+end
+
+task default: %i[ terraform ansible ]
