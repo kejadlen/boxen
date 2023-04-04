@@ -22,7 +22,7 @@
         path: /mnt/lotus-land-story/postgresql
         state: directory
         owner: postgres
-        mode: "0755"
+        mode: "0700"
     - name: Set data directory to volume
       ansible.builtin.lineinfile:
         dest: "/etc/postgresql/13/main/postgresql.conf"
@@ -115,7 +115,7 @@
           community.postgresql.postgresql_user:
             db: miniflux
             name: miniflux
-            password: miniflux
+            password: "{{ miniflux_db_password }}"
           notify: Restart postgres
         - name: Grant miniflux access
           community.postgresql.postgresql_pg_hba:
@@ -143,7 +143,7 @@
               ports:
                 - "8080:8080"
               environment:
-                - DATABASE_URL=postgres://miniflux:miniflux@host.docker.internal/miniflux
+                - DATABASE_URL=postgres://miniflux:{{ miniflux_db_password }}@host.docker.internal/miniflux
                 - RUN_MIGRATIONS=1
                 - CREATE_ADMIN=1
                 - ADMIN_USERNAME=alpha
