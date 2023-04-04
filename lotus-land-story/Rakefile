@@ -1,6 +1,25 @@
+require "open3"
 require "yaml"
 
 DOMAIN = ENV.fetch("LOTUS_LAND_STORY_DOMAIN")
+
+task bootstrap: "pip:sync"
+
+namespace :pip do
+  task :sync => "requirements.txt" do
+    sh "pip-sync requirements.txt"
+  end
+
+  task :upgrade do
+    out, _ = Open3.capture2e("pip-compile --upgrade --resolver=backtracking requirements.in")
+    File.write("requirements.txt", out)
+  end
+
+  file "requirements.txt" => "requirements.in" do |t|
+    out, _ = Open3.capture2e("pip-compile --resolver=backtracking requirements.in")
+    File.write(t.name, out)
+  end
+end
 
 task terraform: "terraform.tfvars" do
   sh "terraform apply"
