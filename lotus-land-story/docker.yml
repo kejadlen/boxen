@@ -1,0 +1,78 @@
+# https://docs.docker.com/engine/install/debian/#install-using-the-repository
+- name: Set up Docker
+  hosts: lotus-land-story
+  tasks:
+
+    - name: Install Docker requirements
+      ansible.builtin.apt:
+        pkg:
+          - ca-certificates
+          - curl
+          - gnupg
+        state: present
+
+    - name: Make /etc/apt/keyrings
+      ansible.builtin.file:
+        path: /etc/apt/keyrings
+        state: directory
+        mode: "0755"
+
+    - name: Download Docker GPG key
+      ansible.builtin.shell: |
+        set -o pipefail
+        curl -fsSL https://download.docker.com/linux/debian/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+      args:
+        creates: /etc/apt/keyrings/docker.gpg
+
+    - name: Get architecture
+      ansible.builtin.command: dpkg --print-architecture
+      register: arch
+      changed_when: arch.rc != 0
+
+    - name: Set up Docker repository
+      ansible.builtin.template:
+        src: templates/docker.list
+        dest: /etc/apt/sources.list.d/docker.list
+        mode: "0644"
+
+    - name: Install Docker
+      ansible.builtin.apt:
+        pkg:
+          - docker-ce
+          - docker-ce-cli
+          - containerd.io
+          - docker-buildx-plugin
+          - docker-compose-plugin
+        update_cache: true
+
+    - name: Create Docker volume location
+      ansible.builtin.file:
+        path: /mnt/lotus-land-story/docker
+        state: directory
+        mode: "0755"
+
+    - name: Get docker0 IP address
+      ansible.builtin.shell: ip -4 -o addr show docker0 | awk '{print $4}' # noqa: risky-shell-pipe
+      vars:
+        executable: /usr/bin/bash
+      register: docker_ip
+      changed_when: docker_ip.rc != 0
+
+    - name: Save docker_ip fact
+      ansible.builtin.set_fact:
+        docker_ip:
+          cidr: "{{ docker_ip.stdout }}"
+          address: "{{ docker_ip.stdout | ansible.utils.ipaddr('address') }}"
+
+    - name: Configure Docker daemon
+      ansible.builtin.template:
+        src: templates/daemon.json
+        dest: /etc/docker/daemon.json
+        mode: "0644"
+      notify: Restart docker
+
+  handlers:
+    - name: Import restarts
+      ansible.builtin.import_tasks: restarts.yml
+
+# vim: ft=yaml.ansible

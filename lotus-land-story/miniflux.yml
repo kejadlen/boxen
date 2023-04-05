@@ -1,0 +1,70 @@
+# https://miniflux.app/docs/installation.html#docker
+
+- name: Set up the Miniflux db
+  hosts: lotus-land-story
+  become: true
+  become_user: postgres
+  vars_files:
+    - vars.yml
+  tasks:
+
+    - name: Create the Miniflux db
+      community.postgresql.postgresql_db:
+        name: miniflux
+      notify: Restart postgres
+
+    - name: Create the Miniflux db user
+      community.postgresql.postgresql_user:
+        db: miniflux
+        name: miniflux
+        password: "{{ miniflux_db_password }}"
+      notify: Restart postgres
+
+    - name: Grant Miniflux access to the db
+      community.postgresql.postgresql_pg_hba:
+        dest: /etc/postgresql/13/main/pg_hba.conf
+        contype: host
+        users: miniflux
+        source: samenet # TODO Can this be restricted to docker_ip?
+        databases: miniflux
+        create: true
+      notify: Restart postgres
+
+    - name: Install hstore
+      community.postgresql.postgresql_ext:
+        name: hstore
+        db: miniflux
+      notify: Restart postgres
+
+  handlers:
+    - name: Import restarts
+      ansible.builtin.import_tasks: restarts.yml
+
+- name: Set up the Miniflux db
+  hosts: lotus-land-story
+  vars_files:
+    - vars.yml
+  tasks:
+
+    - name: Run miniflux
+      community.docker.docker_compose:
+        project_name: miniflux
+        definition:
+          version: "3.3"
+          services:
+            miniflux:
+              image: miniflux/miniflux:latest
+              ports:
+                - "8080:8080"
+              environment:
+                - DATABASE_URL=postgres://miniflux:{{ miniflux_db_password }}@host.docker.internal/miniflux
+                - RUN_MIGRATIONS=1
+                - CREATE_ADMIN=1
+                - ADMIN_USERNAME=alpha
+                - ADMIN_PASSWORD={{ miniflux_password }}
+                - BASE_URL=https://rss.{{ domain }}
+              restart: unless-stopped
+              extra_hosts:
+                - "host.docker.internal:host-gateway"
+
+# vim: ft=yaml.ansible

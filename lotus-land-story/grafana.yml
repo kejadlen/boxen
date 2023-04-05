@@ -1,0 +1,62 @@
+- name: Set up Grafana
+  hosts: lotus-land-story
+  tasks:
+
+    - name: Create Grafana dir
+      ansible.builtin.file:
+        path: /mnt/lotus-land-story/grafana/provisioning/{{ item }}
+        state: directory
+        mode: "0755"
+      loop:
+        - datasources
+
+    - name: Configure grafana
+      ansible.builtin.copy:
+        dest: /mnt/lotus-land-story/grafana/grafana.ini
+        content: |
+          [metrics]
+          enabled             = true
+          disable_total_stats = false
+        mode: "0644"
+
+    - name: Provision Grafana
+      ansible.builtin.copy:
+        dest: /mnt/lotus-land-story/grafana/provisioning/datasources/prometheus.yml
+        content: |
+          apiVersion: 1
+
+          datasources:
+            - name: Prometheus
+              type: prometheus
+              # Access mode - proxy (server in the UI) or direct (browser in the UI).
+              access: proxy
+              url: http://host.docker.internal:9090
+              jsonData:
+                httpMethod: POST
+                manageAlerts: true
+                prometheusType: Prometheus
+                prometheusVersion: 2.37.0
+        mode: "0644"
+
+    - name: Run Grafana
+      community.docker.docker_compose:
+        project_name: grafana
+        remove_orphans: true
+        definition:
+          version: "3.3"
+          services:
+            grafana:
+              image: grafana/grafana-oss:latest
+              ports:
+                - "3000:3000"
+              volumes:
+                - /mnt/lotus-land-story/grafana/grafana.ini:/etc/grafana/grafana.ini
+                - /mnt/lotus-land-story/grafana/provisioning:/etc/grafana/provisioning
+                - grafana:/var/lib/grafana
+              restart: unless-stopped
+              extra_hosts:
+                - "host.docker.internal:host-gateway"
+          volumes:
+            grafana:
+
+# vim: ft=yaml.ansible

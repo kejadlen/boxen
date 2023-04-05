@@ -1,0 +1,32 @@
+# https://wiki.debian.org/PostgreSql
+- name: Set up postgres
+  hosts: lotus-land-story
+  tasks:
+
+    - name: Install postgres
+      ansible.builtin.apt:
+        pkg:
+          - postgresql
+          - postgresql-client
+        state: present
+
+    - name: Make data directory
+      ansible.builtin.file:
+        path: /mnt/lotus-land-story/postgresql
+        state: directory
+        owner: postgres
+        mode: "0700"
+
+    - name: Set data directory
+      ansible.builtin.lineinfile:
+        dest: "/etc/postgresql/13/main/postgresql.conf"
+        regexp: '^#?data_directory ='
+        line: "data_directory = '/mnt/lotus-land-story/postgresql'"
+        state: present
+      notify: Restart postgres
+
+  handlers:
+    - name: Import restarts
+      ansible.builtin.import_tasks: restarts.yml
+
+# vim: ft=yaml.ansible

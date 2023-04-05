@@ -1,0 +1,49 @@
+- name: Set up Caddy
+  hosts: lotus-land-story
+  vars_files:
+    - vars.yml
+  tasks:
+
+    - name: Make /mnt/lotus-land-story/caddy
+      ansible.builtin.file:
+        path: /mnt/lotus-land-story/{{ item }}
+        state: directory
+        mode: "0755"
+      loop:
+        - caddy
+        - caddy/data
+
+    - name: Set up Caddyfile
+      ansible.builtin.template:
+        src: templates/Caddyfile
+        dest: /mnt/lotus-land-story/caddy/Caddyfile
+        mode: "0644"
+
+    - name: Run caddy
+      community.docker.docker_compose:
+        project_name: caddy
+        definition:
+          version: "3.3"
+          services:
+            caddy:
+              image: caddy:2
+              container_name: caddy
+              ports:
+                - "80:80"
+                - "443:443"
+                - "2019:2019"
+              volumes:
+                - /mnt/lotus-land-story/caddy/Caddyfile:/etc/caddy/Caddyfile
+                - /mnt/lotus-land-story/caddy/data:/data
+                - caddy-config:/config
+              restart: unless-stopped
+              extra_hosts:
+                - "host.docker.internal:host-gateway"
+          volumes:
+            caddy-config:
+
+  handlers:
+    - name: Import restarts
+      ansible.builtin.import_tasks: restarts.yml
+
+# vim: ft=yaml.ansible

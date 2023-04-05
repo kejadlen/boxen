@@ -1,0 +1,11 @@
+- name: Restart postgres
+  ansible.builtin.service:
+    name: postgresql
+    state: restarted
+
+- name: Restart docker
+  ansible.builtin.service:
+    name: docker
+    state: restarted
+
+# vim: ft=yaml.ansible

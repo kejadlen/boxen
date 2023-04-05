@@ -1,35 +1,13 @@
-- name: Set up lotus-land-story
+- name: Base setup for lotus-land-story
   hosts: lotus-land-story
   vars_files:
     - vars.yml
   tasks:
-
-    # https://wiki.debian.org/PostgreSql
-    - name: Install postgres
-      ansible.builtin.apt:
-        pkg:
-          - postgresql
-          - postgresql-client
-        state: present
-
     - name: Always mount the lotus-land-story volume
       ansible.builtin.lineinfile:
         dest: /etc/fstab
         line: "{{ linode_volume }} /mnt/lotus-land-story ext4 defaults,noatime,nofail 0 2"
         state: present
-    - name: Make /mnt/lotus-land-story/postgresql
-      ansible.builtin.file:
-        path: /mnt/lotus-land-story/postgresql
-        state: directory
-        owner: postgres
-        mode: "0700"
-    - name: Set data directory to volume
-      ansible.builtin.lineinfile:
-        dest: "/etc/postgresql/13/main/postgresql.conf"
-        regexp: '^#?data_directory ='
-        line: "data_directory = '/mnt/lotus-land-story/postgresql'"
-        state: present
-      notify: Restart postgres
 
     - name: Install ansible requirements
       ansible.builtin.apt:
@@ -40,347 +18,78 @@
           - python3-psycopg2
         state: present
 
-    # https://docs.docker.com/engine/install/debian/#install-using-the-repository
-    - name: Install docker
-      block:
-        - name: Install docker requirements
-          ansible.builtin.apt:
-            pkg:
-              - ca-certificates
-              - curl
-              - gnupg
-            state: present
-        - name: Make /etc/apt/keyrings
-          ansible.builtin.file:
-            path: /etc/apt/keyrings
-            state: directory
-            mode: "0755"
-        - name: Download Docker GPG key
-          ansible.builtin.shell: |
-            set -o pipefail
-            curl -fsSL https://download.docker.com/linux/debian/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg
-          args:
-            creates: /etc/apt/keyrings/docker.gpg
-        - name: Get architecture
-          ansible.builtin.command: dpkg --print-architecture
-          register: arch
-          changed_when: arch.rc != 0
-        - name: Set up docker repository
-          ansible.builtin.template:
-            src: templates/docker.list
-            dest: /etc/apt/sources.list.d/docker.list
-            mode: "0644"
-        - name: Install docker
-          ansible.builtin.apt:
-            pkg:
-              - docker-ce
-              - docker-ce-cli
-              - containerd.io
-              - docker-buildx-plugin
-              - docker-compose-plugin
-            update_cache: true
-        - name: Get docker0 IP address
-          ansible.builtin.shell: ip -4 -o addr show docker0 | awk '{print $4}' # noqa: risky-shell-pipe
-          vars:
-            executable: /usr/bin/bash
-          register: docker_ip
-          changed_when: docker_ip.rc != 0
-        - name: Set docker ip fact
-          ansible.builtin.set_fact:
-            docker_ip:
-              cidr: "{{ docker_ip.stdout }}"
-              address: "{{ docker_ip.stdout | ansible.utils.ipaddr('address') }}"
-        - name: Create Docker volume location
-          ansible.builtin.file:
-            path: /mnt/lotus-land-story/docker
-            state: directory
-            mode: "0755"
-        - name: Docker config
-          ansible.builtin.template:
-            src: templates/daemon.json
-            dest: /etc/docker/daemon.json
-            mode: "0644"
-          notify: Restart docker
+- import_playbook: postgres.yml # noqa: name[play]
+- import_playbook: docker.yml # noqa: name[play]
 
+- name: Set up postgres
+  hosts: lotus-land-story
+  tasks:
 
-    - name: Set up postgres
-      become: true
-      become_user: postgres
-      block:
-
-        - name: Listen on docker0 interface
-          ansible.builtin.lineinfile:
-            dest: "/etc/postgresql/13/main/conf.d/listen.conf"
-            regexp: '^#?listen_addresses='
-            line: "listen_addresses='localhost,{{ docker_ip.address }}'"
-            state: present
-            create: true
-            mode: "0644"
-          notify: Restart postgres
-
-    - name: Set up postgres for miniflux
-      become: true
-      become_user: postgres
-      block:
-
-        # https://miniflux.app/docs/installation.html#docker
-        - name: Create a miniflux db
-          community.postgresql.postgresql_db:
-            name: miniflux
-          notify: Restart postgres
-        - name: Create a miniflux db user
-          community.postgresql.postgresql_user:
-            db: miniflux
-            name: miniflux
-            password: "{{ miniflux_db_password }}"
-          notify: Restart postgres
-        - name: Grant miniflux access
-          community.postgresql.postgresql_pg_hba:
-            dest: /etc/postgresql/13/main/pg_hba.conf
-            contype: host
-            users: miniflux
-            source: samenet
-            databases: miniflux
-            create: true
-          notify: Restart postgres
-        - name: Install hstore
-          community.postgresql.postgresql_ext:
-            name: hstore
-            db: miniflux
-          notify: Restart postgres
-
-        - name: Set up postgres-exporter
-          block:
-            - name: Get postgres roles
-              community.postgresql.postgresql_info:
-                filter: roles
-              register: postgres_info
-            - name: Add postgres permissions for postgres-exporter
-              community.postgresql.postgresql_query:
-                query: |
-                  CREATE USER prometheus;
-                  ALTER USER prometheus SET SEARCH_PATH TO prometheus,pg_catalog;
-
-                  CREATE SCHEMA prometheus AUTHORIZATION prometheus;
-
-                  CREATE FUNCTION prometheus.f_select_pg_stat_activity()
-                  RETURNS setof pg_catalog.pg_stat_activity
-                  LANGUAGE sql
-                  SECURITY DEFINER
-                  AS $$
-                    SELECT * from pg_catalog.pg_stat_activity;
-                  $$;
-
-                  CREATE FUNCTION prometheus.f_select_pg_stat_replication()
-                  RETURNS setof pg_catalog.pg_stat_replication
-                  LANGUAGE sql
-                  SECURITY DEFINER
-                  AS $$
-                    SELECT * from pg_catalog.pg_stat_replication;
-                  $$;
-
-                  CREATE VIEW prometheus.pg_stat_replication
-                  AS
-                    SELECT * FROM prometheus.f_select_pg_stat_replication();
-
-                  CREATE VIEW prometheus.pg_stat_activity
-                  AS
-                    SELECT * FROM prometheus.f_select_pg_stat_activity();
-
-                  GRANT SELECT ON prometheus.pg_stat_replication TO prometheus;
-                  GRANT SELECT ON prometheus.pg_stat_activity TO prometheus;
-              when: "'prometheus' not in postgres_info.roles"
-
-    - name: Run miniflux
-      community.docker.docker_compose:
-        project_name: miniflux
-        definition:
-          version: "3.3"
-          services:
-            miniflux:
-              image: miniflux/miniflux:latest
-              ports:
-                - "8080:8080"
-              environment:
-                - DATABASE_URL=postgres://miniflux:{{ miniflux_db_password }}@host.docker.internal/miniflux
-                - RUN_MIGRATIONS=1
-                - CREATE_ADMIN=1
-                - ADMIN_USERNAME=alpha
-                - ADMIN_PASSWORD={{ miniflux_password }}
-                - BASE_URL=https://rss.{{ domain }}
-              restart: unless-stopped
-              extra_hosts:
-                - "host.docker.internal:host-gateway"
-
-    - name: Install host exporters
-      ansible.builtin.apt:
-        pkg:
-          - prometheus-node-exporter
-          - prometheus-postgres-exporter
-        state: present
-    # /usr/share/doc/prometheus-postgres-exporter/README.Debian
-    - name: Configure postgres-exporter
+    - name: Set up postgres to listen on docker0 interface
       ansible.builtin.lineinfile:
-        dest: /etc/default/prometheus-postgres-exporter
-        regexp: '^DATA_SOURCE_NAME='
-        line: "DATA_SOURCE_NAME='user=prometheus host=/run/postgresql dbname=postgres'"
+        dest: "/etc/postgresql/13/main/conf.d/listen.conf"
+        regexp: '^#?listen_addresses='
+        line: "listen_addresses='localhost,{{ docker_ip.address }}'"
         state: present
-    - name: Create Prometheus dir
-      ansible.builtin.file:
-        path: /mnt/lotus-land-story/prometheus
-        state: directory
-        mode: "0755"
-    - name: Prometheus config
-      ansible.builtin.copy:
-        dest: /mnt/lotus-land-story/prometheus/prometheus.yml
-        content: |
-          global:
-            # Attach these labels to any time series or alerts when communicating with
-            # external systems (federation, remote storage, Alertmanager).
-            external_labels:
-              monitor: 'codelab-monitor'
-
-          scrape_configs:
-            - job_name: 'prometheus'
-              static_configs:
-                - targets: ['localhost:9090']
-
-            - job_name: node
-              static_configs:
-                - targets: ['host.docker.internal:9100']
-
-            - job_name: 'docker'
-              static_configs:
-                - targets: ['host.docker.internal:9323']
-
-            - job_name: caddy
-              static_configs:
-                - targets: ['host.docker.internal:2019']
-
-            - job_name: 'grafana'
-              static_configs:
-                - targets: ['host.docker.internal:3000']
-
-            - job_name: 'postgres'
-              static_configs:
-                - targets: ['host.docker.internal:9187']
+        create: true
         mode: "0644"
-    - name: Run Prometheus
-      community.docker.docker_compose:
-        project_name: prometheus
-        remove_orphans: true
-        definition:
-          version: "3.3"
-          services:
-            prometheus:
-              image: prom/prometheus:latest
-              ports:
-                - "9090:9090"
-              volumes:
-                - /mnt/lotus-land-story/prometheus:/etc/prometheus
-              restart: unless-stopped
-              extra_hosts:
-                - "host.docker.internal:host-gateway"
-
-    - name: Create Grafana dir
-      ansible.builtin.file:
-        path: /mnt/lotus-land-story/grafana/provisioning/{{ item }}
-        state: directory
-        mode: "0755"
-      loop:
-        - datasources
-    - name: Configure grafana
-      ansible.builtin.copy:
-        dest: /mnt/lotus-land-story/grafana/grafana.ini
-        content: |
-          [metrics]
-          enabled             = true
-          disable_total_stats = false
-        mode: "0644"
-    - name: Provision Grafana
-      ansible.builtin.copy:
-        dest: /mnt/lotus-land-story/grafana/provisioning/datasources/prometheus.yml
-        content: |
-          apiVersion: 1
-
-          datasources:
-            - name: Prometheus
-              type: prometheus
-              # Access mode - proxy (server in the UI) or direct (browser in the UI).
-              access: proxy
-              url: http://host.docker.internal:9090
-              jsonData:
-                httpMethod: POST
-                manageAlerts: true
-                prometheusType: Prometheus
-                prometheusVersion: 2.37.0
-        mode: "0644"
-    - name: Run Grafana
-      community.docker.docker_compose:
-        project_name: grafana
-        remove_orphans: true
-        definition:
-          version: "3.3"
-          services:
-            grafana:
-              image: grafana/grafana-oss:latest
-              ports:
-                - "3000:3000"
-              volumes:
-                - /mnt/lotus-land-story/grafana/grafana.ini:/etc/grafana/grafana.ini
-                - /mnt/lotus-land-story/grafana/provisioning:/etc/grafana/provisioning
-                - grafana:/var/lib/grafana
-              restart: unless-stopped
-              extra_hosts:
-                - "host.docker.internal:host-gateway"
-          volumes:
-            grafana:
-
-    - name: Make /mnt/lotus-land-story/caddy
-      ansible.builtin.file:
-        path: /mnt/lotus-land-story/{{ item }}
-        state: directory
-        mode: "0755"
-      loop:
-        - caddy
-        - caddy/data
-    - name: Set up Caddyfile
-      ansible.builtin.template:
-        src: templates/Caddyfile
-        dest: /mnt/lotus-land-story/caddy/Caddyfile
-        mode: "0644"
-    - name: Run caddy
-      community.docker.docker_compose:
-        project_name: caddy
-        definition:
-          version: "3.3"
-          services:
-            caddy:
-              image: caddy:2
-              container_name: caddy
-              ports:
-                - "80:80"
-                - "443:443"
-                - "2019:2019"
-              volumes:
-                - /mnt/lotus-land-story/caddy/Caddyfile:/etc/caddy/Caddyfile
-                - /mnt/lotus-land-story/caddy/data:/data
-                - caddy-config:/config
-              restart: unless-stopped
-              extra_hosts:
-                - "host.docker.internal:host-gateway"
-          volumes:
-            caddy-config:
+      notify: Restart postgres
 
   handlers:
-    - name: Restart postgres
-      ansible.builtin.service:
-        name: postgresql
-        state: restarted
+    - name: Import restarts
+      ansible.builtin.import_tasks: restarts.yml
 
-    - name: Restart docker
-      ansible.builtin.service:
-        name: docker
-        state: restarted
+- import_playbook: prometheus.yml # noqa: name[play]
+
+- name: Set up prometheus user in postgres
+  hosts: lotus-land-story
+  become: true
+  become_user: postgres
+  tasks:
+
+    - name: Get postgres roles
+      community.postgresql.postgresql_info:
+        filter: roles
+      register: postgres_info
+
+    - name: Add postgres permissions for postgres-exporter
+      community.postgresql.postgresql_query:
+        query: |
+          CREATE USER prometheus;
+          ALTER USER prometheus SET SEARCH_PATH TO prometheus,pg_catalog;
+
+          CREATE SCHEMA prometheus AUTHORIZATION prometheus;
+
+          CREATE FUNCTION prometheus.f_select_pg_stat_activity()
+          RETURNS setof pg_catalog.pg_stat_activity
+          LANGUAGE sql
+          SECURITY DEFINER
+          AS $$
+            SELECT * from pg_catalog.pg_stat_activity;
+          $$;
+
+          CREATE FUNCTION prometheus.f_select_pg_stat_replication()
+          RETURNS setof pg_catalog.pg_stat_replication
+          LANGUAGE sql
+          SECURITY DEFINER
+          AS $$
+            SELECT * from pg_catalog.pg_stat_replication;
+          $$;
+
+          CREATE VIEW prometheus.pg_stat_replication
+          AS
+            SELECT * FROM prometheus.f_select_pg_stat_replication();
+
+          CREATE VIEW prometheus.pg_stat_activity
+          AS
+            SELECT * FROM prometheus.f_select_pg_stat_activity();
+
+          GRANT SELECT ON prometheus.pg_stat_replication TO prometheus;
+          GRANT SELECT ON prometheus.pg_stat_activity TO prometheus;
+      when: "'prometheus' not in postgres_info.roles"
+
+- import_playbook: grafana.yml    # noqa: name[play]
+- import_playbook: miniflux.yml   # noqa: name[play]
+- import_playbook: caddy.yml      # noqa: name[play]
 
 # vim: ft=yaml.ansible
