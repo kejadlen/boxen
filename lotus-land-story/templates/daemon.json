@@ -1,0 +1,4 @@
+{
+  "data-root": "/mnt/lotus-land-story/docker",
+  "metrics-addr": "{{ docker_ip.address }}:9323"
+}

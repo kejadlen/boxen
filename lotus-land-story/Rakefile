@@ -10,6 +10,7 @@ namespace :pip do
     sh "pip-sync requirements.txt"
   end
 
+  desc ""
   task :upgrade do
     out, _ = Open3.capture2e("pip-compile --upgrade --resolver=backtracking requirements.in")
     File.write("requirements.txt", out)
@@ -21,10 +22,12 @@ namespace :pip do
   end
 end
 
+desc ""
 task terraform: "terraform.tfvars" do
   sh "terraform apply"
 end
 
+desc ""
 task ansible: "vars.yml" do
   sh "ansible-playbook main.yml"
 end

@@ -1,2 +1,15 @@
-rss.{{ domain }}
-reverse_proxy host.docker.internal:8080
+:2019 {
+	metrics
+}
+
+rss.{{ domain }} {
+	reverse_proxy host.docker.internal:8080
+}
+
+prometheus.{{ domain }} {
+	reverse_proxy host.docker.internal:9090
+}
+
+grafana.{{ domain }} {
+	reverse_proxy host.docker.internal:3000
+}

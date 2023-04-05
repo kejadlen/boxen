@@ -52,13 +52,21 @@ data "linode_domain" "domain" {
   domain = var.domain
 }
 
-resource "linode_domain_record" "rww" {
-    domain_id = data.linode_domain.domain.id
-    name = "rss"
-    record_type = "A"
-    target = resource.linode_instance.lotus_land_story.ip_address
+resource "linode_domain_record" "subdomains" {
+  domain_id   = data.linode_domain.domain.id
+  record_type = "A"
+  target      = resource.linode_instance.lotus_land_story.ip_address
+
+  for_each = toset(["rss", "prometheus", "grafana"])
+  name = each.key
 }
 
+resource "linode_domain_record" "prometheus" {
+  domain_id   = data.linode_domain.domain.id
+  name        = "prometheus"
+  record_type = "A"
+  target      = resource.linode_instance.lotus_land_story.ip_address
+}
 
 output "lotus_land_story_ip" {
   value = resource.linode_instance.lotus_land_story.ip_address
