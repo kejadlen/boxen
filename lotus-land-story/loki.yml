@@ -1,0 +1,87 @@
+# https://raw.githubusercontent.com/grafana/loki/v2.8.0/production/docker-compose.yaml
+# https://grafana.com/docs/loki/latest/clients/docker-driver/
+
+- name: Set up Loki
+  hosts: lotus-land-story
+  tasks:
+
+    - name: Provision Grafana
+      ansible.builtin.copy:
+        dest: /mnt/lotus-land-story/grafana/provisioning/datasources/loki.yml
+        content: |
+          apiVersion: 1
+
+          datasources:
+            - name: Loki
+              type: loki
+              access: proxy
+              url: http://host.docker.internal:3100
+        mode: "0644"
+
+    - name: Create Loki config dirs
+      ansible.builtin.file:
+        path: /mnt/lotus-land-story/loki/{{ item }}
+        state: directory
+        mode: "0755"
+      loop:
+        - config
+        - data
+
+    - name: Configure Loki
+      ansible.builtin.copy:
+        dest: /mnt/lotus-land-story/loki/config/config.yml
+        content: |
+          auth_enabled: false
+
+          server:
+            http_listen_port: 3100
+
+          common:
+            path_prefix: /loki
+            storage:
+              filesystem:
+                chunks_directory: /loki/chunks
+                rules_directory: /loki/rules
+            replication_factor: 1
+            ring:
+              kvstore:
+                store: inmemory
+
+          schema_config:
+            configs:
+              - from: 2020-10-24
+                store: boltdb-shipper
+                object_store: filesystem
+                schema: v11
+                index:
+                  prefix: index_
+                  period: 24h
+
+          storage_config:
+            filesystem:
+              directory: /data
+
+          ruler:
+            alertmanager_url: http://localhost:9093
+        mode: "0644"
+
+    - name: Run Loki
+      community.docker.docker_compose:
+        project_name: loki
+        remove_orphans: true
+        definition:
+          version: "3.3"
+          services:
+            loki:
+              image: grafana/loki:2.8.0
+              ports:
+                - "3100:3100"
+              command: -config.file=/mnt/config/config.yml
+              volumes:
+                - /mnt/lotus-land-story/loki/config:/mnt/config
+                - /mnt/lotus-land-story/loki/data:/data
+              restart: unless-stopped
+              extra_hosts:
+                - "host.docker.internal:host-gateway"
+
+# vim: ft=yaml.ansible

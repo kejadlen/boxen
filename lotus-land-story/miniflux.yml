@@ -49,6 +49,7 @@
     - name: Run miniflux
       community.docker.docker_compose:
         project_name: miniflux
+        remove_orphans: true
         definition:
           version: "3.3"
           services:

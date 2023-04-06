@@ -57,7 +57,7 @@ resource "linode_domain_record" "subdomains" {
   record_type = "A"
   target      = resource.linode_instance.lotus_land_story.ip_address
 
-  for_each = toset(["rss", "prometheus", "grafana"])
+  for_each = toset(["rss", "prometheus", "grafana", "loki"])
   name = each.key
 }
 

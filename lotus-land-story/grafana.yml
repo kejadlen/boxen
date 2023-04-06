@@ -10,16 +10,18 @@
       loop:
         - datasources
 
-    - name: Configure grafana
+    - name: Configure Grafana
       ansible.builtin.copy:
         dest: /mnt/lotus-land-story/grafana/grafana.ini
         content: |
           [metrics]
           enabled             = true
           disable_total_stats = false
+          [server]
+          domain = grafana.{{ domain }}
         mode: "0644"
 
-    - name: Provision Grafana
+    - name: Provision Prometheus
       ansible.builtin.copy:
         dest: /mnt/lotus-land-story/grafana/provisioning/datasources/prometheus.yml
         content: |

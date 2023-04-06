@@ -13,3 +13,7 @@ prometheus.{{ domain }} {
 grafana.{{ domain }} {
 	reverse_proxy host.docker.internal:3000
 }
+
+loki.{{ domain }} {
+	reverse_proxy host.docker.internal:3100
+}

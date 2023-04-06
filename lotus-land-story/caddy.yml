@@ -22,6 +22,7 @@
     - name: Run caddy
       community.docker.docker_compose:
         project_name: caddy
+        remove_orphans: true
         definition:
           version: "3.3"
           services:

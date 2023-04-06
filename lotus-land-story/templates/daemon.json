@@ -1,4 +1,8 @@
 {
   "data-root": "/mnt/lotus-land-story/docker",
-  "metrics-addr": "{{ docker_ip.address }}:9323"
+  "metrics-addr": "{{ docker_ip.address }}:9323",
+  "log-driver": "loki",
+  "log-opts": {
+    "loki-url": "http://localhost:3100/loki/api/v1/push"
+  }
 }
