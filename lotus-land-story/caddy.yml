@@ -19,29 +19,29 @@
         dest: /mnt/lotus-land-story/caddy/Caddyfile
         mode: "0644"
 
-    - name: Run caddy
-      community.docker.docker_compose:
-        project_name: caddy
-        remove_orphans: true
-        definition:
-          version: "3.3"
-          services:
-            caddy:
-              image: caddy:2
-              container_name: caddy
-              ports:
-                - "80:80"
-                - "443:443"
-                - "2019:2019"
-              volumes:
-                - /mnt/lotus-land-story/caddy/Caddyfile:/etc/caddy/Caddyfile
-                - /mnt/lotus-land-story/caddy/data:/data
-                - caddy-config:/config
-              restart: unless-stopped
-              extra_hosts:
-                - "host.docker.internal:host-gateway"
-          volumes:
-            caddy-config:
+    - name: Create Caddy volume
+      community.docker.docker_volume:
+        name: caddy
+
+    - name: Run Caddy
+      community.docker.docker_container:
+        # recreate: true
+        # restart: true
+        name: caddy
+        image: caddy:2
+        ports:
+          - "80:80"
+          - "443:443"
+          - "2019:2019"
+        volumes:
+          - /mnt/lotus-land-story/caddy/Caddyfile:/etc/caddy/Caddyfile
+          - /mnt/lotus-land-story/caddy/data:/data
+          - caddy-config:/config
+        restart_policy: unless-stopped
+        networks:
+          - name: lotus_land_story
+        etc_hosts:
+          host.docker.internal: host-gateway
 
   handlers:
     - name: Import restarts

@@ -45,12 +45,6 @@
           - docker-compose-plugin
         update_cache: true
 
-    - name: Install Loki Docker driver
-      community.docker.docker_plugin:
-        plugin_name: grafana/loki-docker-driver
-        alias: loki
-        state: enable
-
     - name: Create Docker volume location
       ansible.builtin.file:
         path: /mnt/lotus-land-story/docker
@@ -76,6 +70,10 @@
         dest: /etc/docker/daemon.json
         mode: "0644"
       notify: Restart docker
+
+    - name: Create docker network
+      community.docker.docker_network:
+        name: lotus_land_story
 
   handlers:
     - name: Import restarts

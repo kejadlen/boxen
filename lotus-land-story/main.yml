@@ -89,6 +89,7 @@
       when: "'prometheus' not in postgres_info.roles"
 
 - import_playbook: grafana.yml    # noqa: name[play]
+- import_playbook: loki.yml       # noqa: name[play]
 - import_playbook: miniflux.yml   # noqa: name[play]
 - import_playbook: caddy.yml      # noqa: name[play]
 
