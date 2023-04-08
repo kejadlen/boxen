@@ -100,8 +100,6 @@
         # restart: true
         name: loki
         image: grafana/loki:2.8.0
-        ports:
-          - "3100:3100"
         command: -config.file=/mnt/config/loki.yml
         volumes:
           - /mnt/lotus-land-story/loki/config:/mnt/config

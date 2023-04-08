@@ -17,7 +17,7 @@
       community.postgresql.postgresql_user:
         db: miniflux
         name: miniflux
-        password: "{{ miniflux_db_password }}"
+        password: "{{ miniflux.db_password }}"
       notify: Restart postgres
 
     - name: Grant Miniflux access to the db
@@ -52,14 +52,12 @@
         # restart: true
         name: miniflux
         image: miniflux/miniflux:2.0.43
-        ports:
-          - "8080:8080"
         env:
-          DATABASE_URL: postgres://miniflux:{{ miniflux_db_password }}@host.docker.internal/miniflux
+          DATABASE_URL: postgres://miniflux:{{ miniflux.db_password }}@host.docker.internal/miniflux
           RUN_MIGRATIONS: "1"
           CREATE_ADMIN: "1"
           ADMIN_USERNAME: alpha
-          ADMIN_PASSWORD: "{{ miniflux_password }}"
+          ADMIN_PASSWORD: "{{ miniflux.password }}"
           BASE_URL: https://rss.{{ domain }}
         restart_policy: unless-stopped
         networks:

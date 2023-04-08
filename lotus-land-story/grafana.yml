@@ -21,6 +21,7 @@
           disable_total_stats = false
           [server]
           domain = grafana.{{ domain }}
+          http_addr = 0.0.0.0
         mode: "0644"
 
     - name: Provision Prometheus
@@ -52,8 +53,8 @@
         # restart: true
         name: grafana
         image: grafana/grafana-oss:9.2.15
-        ports:
-          - "3000:3000"
+        # ports:
+        #   - "3000:3000"
         volumes:
           - /mnt/lotus-land-story/grafana/grafana.ini:/etc/grafana/grafana.ini
           - /mnt/lotus-land-story/grafana/provisioning:/etc/grafana/provisioning

@@ -1,5 +1,7 @@
 - name: Set up Prometheus
   hosts: lotus-land-story
+  vars_files:
+    - vars.yml
   tasks:
 
     - name: Install host exporters
@@ -21,47 +23,26 @@
       ansible.builtin.file:
         path: /mnt/lotus-land-story/prometheus
         state: directory
+        owner: prometheus
+        group: prometheus
         mode: "0755"
 
     - name: Prometheus config
-      ansible.builtin.copy:
+      ansible.builtin.template:
         dest: /mnt/lotus-land-story/prometheus/prometheus.yml
-        content: |
-          global:
-            # Attach these labels to any time series or alerts when communicating with
-            # external systems (federation, remote storage, Alertmanager).
-            external_labels:
-              monitor: 'codelab-monitor'
-
-          scrape_configs:
-            - job_name: prometheus
-              static_configs:
-                - targets: ['localhost:9090']
-
-            - job_name: node
-              static_configs:
-                - targets: ['host.docker.internal:9100']
-
-            - job_name: docker
-              static_configs:
-                - targets: ['host.docker.internal:9323']
-
-            - job_name: caddy
-              static_configs:
-                - targets: ['caddy:2019']
-
-            - job_name: grafana
-              static_configs:
-                - targets: ['grafana:3000']
-
-            - job_name: postgres
-              static_configs:
-                - targets: ['host.docker.internal:9187']
-        mode: "0644"
+        src: templates/prometheus.yml
+        owner: prometheus
+        group: prometheus
+        mode: "0600"
 
     - name: Create Prometheus volume
       community.docker.docker_volume:
         name: prometheus
+
+    - name: Get prometheus user info
+      ansible.builtin.user:
+        name: prometheus
+      register: prometheus_user
 
     - name: Run Prometheus
       community.docker.docker_container:
@@ -69,8 +50,8 @@
         # restart: true
         name: prometheus
         image: prom/prometheus:v2.43.0
-        ports:
-          - "9090:9090"
+        user: "{{ prometheus_user.uid }}"
+        groups: "{{ prometheus_user.group }}"
         volumes:
           - /mnt/lotus-land-story/prometheus:/etc/prometheus
           - prometheus:/prometheus

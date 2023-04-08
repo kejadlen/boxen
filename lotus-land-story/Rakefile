@@ -28,8 +28,10 @@ task terraform: "terraform.tfvars" do
 end
 
 desc ""
-task ansible: "vars.yml" do
-  sh "ansible-playbook main.yml"
+task :ansible, %i[ playbook ] => "vars.yml" do |_, args|
+  playbook = args.fetch(:playbook, "main")
+
+  sh "ansible-playbook #{playbook}.yml"
 end
 
 task "terraform.tfvars" do |t|
@@ -38,14 +40,21 @@ end
 
 task "vars.yml" do |t|
   linode_volume = `terraform output -raw lotus_land_story_volume`
-  miniflux_db_password = `op read op://Private/Miniflux/db_password`.strip
+  miniflux_db_password = `op read "op://Private/Miniflux/db password"`.strip
   miniflux_password = `op read op://Private/Miniflux/password`.strip
+  prometheus_linode_api_token = `op read "op://Private/lotus-land-story/prometheus/linode api token"`.strip
+
   File.write(t.name, YAML.dump({
-    domain: DOMAIN,
-    linode_volume:,
-    miniflux_db_password:,
-    miniflux_password:,
-  }.transform_keys(&:to_s)))
+    "domain" => DOMAIN,
+    "linode_volume" => linode_volume,
+    "prometheus" => {
+      "linode_api_token" => prometheus_linode_api_token,
+    },
+    "miniflux" => {
+      "db_password" => miniflux_db_password,
+      "password" => miniflux_password,
+    },
+  }))
 end
 
 task default: %i[ terraform ansible ]
