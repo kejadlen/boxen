@@ -27,6 +27,7 @@ resource "linode_instance" "lotus_land_story" {
   region          = "us-west"
   type            = "g6-nanode-1"
   authorized_keys = split("\n", chomp(data.http.github_keys.response_body))
+  backups_enabled = true
 }
 
 resource "linode_volume" "lotus_land_story" {
