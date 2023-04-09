@@ -3,11 +3,16 @@
   vars_files:
     - vars.yml
   tasks:
+
     - name: Always mount the lotus-land-story volume
       ansible.builtin.lineinfile:
         dest: /etc/fstab
         line: "{{ linode_volume }} /mnt/lotus-land-story ext4 defaults,noatime,nofail 0 2"
         state: present
+
+    - name: Set hostname
+      ansible.builtin.hostname:
+        name: lotus-land-story
 
     - name: Install ansible requirements
       ansible.builtin.apt:
@@ -18,8 +23,9 @@
           - python3-psycopg2
         state: present
 
-- import_playbook: postgres.yml # noqa: name[play]
-- import_playbook: docker.yml # noqa: name[play]
+- import_playbook: ../playbooks/tailscale.yml # noqa: name[play]
+- import_playbook: postgres.yml               # noqa: name[play]
+- import_playbook: docker.yml                 # noqa: name[play]
 
 - name: Set up postgres
   hosts: lotus-land-story

@@ -14,4 +14,9 @@ ansible all -m ping
 
 # ansible
 rake ansible
+
+# manually connect to tailscale
+
+# specific playbooks
+rake ansible[playbook]
 ```

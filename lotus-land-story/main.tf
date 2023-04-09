@@ -59,7 +59,7 @@ resource "linode_domain_record" "subdomains" {
   target      = resource.linode_instance.lotus_land_story.ip_address
 
   for_each = toset(["rss", "prometheus", "grafana", "loki"])
-  name = each.key
+  name     = each.key
 }
 
 resource "linode_domain_record" "prometheus" {
