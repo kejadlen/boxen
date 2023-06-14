@@ -51,7 +51,7 @@
         # recreate: true
         # restart: true
         name: miniflux
-        image: miniflux/miniflux:2.0.43
+        image: miniflux/miniflux:2.0.44
         env:
           DATABASE_URL: postgres://miniflux:{{ miniflux.db_password }}@host.docker.internal/miniflux
           RUN_MIGRATIONS: "1"
@@ -59,6 +59,8 @@
           ADMIN_USERNAME: alpha
           ADMIN_PASSWORD: "{{ miniflux.password }}"
           BASE_URL: https://rss.{{ domain }}
+          METRICS_COLLECTOR: "1"
+          METRICS_ALLOWED_NETWORKS: "172.25.0.0/16" # TODO Read this from docker?
         restart_policy: unless-stopped
         networks:
           - name: lotus_land_story

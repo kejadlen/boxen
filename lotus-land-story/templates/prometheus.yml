@@ -33,6 +33,10 @@ scrape_configs:
     static_configs:
       - targets: ['promtail:9080']
 
+  - job_name: miniflux
+    static_configs:
+      - targets: ['miniflux:8080']
+
   - job_name: linode
     linode_sd_configs:
       - authorization:
