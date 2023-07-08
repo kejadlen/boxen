@@ -98,5 +98,6 @@
 - import_playbook: loki.yml       # noqa: name[play]
 - import_playbook: miniflux.yml   # noqa: name[play]
 - import_playbook: caddy.yml      # noqa: name[play]
+- import_playbook: golink.yml     # noqa: name[play]
 
 # vim: ft=yaml.ansible
