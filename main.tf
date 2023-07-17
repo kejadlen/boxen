@@ -19,15 +19,23 @@ variable "soa_email" {
   nullable = false
 }
 
-data "linode_instances" "ramble-hard" {
+data "linode_instances" "ramble_hard" {
   filter {
     name = "label"
     values = ["ramble-hard"]
   }
 }
 
+data "linode_instances" "lotus_land_story" {
+  filter {
+    name = "label"
+    values = ["lotus-land-story"]
+  }
+}
+
 locals {
-  ramble-hard = data.linode_instances.ramble-hard.instances.0
+  ramble_hard = data.linode_instances.ramble_hard.instances.0
+  lotus_land_story = data.linode_instances.lotus_land_story.instances.0
 }
 
 resource "linode_domain" "kejadlen-dev" {

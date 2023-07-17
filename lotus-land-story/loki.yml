@@ -96,10 +96,9 @@
 
     - name: Run Loki
       community.docker.docker_container:
-        # recreate: true
-        # restart: true
         name: loki
         image: grafana/loki:2.8.0
+        restart: true
         command: -config.file=/mnt/config/loki.yml
         volumes:
           - /mnt/lotus-land-story/loki/config:/mnt/config
@@ -112,10 +111,9 @@
 
     - name: Run Promtail
       community.docker.docker_container:
-        # recreate: true
-        # restart: true
         name: promtail
         image: grafana/promtail:2.8.0
+        restart: true
         command: -config.file=/mnt/config/promtail.yml
         volumes:
           - /var/log:/var/log

@@ -23,10 +23,6 @@
         volumes:
           - /mnt/lotus-land-story/golink:/home/nonroot
         restart_policy: unless-stopped
-        # networks:
-        #   - name: lotus_land_story
-        # etc_hosts:
-        #   host.docker.internal: host-gateway
 
   handlers:
     - name: Import restarts
