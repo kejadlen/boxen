@@ -37,6 +37,11 @@ scrape_configs:
     static_configs:
       - targets: ['miniflux:8080']
 
+  - job_name: woodpecker
+    bearer_token: {{ woodpecker.api_token }}
+    static_configs:
+      - targets: ['woodpecker-server:8000']
+
   - job_name: linode
     linode_sd_configs:
       - authorization:

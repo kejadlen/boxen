@@ -17,3 +17,11 @@ prometheus.{{ domain }} {
 grafana.{{ domain }} {
 	reverse_proxy grafana:3000
 }
+
+ci.{{ domain }} {
+	reverse_proxy woodpecker-server:8000
+}
+
+woodpecker.{{ domain }} {
+	reverse_proxy woodpecker-server:8000
+}
