@@ -11,6 +11,14 @@
           - prometheus-postgres-exporter
         state: present
 
+    - name: Configure node-exporter
+      ansible.builtin.lineinfile:
+        dest: /etc/default/prometheus-node-exporter
+        regexp: '^ARGS='
+        # Include filesystems under /mnt
+        line: ARGS='--collector.filesystem.ignored-mount-points="^/(dev|proc|run|sys|media|var/lib/docker/.+)($|/)"'
+        state: present
+
     # /usr/share/doc/prometheus-postgres-exporter/README.Debian
     - name: Configure postgres-exporter
       ansible.builtin.lineinfile:
