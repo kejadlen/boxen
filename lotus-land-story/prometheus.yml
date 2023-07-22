@@ -58,6 +58,10 @@
         # restart: true
         name: prometheus
         image: prom/prometheus:v2.43.0
+        command:
+          - --config.file=/etc/prometheus/prometheus.yml
+          - --storage.tsdb.retention.size=5GB
+        restart: true
         user: "{{ prometheus_user.uid }}"
         groups: "{{ prometheus_user.group }}"
         volumes:

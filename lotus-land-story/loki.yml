@@ -55,6 +55,16 @@
                 index:
                   prefix: index_
                   period: 24h
+
+              # https://grafana.com/docs/loki/latest/operations/storage/tsdb/
+              - from: 2023-07-17
+                index:
+                  period: 24h
+                  prefix: index_
+                object_store: filesystem
+                schema: v12
+                store: tsdb
+
           storage_config:
             filesystem:
               directory: /data
