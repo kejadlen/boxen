@@ -56,7 +56,7 @@
         # recreate: true
         # restart: true
         name: miniflux
-        image: miniflux/miniflux:2.0.44
+        image: miniflux/miniflux:{{ miniflux.version }}
         env:
           DATABASE_URL: postgres://miniflux:{{ miniflux.db_password }}@host.docker.internal/miniflux
           RUN_MIGRATIONS: "1"
