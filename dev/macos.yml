@@ -20,18 +20,35 @@
       dest: ~/Library/Dictionaries/websters-1913.dictionary
 
   - name: Enable Touch ID for sudo
+    become: yes
     lineinfile:
       path: /etc/pam.d/sudo
       insertafter: '^auth\s+sufficient'
       regexp: '^auth\s+sufficient\s+pam_tid.so$'
       line: "auth\tsufficient\tpam_tid.so"
 
-    # tmux
-    - shell: brew --prefix
-      register: brew_prefix
-    - lineinfile:
-        path: /etc/pam.d/sudo
-        insertbefore: '^auth\tsufficient\tpam_tid.so'
-        regexp: '^auth\s+optional\s+.*pam_reattach.so$'
-        line: "auth\toptional\t{{ brew_prefix.stdout | trim }}/lib/pam/pam_reattach.so"
-    become: true
+  - name: Enable Touch ID for sudo in tmux
+    become: yes
+    lineinfile:
+      path: /etc/pam.d/sudo
+      insertbefore: '^auth\tsufficient\tpam_tid.so'
+      regexp: '^auth\s+optional\s+.*pam_reattach.so$'
+      line: "auth\toptional\t/opt/homebrew/lib/pam/pam_reattach.so"
+
+  # https://github.com/tmux/tmux/issues/2262
+  - name: Fix tmux-256color terminfo
+    block:
+    - name: Create temporary file
+      ansible.builtin.tempfile:
+        state: file
+      register: tempfile
+    - name: Create terminfo source file
+      ansible.builtin.copy:
+        src: macos/tmux-256color
+        dest: "{{ tempfile.path }}"
+    - name: Install terminfo
+      command: /usr/bin/tic -x {{ tempfile.path }}
+    - name: Delete temporary file
+      ansible.builtin.file:
+        path: "{{ tempfile.path }}"
+        state: absent
