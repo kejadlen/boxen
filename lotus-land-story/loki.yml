@@ -93,7 +93,8 @@
                   - localhost
                 labels:
                   job: varlogs
-                  __path__: /var/log/*log
+                  __path__: /var/log/*.log
+                  __path_exclude__: /var/log/syslog
             - job_name: docker
               docker_sd_configs:
                 - host: unix:///var/run/docker.sock
@@ -102,6 +103,23 @@
                 - source_labels: ['__meta_docker_container_name']
                   regex: '/(.*)'
                   target_label: 'container'
+            - job_name: syslog
+              syslog:
+                listen_address: 0.0.0.0:1514
+                listen_protocol: tcp
+                idle_timeout: 60s
+                label_structured_data: yes
+                labels:
+                  job: syslog
+              relabel_configs:
+                - source_labels: ['__syslog_message_hostname']
+                  target_label: 'host'
+                - source_labels: ['__syslog_message_severity']
+                  target_label: level
+                - source_labels: ['__syslog_message_facility']
+                  target_label: syslog_facility
+                - source_labels: ['__syslog_message_app_name']
+                  target_label: syslog_identifier
         mode: "0644"
 
     - name: Run Loki
@@ -110,6 +128,8 @@
         image: grafana/loki:2.8.0
         restart: true
         command: -config.file=/mnt/config/loki.yml
+        ports:
+          - "3100:3100"
         volumes:
           - /mnt/lotus-land-story/loki/config:/mnt/config
           - /mnt/lotus-land-story/loki/data:/data
@@ -125,6 +145,8 @@
         image: grafana/promtail:2.8.0
         restart: true
         command: -config.file=/mnt/config/promtail.yml
+        ports:
+          - "1514:1514"
         volumes:
           - /var/log:/var/log
           - /var/run/docker.sock:/var/run/docker.sock
@@ -134,5 +156,25 @@
           - name: lotus_land_story
         etc_hosts:
           host.docker.internal: host-gateway
+
+    - name: Ship to promtail using rsyslog
+      ansible.builtin.copy:
+        content: |
+          *.* action(type="omfwd"
+                     protocol="tcp"
+                     target="127.0.0.1"
+                     port="1514"
+                     Template="RSYSLOG_SyslogProtocol23Format"
+                     TCP_Framing="octet-counted"
+                     KeepAlive="on")
+        dest: /etc/rsyslog.d/50-promtail.conf
+        mode: "0644"
+      notify: Restart rsyslog
+
+  handlers:
+    - name: Restart rsyslog
+      ansible.builtin.service:
+        name: rsyslog
+        state: restarted
 
 # vim: ft=yaml.ansible
