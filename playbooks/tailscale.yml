@@ -1,5 +1,4 @@
 # https://tailscale.com/download/linux/debian-bullseye
-
 - name: Install Tailscale
   hosts: all
   become: true
@@ -27,3 +26,62 @@
       ansible.builtin.package:
         name: tailscale
         state: present
+
+# https://tailscale.com/kb/1077/secure-server-ubuntu-18-04/
+- name: Only allow connections over Tailscale
+  hosts: all
+  become: true
+  tasks:
+
+    - name: Get Tailscale status
+      ansible.builtin.command: tailscale status --json
+      register: tailscale_status
+      changed_when: false
+
+    - name: Only allow connections over Tailscale
+      when: _tailscale_status.BackendState == "Running"
+      vars:
+        _tailscale_status: "{{ tailscale_status.stdout | from_json }}"
+      block:
+
+        - name: Install ufw
+          ansible.builtin.package:
+            name: ufw
+            state: present
+
+        - name: Allow access over tailscale
+          community.general.ufw:
+            state: enabled
+            rule: allow
+            interface_in: tailscale0
+
+        - name: Restrict incoming traffic
+          community.general.ufw:
+            default: deny
+            direction: "{{ item }}"
+          loop:
+            - incoming
+
+        - name: Allow access to HTTP(S)
+          community.general.ufw:
+            rule: allow
+            port: "{{ item }}"
+            proto: tcp
+          loop:
+            - http
+            - https
+
+      notify:
+        - Reload ufw
+        - Restart ssh
+
+  handlers:
+    - name: Reload ufw
+      ansible.builtin.service:
+        name: ufw
+        state: reloaded
+
+    - name: Restart ssh
+      ansible.builtin.service:
+        name: ssh
+        state: restarted
