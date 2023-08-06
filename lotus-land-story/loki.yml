@@ -105,7 +105,7 @@
                   target_label: 'container'
             - job_name: syslog
               syslog:
-                listen_address: 0.0.0.0:1514
+                listen_address: 0.0.0.0:514
                 listen_protocol: tcp
                 idle_timeout: 60s
                 label_structured_data: yes
@@ -146,7 +146,7 @@
         restart: true
         command: -config.file=/mnt/config/promtail.yml
         ports:
-          - "1514:1514"
+          - "514:514"
         volumes:
           - /var/log:/var/log
           - /var/run/docker.sock:/var/run/docker.sock
@@ -163,7 +163,7 @@
           *.* action(type="omfwd"
                      protocol="tcp"
                      target="127.0.0.1"
-                     port="1514"
+                     port="514"
                      Template="RSYSLOG_SyslogProtocol23Format"
                      TCP_Framing="octet-counted"
                      KeepAlive="on")
