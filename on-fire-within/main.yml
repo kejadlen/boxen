@@ -1,5 +1,6 @@
 - import_playbook: pi.yml
 - import_playbook: hass-io.yml
+- import_playbook: pi-hole.yml
 
 - hosts: on-fire-within
   become: yes
@@ -120,27 +121,6 @@
       tags:
         - debug
 
-    # Workaround for https://github.com/pi-hole/docker-pi-hole/issues/1048
-    # - https://github.com/pi-hole/docker-pi-hole/issues/1042#issuecomment-1086728157
-    # - https://github.com/pi-hole/docker-pi-hole/issues/1043#issuecomment-1086936352
-    - name: Work around a Docker libseccomp issue w/Pi-Hole
-      block:
-        - apt_key:
-            keyserver: keyserver.ubuntu.com
-            id: "{{ item }}"
-          loop:
-            - 04EE7237B7D453EC
-            - 648ACFD622F3D138
-        - apt_repository:
-            repo: deb http://deb.debian.org/debian buster-backports main
-            filename: buster-backports
-            state: present
-        - shell: apt-cache policy libseccomp2 | grep buster-backports -B1 | head -n1 | sed -e 's/^\s*\**\s*\(\S*\).*/\1/'
-          register: libseccomp2_version
-        - apt:
-            update_cache: yes
-            name: libseccomp2={{ libseccomp2_version.stdout_lines[0] }}
-
     - name: Docker ALL the things!
       docker_compose:
         project_name: on-fire-within
@@ -185,7 +165,7 @@
             #     - traefik.http.routers.mitmproxy-web.tls.certresolver=le
             #     - traefik.http.services.mitmproxy-web.loadbalancer.server.port=8081
             pihole:
-              image: pihole/pihole:2023.05.1
+              image: pihole/pihole:2023.05.2
               container_name: pihole
               ports:
                 - 53:53/tcp
@@ -209,7 +189,7 @@
                 - traefik.http.services.pihole.loadbalancer.server.port=80
               restart: unless-stopped
             syncthing:
-              image: syncthing/syncthing:latest
+              image: syncthing/syncthing:1.23.5
               container_name: syncthing
               ports:
                 - 22000:22000/tcp # TCP file transfers
@@ -229,7 +209,7 @@
                 - traefik.http.services.syncthing.loadbalancer.server.port=8384
               restart: unless-stopped
             traefik:
-              image: traefik:v2.9.6
+              image: traefik:v2.10.4
               container_name: traefik
               ports:
                 - 80:80
@@ -285,6 +265,20 @@
       tags:
         - debug
 
+    - name: Ship logs via rsyslog
+      ansible.builtin.copy:
+        content: |
+          *.* action(type="omfwd"
+                     protocol="tcp"
+                     target="lotus-land-story"
+                     port="514"
+                     Template="RSYSLOG_SyslogProtocol23Format"
+                     TCP_Framing="octet-counted"
+                     KeepAlive="on")
+        dest: /etc/rsyslog.d/50-promtail.conf
+        mode: "0644"
+      notify: Restart rsyslog
+
   handlers:
     - name: Restart ddclient
       docker_container:
@@ -303,3 +297,10 @@
         name: homeassistant
         restart: yes
       ignore_errors: yes
+
+    - name: Restart rsyslog
+      ansible.builtin.service:
+        name: rsyslog
+        state: restarted
+
+# vim: ft=yaml.ansible

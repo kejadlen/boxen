@@ -47,6 +47,7 @@
 
 - import_playbook: prometheus.yml # noqa: name[play]
 
+# Maybe this should be in the prometheus playbook?
 - name: Set up prometheus user in postgres
   hosts: lotus-land-story
   become: true
