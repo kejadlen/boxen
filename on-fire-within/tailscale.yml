@@ -1,5 +1,6 @@
 # https://tailscale.com/download/linux/rpi
 
+# TODO Conditionalize this on the OS and merge into ../playbooks/tailscale.yml
 - name: Install Tailscale
   hosts: on-fire-within
   become: true
@@ -18,7 +19,7 @@
         state: present
 
     # curl -fsSL https://pkgs.tailscale.com/stable/raspbian/buster.list | sudo tee /etc/apt/sources.list.d/tailscale.list
-    - name: Add Tailsale apt repo
+    - name: Add Tailscale apt repo
       ansible.builtin.apt_repository:
         repo: deb https://pkgs.tailscale.com/stable/raspbian buster main
         state: present
@@ -34,3 +35,33 @@
       ansible.builtin.package:
         name: tailscale
         state: present
+
+- name: Restrict tailscaled logging
+  hosts: on-fire-within
+  become: true
+  tasks:
+
+    - name: Create systemd override dir for tailscaled
+      ansible.builtin.file:
+        path: /etc/systemd/system/tailscaled.service.d
+        state: directory
+        mode: "0644"
+
+    - name: Create systemd override
+      ansible.builtin.copy:
+        content: |
+          [Service]
+          LogLevelMax=notice
+        dest: /etc/systemd/system/tailscaled.service.d/override.conf
+        mode: "0644"
+      notify:
+        - Restart Tailscale
+
+  handlers:
+
+    - name: Restart Tailscale
+      ansible.builtin.systemd:
+        name: tailscaled
+        state: restarted
+        daemon_reload: true
+

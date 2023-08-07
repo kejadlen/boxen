@@ -1,9 +1,10 @@
 - import_playbook: pi.yml
+- import_playbook: tailscale.yml
 - import_playbook: hass-io.yml
 - import_playbook: pi-hole.yml
 
+  become: true
 - hosts: on-fire-within
-  become: yes
   vars_files:
     - vars.private
   tasks:

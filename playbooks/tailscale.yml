@@ -9,6 +9,7 @@
       ansible.builtin.get_url:
         url: https://pkgs.tailscale.com/stable/debian/bullseye.noarmor.gpg
         dest: /usr/share/keyrings/tailscale-archive-keyring.gpg
+        mode: "0644"
 
     # curl -fsSL https://pkgs.tailscale.com/stable/debian/bullseye.tailscale-keyring.list | sudo tee /etc/apt/sources.list.d/tailscale.list
     - name: Add Tailscale repository
@@ -27,61 +28,33 @@
         name: tailscale
         state: present
 
-# https://tailscale.com/kb/1077/secure-server-ubuntu-18-04/
-- name: Only allow connections over Tailscale
+- name: Restrict tailscaled logging
   hosts: all
   become: true
   tasks:
 
-    - name: Get Tailscale status
-      ansible.builtin.command: tailscale status --json
-      register: tailscale_status
-      changed_when: false
+    - name: Create systemd override dir for tailscaled
+      ansible.builtin.file:
+        path: /etc/systemd/system/tailscaled.service.d
+        state: directory
+        mode: "0644"
 
-    - name: Only allow connections over Tailscale
-      when: _tailscale_status.BackendState == "Running"
-      vars:
-        _tailscale_status: "{{ tailscale_status.stdout | from_json }}"
-      block:
-
-        - name: Install ufw
-          ansible.builtin.package:
-            name: ufw
-            state: present
-
-        - name: Allow access over tailscale
-          community.general.ufw:
-            state: enabled
-            rule: allow
-            interface_in: tailscale0
-
-        - name: Restrict incoming traffic
-          community.general.ufw:
-            default: deny
-            direction: "{{ item }}"
-          loop:
-            - incoming
-
-        - name: Allow access to HTTP(S)
-          community.general.ufw:
-            rule: allow
-            port: "{{ item }}"
-            proto: tcp
-          loop:
-            - http
-            - https
-
+    - name: Create systemd override
+      ansible.builtin.copy:
+        content: |
+          [Service]
+          LogLevelMax=notice
+        dest: /etc/systemd/system/tailscaled.service.d/override.conf
+        mode: "0644"
       notify:
-        - Reload ufw
-        - Restart ssh
+        - Restart Tailscale
 
   handlers:
-    - name: Reload ufw
-      ansible.builtin.service:
-        name: ufw
-        state: reloaded
 
-    - name: Restart ssh
-      ansible.builtin.service:
-        name: ssh
+    - name: Restart Tailscale
+      ansible.builtin.systemd:
+        name: tailscaled
         state: restarted
+        daemon_reload: true
+
+# vim: ft=yaml.ansible

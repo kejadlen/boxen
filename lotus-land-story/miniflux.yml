@@ -53,8 +53,7 @@
 
     - name: Run Miniflux
       community.docker.docker_container:
-        # recreate: true
-        # restart: true
+        restart: true
         name: miniflux
         image: miniflux/miniflux:{{ miniflux.version }}
         env:
@@ -71,5 +70,9 @@
           - name: lotus_land_story
         etc_hosts:
           host.docker.internal: host-gateway
+
+  handlers:
+    - name: Import restarts
+      ansible.builtin.import_tasks: restarts.yml
 
 # vim: ft=yaml.ansible

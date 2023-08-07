@@ -8,4 +8,13 @@
     name: docker
     state: restarted
 
+- name: Reload ufw
+  community.general.ufw:
+    state: reloaded
+
+- name: Restart ssh
+  ansible.builtin.service:
+    name: ssh
+    state: restarted
+
 # vim: ft=yaml.ansible

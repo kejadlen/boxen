@@ -1,0 +1,66 @@
+- hosts: on-fire-within
+  become: yes
+  vars_files:
+    - vars.private
+  tasks:
+
+    # Workaround for https://github.com/pi-hole/docker-pi-hole/issues/1048
+    # - https://github.com/pi-hole/docker-pi-hole/issues/1042#issuecomment-1086728157
+    # - https://github.com/pi-hole/docker-pi-hole/issues/1043#issuecomment-1086936352
+    - name: Work around a Docker libseccomp issue w/Pi-Hole
+      block:
+        - apt_key:
+            keyserver: keyserver.ubuntu.com
+            id: "{{ item }}"
+          loop:
+            - 0E98404D386FA1D9
+            - 6ED0E7B82643E131
+        - apt_repository:
+            repo: deb http://deb.debian.org/debian buster-backports main
+            filename: buster-backports
+            state: present
+        - shell: apt-cache policy libseccomp2 | grep buster-backports -B1 | head -n1 | sed -e 's/^\s*\**\s*\(\S*\).*/\1/'
+          register: libseccomp2_version
+        - apt:
+            update_cache: yes
+            name: libseccomp2={{ libseccomp2_version.stdout_lines[0] }}
+
+    # https://docs.pi-hole.net/guides/dns/unbound/
+    - name: Set up Pi-hole as recursive DNS server
+      block:
+        - name: Install unbound
+          apt:
+            name: unbound
+        - name: Configure unbound
+          ansible.builtin.copy:
+            src: unbound.conf
+            dest: /etc/unbound/unbound.conf.d/pi-hole.conf
+          notify: Restart unbound
+        - name: Use the same limit for FTL as unbound
+          ansible.builtin.lineinfile:
+            path: /etc/dnsmasq.d/99-edns.conf
+            line: edns-packet-max=1232
+            create: true
+
+        - name: Disable resolvconf.conf entry for unbound
+          block:
+            - name: Disable unbound-resolvconf.service
+              service:
+                name: unbound-resolvconf
+                enabled: false
+            - name: Disable resolvconf_resolvers.conf from being generated
+              ansible.builtin.replace:
+                path: /etc/resolvconf.conf
+                regexp: '^unbound_conf='
+                replace: '#unbound_conf='
+            - name: Remove resolvconf_resolvers.conf
+              ansible.builtin.file:
+                path: /etc/unbound/unbound.conf.d/resolvconf_resolvers.conf
+                state: absent
+          notify: Restart unbound
+
+  handlers:
+    - name: Restart unbound
+      ansible.builtin.service:
+          name: unbound
+          state: restarted
