@@ -49,6 +49,36 @@
             from_ip: "{{ docker_network.network.IPAM.Config[0].Subnet }}"
           notify: Reload ufw
 
+    # https://pgtune.leopard.in.ua/
+    #   DB Version: 15
+    #   OS Type: linux
+    #   DB Type: web
+    #   Total Memory (RAM): 2 GB
+    #   CPUs num: 1
+    #   Data Storage: ssd
+    - name: Tune postgres
+      ansible.builtin.lineinfile:
+        dest: "/etc/postgresql/13/main/postgresql.conf"
+        regexp: '^#?{{ item.key }} ='
+        line: "{{ item.key }} = {{ item.value }}"
+        state: present
+      loop: "{{ configs | dict2items }}"
+      vars:
+        configs:
+          max_connections: 200
+          shared_buffers: 512MB
+          effective_cache_size: 1536MB
+          maintenance_work_mem: 128MB
+          checkpoint_completion_target: 0.9
+          wal_buffers: 16MB
+          default_statistics_target: 100
+          random_page_cost: 1.1
+          effective_io_concurrency: 200
+          work_mem: 1310kB
+          min_wal_size: 1GB
+          max_wal_size: 4GB
+      notify: Restart postgres
+
   handlers:
     - name: Import restarts
       ansible.builtin.import_tasks: restarts.yml
