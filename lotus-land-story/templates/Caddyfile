@@ -25,3 +25,7 @@ ci.{{ domain }} {
 woodpecker.{{ domain }} {
 	reverse_proxy woodpecker-server:8000
 }
+
+{{ firefly_iii.subdomain }}.{{ domain }} {
+	reverse_proxy firefly-iii:8080
+}

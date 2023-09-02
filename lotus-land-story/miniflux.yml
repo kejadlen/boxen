@@ -55,7 +55,7 @@
       community.docker.docker_container:
         restart: true
         name: miniflux
-        image: miniflux/miniflux:{{ miniflux.version }}
+        image: miniflux/miniflux:2.0.47
         env:
           DATABASE_URL: postgres://miniflux:{{ miniflux.db_password }}@host.docker.internal/miniflux
           RUN_MIGRATIONS: "1"
