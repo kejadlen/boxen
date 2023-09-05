@@ -61,6 +61,7 @@
         command:
           - --config.file=/etc/prometheus/prometheus.yml
           - --storage.tsdb.retention.size=5GB
+          - --log.format=json
         restart: true
         user: "{{ prometheus_user.uid }}"
         groups: "{{ prometheus_user.group }}"

@@ -42,7 +42,12 @@ scrape_configs:
     static_configs:
       - targets: ['woodpecker-server:8000']
 
-  - job_name: linode
-    linode_sd_configs:
-      - authorization:
-          credentials: {{ prometheus.linode_api_token }}
+  # - job_name: linode
+  #   linode_sd_configs:
+  #     - authorization:
+  #         credentials: {{ prometheus.linode_api_token }}
+  #   relabel_configs:
+  #     # Use the public IPv6 address and port 9100 to scrape the target.
+  #     - source_labels: [__meta_linode_public_ipv6]
+  #       target_label: __address__
+  #       replacement: "[$1]:9100"

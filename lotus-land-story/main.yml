@@ -95,13 +95,32 @@
           GRANT SELECT ON prometheus.pg_stat_activity TO prometheus;
       when: "'prometheus' not in postgres_info.roles"
 
-- import_playbook: golink.yml     # noqa: name[play]
-- import_playbook: grafana.yml    # noqa: name[play]
-- import_playbook: loki.yml       # noqa: name[play]
-- import_playbook: miniflux.yml   # noqa: name[play]
-- import_playbook: woodpecker.yml # noqa: name[play]
+- import_playbook: golink.yml      # noqa: name[play]
+- import_playbook: grafana.yml     # noqa: name[play]
+- import_playbook: loki.yml        # noqa: name[play]
+- import_playbook: miniflux.yml    # noqa: name[play]
+- import_playbook: woodpecker.yml  # noqa: name[play]
 - import_playbook: firefly-iii.yml # noqa: name[play]
 
-- import_playbook: caddy.yml      # noqa: name[play]
+- import_playbook: caddy.yml       # noqa: name[play]
+
+- name: Set up ufw
+  hosts: lotus-land-story
+  tasks:
+
+    - name: Get docker network for ufw
+      community.docker.docker_network:
+        name: lotus_land_story
+      register: docker_network
+
+    - name: Allow access from docker network
+      community.general.ufw:
+        rule: allow
+        from_ip: "{{ docker_network.network.IPAM.Config[0].Subnet }}"
+      notify: Reload ufw
+
+  handlers:
+    - name: Import restarts
+      ansible.builtin.import_tasks: restarts.yml
 
 # vim: ft=yaml.ansible
