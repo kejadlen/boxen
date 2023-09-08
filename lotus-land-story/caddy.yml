@@ -25,10 +25,8 @@
 
     - name: Run Caddy
       community.docker.docker_container:
-        # recreate: true
-        # restart: true
         name: caddy
-        image: caddy:2
+        image: caddy:2.7.4
         restart: true
         ports:
           - "80:80"
