@@ -21,6 +21,7 @@
       - git
       - git-lfs
       - jq
+      - kitty
       - luarocks
       - neovim
       - ripgrep
