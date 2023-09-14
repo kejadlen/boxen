@@ -13,11 +13,20 @@
         - caddy
         - caddy/data
 
+    - name: Get docker network for trusted proxies
+      community.docker.docker_network:
+        name: lotus_land_story
+      register: docker_network
+
+    # TODO Reload Caddy when this changes:
+    #      docker exec -w /etc/caddy $caddy_container_id caddy reload
     - name: Set up Caddyfile
       ansible.builtin.template:
         src: templates/Caddyfile
         dest: /mnt/lotus-land-story/caddy/Caddyfile
         mode: "0644"
+      vars:
+        trusted_proxies: "{{ docker_network.network.IPAM.Config[0].Subnet }}"
 
     - name: Create Caddy volume
       community.docker.docker_volume:

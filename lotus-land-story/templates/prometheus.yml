@@ -42,6 +42,10 @@ scrape_configs:
     static_configs:
       - targets: ['woodpecker-server:8000']
 
+  - job_name: authelia
+    static_configs:
+      - targets: ['authelia:9959']
+
   # - job_name: linode
   #   linode_sd_configs:
   #     - authorization:

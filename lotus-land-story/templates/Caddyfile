@@ -1,3 +1,8 @@
+# https://www.authelia.com/integration/proxies/caddy/#forwarded-header-trust#trusted-proxies
+(trusted_proxy_list) {
+       trusted_proxies {{ trusted_proxies }}
+}
+
 :2019 {
 	metrics
 }
@@ -27,5 +32,35 @@ woodpecker.{{ domain }} {
 }
 
 {{ firefly_iii.subdomain }}.{{ domain }} {
-	reverse_proxy firefly-iii:8080
+	forward_auth authelia:9091 {
+		uri /api/verify?rd=https://auth.{{ domain }}
+		copy_headers Remote-User Remote-Groups Remote-Name Remote-Email
+
+		## This import needs to be included if you're relying on a trusted proxies configuration.
+		import trusted_proxy_list
+	}
+
+	reverse_proxy firefly-iii:8080 {
+		import trusted_proxy_list
+	}
+}
+
+auth.{{ domain }} {
+	reverse_proxy authelia:9091 {
+		import trusted_proxy_list
+	}
+}
+
+{{ hledger.subdomain }}.{{ domain }} {
+	forward_auth authelia:9091 {
+		uri /api/verify?rd=https://auth.{{ domain }}
+		# copy_headers Remote-User Remote-Groups Remote-Name Remote-Email
+
+		## This import needs to be included if you're relying on a trusted proxies configuration.
+		import trusted_proxy_list
+	}
+
+	reverse_proxy hledger:5000 {
+		import trusted_proxy_list
+	}
 }

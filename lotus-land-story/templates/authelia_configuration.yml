@@ -1,0 +1,66 @@
+theme: auto
+jwt_secret: {{ authelia.jwt_secret }}
+default_redirection_url: https://auth.{{ domain }}/
+
+log:
+  level: debug
+  format: json
+
+telemetry:
+  metrics:
+    enabled: true
+
+authentication_backend:
+  file:
+    path: /config/users_database.yml
+
+access_control:
+  default_policy: deny
+  rules:
+    - domain: "*.{{ domain }}"
+      policy: two_factor
+
+session:
+  secret: {{ authelia.session_secret }}
+  domain: {{ domain }}
+
+storage:
+  encryption_key: {{ authelia.storage_encryption_key }}
+  local:
+    path: /config/db.sqlite3
+
+notifier:
+  smtp:
+    username: apikey
+    password: {{ authelia.smtp_password }}
+    host: smtp.sendgrid.net
+    port: 25
+    sender: authelia@kejadlen.dev
+
+identity_providers:
+  oidc:
+    issuer_private_key: |
+      {{ authelia.oidc_private_key | indent(6) }}
+    clients:
+    - id: grafana
+      description: Grafana
+      secret: $argon2id$v=19$m=65536,t=3,p=4$bHcAAorVdHuZzuz53WfAQA$x+pIDTo6SsGyY9JD4OZ7dT6pkEcPf8Yh6Yb7DXco8aQ
+      public: false
+      authorization_policy: two_factor
+      redirect_uris:
+        - https://grafana.{{ domain }}/login/generic_oauth
+      scopes:
+        - openid
+        - profile
+        - groups
+        - email
+      userinfo_signing_algorithm: none
+    - id: tailscale
+      description: Tailscale
+      secret: $argon2id$v=19$m=65536,t=3,p=4$RivlSdV1WE/NLfd3Pzrubw$ljSvHj9sb0byolv7fk5G3nL415nS7Ze2RMASwPgfBX0
+      redirect_uris:
+        - https://login.tailscale.com/a/oauth_response
+      scopes:
+        - openid
+        - email
+        - profile
