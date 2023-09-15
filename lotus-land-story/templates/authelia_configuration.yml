@@ -46,7 +46,7 @@ identity_providers:
       description: Grafana
       secret: $argon2id$v=19$m=65536,t=3,p=4$bHcAAorVdHuZzuz53WfAQA$x+pIDTo6SsGyY9JD4OZ7dT6pkEcPf8Yh6Yb7DXco8aQ
       public: false
-      authorization_policy: two_factor
+      # authorization_policy: two_factor
       redirect_uris:
         - https://grafana.{{ domain }}/login/generic_oauth
       scopes:
@@ -64,3 +64,15 @@ identity_providers:
         - openid
         - email
         - profile
+    - id: gitea
+      description: Gitea
+      secret: $argon2id$v=19$m=65536,t=3,p=4$bMcI49gLNfk6ovxXbg9jFQ$qE/G5lDzkFebKopyGv1FOqkiA64HhRJ9kq+TJCR0HM0
+      public: false
+      # authorization_policy: two_factor
+      redirect_uris:
+        - https://git.{{ domain }}/user/oauth2/authelia/callback
+      scopes:
+        - openid
+        - email
+        - profile
+      userinfo_signing_algorithm: none
