@@ -14,7 +14,7 @@
       - docker-compose
       - efm-langserver
       - entr
-      - exa
+      - eza
       - fasd
       - fd
       - fzf
@@ -23,7 +23,6 @@
       - jq
       - kitty
       - luarocks
-      - neovim
       - ripgrep
       - ruby-install
       - shellcheck
@@ -33,6 +32,14 @@
       - zsh
 
       - fabianishere/personal/pam_reattach
+
+  - name: Install Homebrew formulae from HEAD
+    community.general.homebrew:
+      name: "{{ item }}"
+      state: head
+    loop:
+      - neovim
+      - z.lua
 
   - name: Install Homebrew casks
     community.general.homebrew_cask:
@@ -51,9 +58,11 @@
       - topnotch
       - zoom
 
+      - font-commit-mono
+      - font-source-code-pro
       # - homebrew/cask-fonts/font-source-code-pro
-      - homebrew/cask-fonts/font-sauce-code-pro-nerd-font
-      - homebrew/cask-versions/firefox-developer-edition
+      # - homebrew/cask-fonts/font-sauce-code-pro-nerd-font
+      # - homebrew/cask-versions/firefox-developer-edition
 
   - name: Heed docker-compose caveats
     block:
