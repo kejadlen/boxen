@@ -22,9 +22,10 @@
 
     - name: Run Firefly III
       community.docker.docker_container:
-        restart: true
         name: firefly-iii
         image: fireflyiii/core:version-6.0.22
+        state: absent
+        restart: true
         env:
           APP_KEY: "{{ firefly_iii.app_key }}"
           APP_URL: https://{{ firefly_iii.subdomain }}.{{ domain }}
@@ -47,9 +48,10 @@
 
     - name: Run Firefly III cron trigger
       community.docker.docker_container:
-        restart: true
         name: firefly-iii-cron
         image: alpine
+        restart: true
+        state: absent
         command: >
           sh -c
           "echo \"0 3 * * * wget -qO- http://firefly-iii:8080/api/v1/cron/{{ firefly_iii.static_cron_token }}\"

@@ -16,6 +16,7 @@
       community.docker.docker_container:
         name: woodpecker-server
         image: woodpeckerci/woodpecker-server:v0.15.11
+        state: absent
         restart: true
         env:
           # WOODPECKER_OPEN: "true"
@@ -36,6 +37,7 @@
       community.docker.docker_container:
         name: woodpecker-agent
         image: woodpeckerci/woodpecker-agent:v0.15.11
+        state: absent
         restart: true
         env:
           WOODPECKER_SERVER: woodpecker-server:9000
