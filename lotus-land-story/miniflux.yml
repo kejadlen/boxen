@@ -55,7 +55,7 @@
       community.docker.docker_container:
         restart: true
         name: miniflux
-        image: miniflux/miniflux:2.0.48
+        image: miniflux/miniflux:2.0.49
         env:
           DATABASE_URL: postgres://miniflux:{{ miniflux.db_password }}@host.docker.internal/miniflux
           RUN_MIGRATIONS: "1"
@@ -71,6 +71,8 @@
           OAUTH2_REDIRECT_URL: https://rss.{{ domain }}/oauth2/oidc/callback
           OAUTH2_OIDC_DISCOVERY_ENDPOINT: https://auth.{{ domain }}
           OAUTH2_USER_CREATION: "1"
+          LOG_FORMAT: json
+          LOG_LEVEL: info
         restart_policy: unless-stopped
         networks:
           - name: lotus_land_story
