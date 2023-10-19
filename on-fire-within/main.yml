@@ -3,20 +3,20 @@
 - import_playbook: hass-io.yml
 - import_playbook: pi-hole.yml
 
-  become: true
 - hosts: on-fire-within
+  become: true
   vars_files:
     - vars.private
   tasks:
 
     - name: Set authorized keys from GitHub
-      authorized_key:
+      ansible.posix.authorized_key:
         user: alpha
         state: present
         key: https://github.com/kejadlen.keys
 
     - name: Install dependencies
-      apt:
+      ansible.builtin.apt:
         name:
           - git
           - vim
@@ -47,14 +47,14 @@
         - /mnt/mushu/syncthing
 
     - name: Mount USB drive
-      mount:
+      ansible.posix.mount:
         path: /mnt/mushu
         src: /dev/sda
         fstype: ext4
         state: mounted
 
     - name: Configure ddclient
-      copy:
+      ansible.builtin.copy:
         content: |
           daemon=300
 
@@ -62,17 +62,17 @@
           ssl=yes
           protocol=googledomains
 
-          {% for host in hosts %}
+          {% for host in ddclient_hosts %}
           login={{ host.login }}, password={{ host.password }} {{ host.host }}
           {% endfor %}
         dest: /etc/ddclient/ddclient.conf
-        mode: 0600
+        mode: "0600"
       vars:
-        hosts: "{{ ddclient.hosts }}"
+        ddclient_hosts: "{{ ddclient.hosts }}"
       notify: Restart ddclient
 
     - name: Traefik static configuration
-      copy:
+      ansible.builtin.copy:
         content: |
           providers:
             docker:
@@ -123,9 +123,9 @@
         - debug
 
     - name: Docker ALL the things!
-      docker_compose:
+      community.docker.docker_compose:
         project_name: on-fire-within
-        pull: yes
+        pull: true
         definition:
           version: '2'
           services:
@@ -166,7 +166,7 @@
             #     - traefik.http.routers.mitmproxy-web.tls.certresolver=le
             #     - traefik.http.services.mitmproxy-web.loadbalancer.server.port=8081
             pihole:
-              image: pihole/pihole:2023.05.2
+              image: pihole/pihole:2023.10.0
               container_name: pihole
               ports:
                 - 53:53/tcp
