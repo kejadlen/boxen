@@ -67,4 +67,13 @@
             path: "{{ tempfile.path }}"
             state: absent
 
+    # https://infosec.exchange/@briankrebs/111434555426146154
+    - name: Change TTL to 65 for fooling tethering detection
+      become: true
+      ansible.builtin.command: sysctl -w {{ item }}=65
+      loop:
+        - net.inet.ip.ttl
+        - net.inet6.ip6.hlim
+      changed_when: true
+
 # vim: ft=yaml.ansible
