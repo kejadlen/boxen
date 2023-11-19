@@ -55,3 +55,12 @@ scrape_configs:
   #     - source_labels: [__meta_linode_public_ipv6]
   #       target_label: __address__
   #       replacement: "[$1]:9100"
+
+  - job_name: akkoma
+    scheme: https
+    authorization:
+      credentials: {{ prometheus.akkoma.access_token }}
+    metrics_path: /api/v1/akkoma/metrics
+    static_configs:
+    - targets:
+      - {{ prometheus.akkoma.target }}
