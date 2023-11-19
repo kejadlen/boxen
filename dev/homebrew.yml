@@ -60,6 +60,7 @@
 
       - font-commit-mono
       - font-source-code-pro
+      - font-symbols-only-nerd-font
       # - homebrew/cask-fonts/font-source-code-pro
       # - homebrew/cask-fonts/font-sauce-code-pro-nerd-font
       # - homebrew/cask-versions/firefox-developer-edition
