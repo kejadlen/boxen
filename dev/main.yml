@@ -11,18 +11,20 @@
 
   # macOS things
 
-  - name: Import terminal profile
-    ansible.builtin.command: open ~/.macos/Alpha.terminal
-
-  - name: Set terminal profile to be the default
-    osx_defaults:
-      domain: com.apple.Terminal
-      key: "{{ item }} Window Settings"
-      type: string
-      value: Alpha
-    with_items:
-      - Default
-      - Startup
+  # Not needed anymore since I've switched to kitty
+  #
+  # - name: Import terminal profile
+  #   ansible.builtin.command: open ~/.macos/Alpha.terminal
+  #
+  # - name: Set terminal profile to be the default
+  #   osx_defaults:
+  #     domain: com.apple.Terminal
+  #     key: "{{ item }} Window Settings"
+  #     type: string
+  #     value: Alpha
+  #   with_items:
+  #     - Default
+  #     - Startup
 
 - import_playbook: homebrew.yml
 
@@ -32,5 +34,11 @@
 
 - hosts: all
   tasks:
-
+    # https://tratt.net/laurie/blog/2024/faster_shell_startup_with_shell_switching.html
+    - name: Set default shell to sh
+      user:
+        name: alpha
+        shell: /bin/sh --login
     - ansible.builtin.command: "luarocks install fennel"
+
+# vim: ft=yaml.ansible

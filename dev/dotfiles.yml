@@ -11,10 +11,3 @@
       dest: ~/{{ item }}
       state: link
     loop:  "{{ ls_dotfiles.stdout_lines | difference(['.git', '.gitmodules']) }}"
-
-  - name: Symlink Prezto runcoms
-    file:
-      src: "{{ item }}"
-      dest: ~/.{{ item | basename }}
-      state: link
-    with_fileglob: "~/.zprezto/runcoms/z*"
