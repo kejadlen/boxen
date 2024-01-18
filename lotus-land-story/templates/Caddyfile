@@ -1,3 +1,9 @@
+{
+	servers {
+		metrics
+	}
+}
+
 # https://www.authelia.com/integration/proxies/caddy/#forwarded-header-trust#trusted-proxies
 (trusted_proxy_list) {
        trusted_proxies {{ trusted_proxies }}
@@ -29,19 +35,23 @@ auth.{{ domain }} {
 	}
 }
 
-{{ hledger.subdomain }}.{{ domain }} {
-	forward_auth authelia:9091 {
-		uri /api/verify?rd=https://auth.{{ domain }}
-		# copy_headers Remote-User Remote-Groups Remote-Name Remote-Email
-
-		## This import needs to be included if you're relying on a trusted proxies configuration.
-		import trusted_proxy_list
-	}
-
-	reverse_proxy hledger:5000 {
-		import trusted_proxy_list
-	}
+search.{{ domain }} {
+	reverse_proxy searxng:8080
 }
+
+# {{ hledger.subdomain }}.{{ domain }} {
+# 	forward_auth authelia:9091 {
+# 		uri /api/verify?rd=https://auth.{{ domain }}
+# 		# copy_headers Remote-User Remote-Groups Remote-Name Remote-Email
+
+# 		## This import needs to be included if you're relying on a trusted proxies configuration.
+# 		import trusted_proxy_list
+# 	}
+
+# 	reverse_proxy hledger:5000 {
+# 		import trusted_proxy_list
+# 	}
+# }
 
 books.{{ domain }} {
 	forward_auth authelia:9091 {

@@ -12,6 +12,7 @@
 
     - name: Run hledger
       community.docker.docker_container:
+        state: absent
         restart: true
         name: hledger
         image: dastapov/hledger:1.31

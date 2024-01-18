@@ -104,7 +104,7 @@
 
     # https://docs.syncthing.net/users/faq.html#inotify-limits
     - name: Increase inotify limit for syncthing
-      lineinfile:
+      ansible.builtin.lineinfile:
         path: /etc/sysctl.conf
         regexp: '^fs.inotify.max_user_watches='
         line: fs.inotify.max_user_watches=204800
@@ -114,7 +114,7 @@
     #
     # https://github.com/ansible/ansible/issues/33960
     - name: Save original host facts
-      set_fact:
+      ansible.builtin.set_fact:
         "{{ item }}_original": "{{ lookup('vars', item) }}"
       with_items:
         - minio
@@ -166,7 +166,7 @@
             #     - traefik.http.routers.mitmproxy-web.tls.certresolver=le
             #     - traefik.http.services.mitmproxy-web.loadbalancer.server.port=8081
             pihole:
-              image: pihole/pihole:2023.11.0
+              image: pihole/pihole:2024.01.0
               container_name: pihole
               ports:
                 - 53:53/tcp
