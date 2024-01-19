@@ -176,6 +176,11 @@
         key: NSWindowSupportsAutomaticInlineTitle
         type: bool
         value: false
+      - # show the proxy icon always
+        domain: com.apple.universalaccess
+        key: showWindowTitlebarIcons
+        type: bool
+        value: true
 
       - # set date format in menubar
         domain: com.apple.menuextra.clock
