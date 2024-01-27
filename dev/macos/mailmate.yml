@@ -10,7 +10,7 @@
 
     - name: Symlink key bindings
       ansible.builtin.file:
-        src: "{{ playbook_dir ~ '/mailmate/Alpha.plist'}}"
+        src: ~/.dotfiles/macos/MailMate.plist
         dest: ~/Library/Application Support/MailMate/Resources/KeyBindings/Alpha.plist
         state: link
 
