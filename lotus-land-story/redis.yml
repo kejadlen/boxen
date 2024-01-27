@@ -1,0 +1,23 @@
+# https://redis.io/docs/install/install-redis/install-redis-on-linux/#install-on-ubuntudebian
+- name: Set up Redis
+  hosts: lotus-land-story
+  tasks:
+
+    - name: Add apt key
+      ansible.builtin.shell: >
+        curl -fsSL https://packages.redis.io/gpg |
+          sudo gpg --dearmor -o /usr/share/keyrings/redis-archive-keyring.gpg
+      creates: /usr/share/keyrings/redis-archive-keyring.gpg
+
+    - name: Add apt repo
+      ansible.builtin.apt_repository:
+        repo: "deb [signed-by=/usr/share/keyrings/redis-archive-keyring.gpg] https://packages.redis.io/deb {{ ansible_distribution_release }} main"
+        state: present
+        filename: redis
+
+    - name: Install Redis
+      ansible.builtin.apt:
+        pkg: redis
+        state: present
+
+# vim: ft=yaml.ansible
