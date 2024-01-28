@@ -1,0 +1,51 @@
+- name: Set up Paperless-ngx
+  hosts: lotus-land-story
+  vars_files:
+    - vars.yml
+  vars:
+    version: 2.4.2
+  tasks:
+
+    - name: Create directories for volume mounting
+      ansible.builtin.file:
+        path: /mnt/lotus-land-story/paperless-ngx/{{ item }}
+        state: directory
+        mode: "0700"
+      loop:
+        - consume
+        - data
+        - export
+        - media
+
+    - name: Get docker network
+      community.docker.docker_network:
+        name: lotus_land_story
+      register: docker_network
+
+    # https://github.com/paperless-ngx/paperless-ngx/blob/main/docker/compose/docker-compose.sqlite.yml
+    - name: Run Paperless-ngx
+      community.docker.docker_container:
+        restart: true
+        name: paperless-ngx
+        image: ghcr.io/paperless-ngx/paperless-ngx:{{ version }}
+        env:
+          PAPERLESS_ENABLE_HTTP_REMOTE_USER: "true"
+          PAPERLESS_REDIS: redis://host.docker.internal:6379
+          PAPERLESS_TIME_ZONE: America/Los_Angeles
+          PAPERLESS_URL: https://paperless.{{ domain }}
+        volumes:
+          - /mnt/lotus-land-story/paperless-ngx/data:/usr/src/paperless/data
+          - /mnt/lotus-land-story/paperless-ngx/media:/usr/src/paperless/media
+          - /mnt/lotus-land-story/paperless-ngx/export:/usr/src/paperless/export
+          - /mnt/lotus-land-story/paperless-ngx/consume:/usr/src/paperless/consume
+        restart_policy: unless-stopped
+        networks:
+          - name: lotus_land_story
+        etc_hosts:
+          host.docker.internal: host-gateway
+
+  handlers:
+    - name: Import restarts
+      ansible.builtin.import_tasks: restarts.yml
+
+# vim: ft=yaml.ansible
