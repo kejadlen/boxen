@@ -7,7 +7,8 @@
       ansible.builtin.shell: >
         curl -fsSL https://packages.redis.io/gpg |
           sudo gpg --dearmor -o /usr/share/keyrings/redis-archive-keyring.gpg
-      creates: /usr/share/keyrings/redis-archive-keyring.gpg
+      args:
+        creates: /usr/share/keyrings/redis-archive-keyring.gpg
 
     - name: Add apt repo
       ansible.builtin.apt_repository:
@@ -19,5 +20,43 @@
       ansible.builtin.apt:
         pkg: redis
         state: present
+
+    # TODO Figure out how to de-duplicate this
+    - name: Save docker_ip
+      block:
+        - name: Get docker0 IP address
+          ansible.builtin.shell: ip -4 -o addr show docker0 | awk '{print $4}' # noqa: risky-shell-pipe
+          vars:
+            executable: /usr/bin/bash
+          register: docker_ip
+          changed_when: docker_ip.rc != 0
+
+        - name: Save docker_ip fact
+          ansible.builtin.set_fact:
+            docker_ip:
+              cidr: "{{ docker_ip.stdout }}"
+              address: "{{ docker_ip.stdout | ansible.utils.ipaddr('address') }}"
+
+    - name: Listen on docker0 interface
+      ansible.builtin.lineinfile:
+        dest: /etc/redis/redis.conf
+        regexp: '^bind 127.0.0.1'
+        line: "bind 127.0.0.1 {{ docker_ip.address }} -::1"
+        state: present
+      notify: Restart redis
+
+    # Disable protected mode since we're only allowing access from localhost
+    # and docker
+    - name: Un-protect redis
+      ansible.builtin.lineinfile:
+        dest: /etc/redis/redis.conf
+        regexp: '^protected-mode '
+        line: "protected-mode no"
+        state: present
+      notify: Restart redis
+
+  handlers:
+    - name: Import restarts
+      ansible.builtin.import_tasks: restarts.yml
 
 # vim: ft=yaml.ansible
