@@ -17,4 +17,9 @@
     name: ssh
     state: restarted
 
+- name: Restart redis
+  ansible.builtin.service:
+    name: redis-server
+    state: restarted
+
 # vim: ft=yaml.ansible
