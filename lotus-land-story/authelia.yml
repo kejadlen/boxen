@@ -1,5 +1,7 @@
 - name: Set up Authelia
   hosts: lotus-land-story
+  vars:
+    version: 4.37.5
   vars_files:
     - vars.yml
   tasks:
@@ -31,7 +33,7 @@
       community.docker.docker_container:
         restart: true
         name: authelia
-        image: docker.io/authelia/authelia:4.37.5
+        image: docker.io/authelia/authelia:{{ version }}
         env:
           AUTHENTICATION_GUARD: remote_user_guard
         volumes:
