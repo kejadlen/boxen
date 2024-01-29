@@ -64,3 +64,10 @@ scrape_configs:
     static_configs:
     - targets:
       - {{ prometheus.akkoma.target }}
+
+  - job_name: paperless
+    metrics_path: /flower/metrics
+    static_configs:
+      - targets: ['paperless-ngx:5555']
+
+# vim: ft=yaml.ansible

@@ -17,6 +17,13 @@
         - export
         - media
 
+    - name: Celery monitoring configuration
+      ansible.builtin.copy:
+        content: |
+          url_prefix = "/flower/"
+        dest: /mnt/lotus-land-story/paperless-ngx/flowerconfig.py
+        mode: "0644"
+
     - name: Get docker network
       community.docker.docker_network:
         name: lotus_land_story
@@ -29,6 +36,7 @@
         name: paperless-ngx
         image: ghcr.io/paperless-ngx/paperless-ngx:{{ version }}
         env:
+          PAPERLESS_ENABLE_FLOWER: "true"
           PAPERLESS_ENABLE_HTTP_REMOTE_USER: "true"
           PAPERLESS_REDIS: redis://host.docker.internal:6379
           PAPERLESS_TIME_ZONE: America/Los_Angeles
@@ -39,11 +47,13 @@
           - /mnt/lotus-land-story/paperless-ngx/media:/usr/src/paperless/media
           - /mnt/lotus-land-story/paperless-ngx/export:/usr/src/paperless/export
           - /mnt/lotus-land-story/paperless-ngx/consume:/usr/src/paperless/consume
+          - /mnt/lotus-land-story/paperless-ngx/flowerconfig.py:/usr/src/paperless/src/paperless/flowerconfig.py:ro
         restart_policy: unless-stopped
         networks:
           - name: lotus_land_story
         etc_hosts:
           host.docker.internal: host-gateway
+
 
   handlers:
     - name: Import restarts
