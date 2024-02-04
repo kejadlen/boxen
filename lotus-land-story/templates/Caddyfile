@@ -38,6 +38,7 @@ auth.{{ domain }} {
 search.{{ domain }} {
  	forward_auth authelia:9091 {
  		uri /api/verify?rd=https://auth.{{ domain }}
+		# copy_headers Remote-User
 
  		# This import needs to be included if you're relying on a trusted proxies configuration.
  		import trusted_proxy_list
@@ -93,6 +94,10 @@ paperless.{{ domain }} {
 	handle /flower/* {
 		reverse_proxy paperless-ngx:5555
 	}
+}
+
+logs.{{ domain }} {
+	reverse_proxy parseable:8000
 }
 
 # vim: ts=4

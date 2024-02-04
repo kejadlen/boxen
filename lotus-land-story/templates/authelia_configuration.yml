@@ -1,3 +1,5 @@
+# https://www.authelia.com/integration/openid-connect/frequently-asked-questions/#how-do-i-generate-client-secrets
+
 theme: auto
 jwt_secret: {{ authelia.jwt_secret }}
 default_redirection_url: https://auth.{{ domain }}/
@@ -18,6 +20,7 @@ access_control:
   default_policy: deny
   rules:
     - domain: "*.{{ domain }}"
+      # policy: one_factor
       policy: two_factor
 
 session:
@@ -42,48 +45,59 @@ identity_providers:
     issuer_private_key: |
       {{ authelia.oidc_private_key | indent(6) }}
     clients:
-    - id: grafana
-      description: Grafana
-      secret: $argon2id$v=19$m=65536,t=3,p=4$bHcAAorVdHuZzuz53WfAQA$x+pIDTo6SsGyY9JD4OZ7dT6pkEcPf8Yh6Yb7DXco8aQ
-      public: false
-      # authorization_policy: two_factor
-      redirect_uris:
-        - https://grafana.{{ domain }}/login/generic_oauth
-      scopes:
-        - openid
-        - profile
-        - groups
-        - email
-      userinfo_signing_algorithm: none
-    - id: tailscale
-      description: Tailscale
-      secret: $argon2id$v=19$m=65536,t=3,p=4$RivlSdV1WE/NLfd3Pzrubw$ljSvHj9sb0byolv7fk5G3nL415nS7Ze2RMASwPgfBX0
-      redirect_uris:
-        - https://login.tailscale.com/a/oauth_response
-      scopes:
-        - openid
-        - email
-        - profile
-    - id: gitea
-      description: Gitea
-      secret: $argon2id$v=19$m=65536,t=3,p=4$bMcI49gLNfk6ovxXbg9jFQ$qE/G5lDzkFebKopyGv1FOqkiA64HhRJ9kq+TJCR0HM0
-      public: false
-      # authorization_policy: two_factor
-      redirect_uris:
-        - https://git.{{ domain }}/user/oauth2/authelia/callback
-      scopes:
-        - openid
-        - email
-        - profile
-      userinfo_signing_algorithm: none
-    - id: miniflux
-      description: Miniflux
-      secret: $argon2id$v=19$m=65536,t=3,p=4$tK5aBDAHOmNsEZzSYS88eg$z6tkZVIzB0x6RQjCM0v34lguS454lcQd/Sm0+xRfg7w
-      public: false
-      redirect_uris:
-        - https://rss.{{ domain }}/oauth2/oidc/callback
-      scopes:
-        - openid
-        - email
-        - profile
-      userinfo_signing_algorithm: none
+
+      - id: grafana
+        description: Grafana
+        secret: $argon2id$v=19$m=65536,t=3,p=4$bHcAAorVdHuZzuz53WfAQA$x+pIDTo6SsGyY9JD4OZ7dT6pkEcPf8Yh6Yb7DXco8aQ
+        public: false
+        redirect_uris:
+          - https://grafana.{{ domain }}/login/generic_oauth
+        scopes:
+          - openid
+          - profile
+          - groups
+          - email
+
+      - id: tailscale
+        description: Tailscale
+        secret: $argon2id$v=19$m=65536,t=3,p=4$RivlSdV1WE/NLfd3Pzrubw$ljSvHj9sb0byolv7fk5G3nL415nS7Ze2RMASwPgfBX0
+        redirect_uris:
+          - https://login.tailscale.com/a/oauth_response
+        scopes:
+          - openid
+          - email
+          - profile
+
+      - id: gitea
+        description: Gitea
+        secret: $argon2id$v=19$m=65536,t=3,p=4$bMcI49gLNfk6ovxXbg9jFQ$qE/G5lDzkFebKopyGv1FOqkiA64HhRJ9kq+TJCR0HM0
+        public: false
+        redirect_uris:
+          - https://git.{{ domain }}/user/oauth2/authelia/callback
+        scopes:
+          - openid
+          - email
+          - profile
+
+      - id: miniflux
+        description: Miniflux
+        secret: $argon2id$v=19$m=65536,t=3,p=4$tK5aBDAHOmNsEZzSYS88eg$z6tkZVIzB0x6RQjCM0v34lguS454lcQd/Sm0+xRfg7w
+        public: false
+        redirect_uris:
+          - https://rss.{{ domain }}/oauth2/oidc/callback
+        scopes:
+          - openid
+          - email
+          - profile
+
+      - id: parseable
+        description: Parseable
+        secret: $argon2id$v=19$m=65536,t=3,p=4$glcGbEsVvimlXW08i18Mbg$5VsdS3E8897Dsb1n+BMO5SAy1a1Sq9jeCLcTADTMGtA
+        public: false
+        redirect_uris:
+          - https://logs.{{ domain }}/api/v1/o/code
+        scopes:
+          - openid
+          - email
+          - profile
+          - groups

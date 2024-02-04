@@ -2,7 +2,12 @@ users:
   alpha:
     disabled: false
     displayname: "Alpha"
-    password: "$argon2id$v=19$m=65536,t=3,p=4$JHtyy/vVD+37neJUjy5Shw$6GODmDOXW/v7cfhqwuEp30bVSCWLT5R3OEe/Gi5FGX0"  # yamllint disable-line rule:line-length
+    password: "$argon2id$v=19$m=65536,t=3,p=4$JHtyy/vVD+37neJUjy5Shw$6GODmDOXW/v7cfhqwuEp30bVSCWLT5R3OEe/Gi5FGX0" # yamllint disable-line rule:line-length
     email: alpha@kejadlen.dev
     groups:
       - admins
+  lydia:
+    disabled: false
+    displayname: "Lydia"
+    password: "$argon2id$v=19$m=65536,t=3,p=4$ALAevUUnRK1hcwf5jp1OkA$aSwuYjEMrbtcAGfhsclL901QKF5S+6u42NQFG7S8DkI" # yamllint disable-line rule:line-length
+    email: lydia.islan@gmail.com

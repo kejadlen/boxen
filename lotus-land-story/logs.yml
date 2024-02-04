@@ -1,0 +1,88 @@
+# https://www.parseable.com/docs/log-ingestion/agents/logstash
+
+- name: Set up Parseable
+  hosts: lotus-land-story
+  vars_files:
+    - vars.yml
+  tasks:
+
+    - name: Create directories for volume mounting
+      ansible.builtin.file:
+        path: /mnt/lotus-land-story/parseable/{{ item }}
+        state: directory
+        mode: "0755"
+      loop:
+        - data
+        - staging
+
+    # https://www.parseable.com/logstash/logstash.conf
+    - name: Configure Logstash
+      ansible.builtin.copy:
+        dest: /mnt/lotus-land-story/parseable/logstash.conf
+        content: |
+          output {
+              http {
+                  id => "parseable"
+                  format => "json_batch"
+                  codec => "json"
+                  url => "http://parseable:8000/api/v1/ingest"
+                  headers => {
+                      "Authorization" => "Basic YWRtaW46YWRtaW4="
+                      "x-p-stream" => "logstash"
+                  }
+                  http_method => "post"
+                  http_compression => false
+                  automatic_retries => 5
+                  retry_non_idempotent => true
+                  connect_timeout => 30
+                  keepalive => false
+                  content_type => "application/json"
+              }
+          }
+        mode: "0644"
+
+    - name: Get docker network
+      community.docker.docker_network:
+        name: lotus_land_story
+      register: docker_network
+
+    # https://www.parseable.com/logstash/docker-compose.yaml
+    - name: Run Parseable
+      community.docker.docker_container:
+        restart: true
+        name: parseable
+        image: parseable/parseable:v0.7.3
+        command:
+          - parseable
+          - local-store
+        env:
+          P_FS_DIR: /parseable/data
+          P_STAGING_DIR: /parseable/staging
+          P_USERNAME: admin
+          P_PASSWORD: admin
+          P_OIDC_CLIENT_ID: parseable
+          P_OIDC_CLIENT_SECRET: "{{ parseable.oidc_secret }}"
+          P_OIDC_ISSUER: https://auth.{{ domain }}
+          P_ORIGIN_URI: https://logs.{{ domain }}
+        volumes:
+          - ./data:/parseable/data
+          - ./staging:/parseable/staging
+        restart_policy: unless-stopped
+        networks:
+          - name: lotus_land_story
+
+    - name: Run Logstash
+      community.docker.docker_container:
+        restart: true
+        name: logstash
+        image: docker.elastic.co/logstash/logstash-oss:8.12.0
+        command: logstash -f /etc/logstash/conf.d/logstash.conf
+        env:
+          LS_JAVA_OPTS: "-Xmx256m -Xms256m"
+        volumes:
+          - /mnt/lotus-land-story/parseable/logstash.conf:/etc/logstash/conf.d/logstash.conf
+        restart_policy: unless-stopped
+        networks:
+          - name: lotus_land_story
+
+# vim: ft=yaml.ansible
