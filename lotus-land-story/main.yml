@@ -24,16 +24,17 @@
         state: present
 
 - import_playbook: ../playbooks/tailscale.yml # noqa: name[play]
-- import_playbook: postgres.yml               # noqa: name[play]
 - import_playbook: docker.yml                 # noqa: name[play]
+- import_playbook: postgres.yml               # noqa: name[play]
+- import_playbook: redis.yml                  # noqa: name[play]
 
-- name: Set up postgres
+- name: Listen on the docker interface
   hosts: lotus-land-story
   tasks:
 
     - name: Set up postgres to listen on docker0 interface
       ansible.builtin.lineinfile:
-        dest: "/etc/postgresql/13/main/conf.d/listen.conf"
+        dest: /etc/postgresql/13/main/conf.d/listen.conf
         regexp: '^#?listen_addresses='
         line: "listen_addresses='localhost,{{ docker_ip.address }}'"
         state: present
