@@ -18,21 +18,6 @@
         image: searxng/searxng:2024.1.17-7c80807bb
         env:
           SEARXNG_BASE_URL: https://search.{{ domain }}
-        #   DATABASE_URL: postgres://miniflux:{{ miniflux.db_password }}@host.docker.internal/miniflux
-        #   RUN_MIGRATIONS: "1"
-        #   CREATE_ADMIN: "1"
-        #   ADMIN_USERNAME: alpha
-        #   ADMIN_PASSWORD: "{{ miniflux.password }}"
-        #   METRICS_COLLECTOR: "1"
-        #   METRICS_ALLOWED_NETWORKS: "{{ docker_network.network.IPAM.Config[0].Subnet }}"
-        #   OAUTH2_PROVIDER: oidc
-        #   OAUTH2_CLIENT_ID: miniflux
-        #   OAUTH2_CLIENT_SECRET: "{{ miniflux.oidc_secret }}"
-        #   OAUTH2_REDIRECT_URL: https://rss.{{ domain }}/oauth2/oidc/callback
-        #   OAUTH2_OIDC_DISCOVERY_ENDPOINT: https://auth.{{ domain }}
-        #   OAUTH2_USER_CREATION: "1"
-        #   LOG_FORMAT: json
-        #   LOG_LEVEL: info
         restart_policy: unless-stopped
         networks:
           - name: lotus_land_story
