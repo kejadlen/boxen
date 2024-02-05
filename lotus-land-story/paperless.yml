@@ -8,7 +8,7 @@
 
     - name: Create directories for volume mounting
       ansible.builtin.file:
-        path: /mnt/lotus-land-story/paperless-ngx/{{ item }}
+        path: /mnt/lotus-land-story/paperless/{{ item }}
         state: directory
         mode: "0700"
       loop:
@@ -21,7 +21,7 @@
       ansible.builtin.copy:
         content: |
           url_prefix = "/flower/"
-        dest: /mnt/lotus-land-story/paperless-ngx/flowerconfig.py
+        dest: /mnt/lotus-land-story/paperless/flowerconfig.py
         mode: "0644"
 
     - name: Get docker network
@@ -33,7 +33,7 @@
     - name: Run Paperless-ngx
       community.docker.docker_container:
         restart: true
-        name: paperless-ngx
+        name: paperless
         image: ghcr.io/paperless-ngx/paperless-ngx:{{ version }}
         env:
           PAPERLESS_ENABLE_FLOWER: "true"
@@ -43,11 +43,11 @@
           PAPERLESS_URL: https://paperless.{{ domain }}
           PAPERLESS_WEBSERVER_WORKERS: "1"
         volumes:
-          - /mnt/lotus-land-story/paperless-ngx/data:/usr/src/paperless/data
-          - /mnt/lotus-land-story/paperless-ngx/media:/usr/src/paperless/media
-          - /mnt/lotus-land-story/paperless-ngx/export:/usr/src/paperless/export
-          - /mnt/lotus-land-story/paperless-ngx/consume:/usr/src/paperless/consume
-          - /mnt/lotus-land-story/paperless-ngx/flowerconfig.py:/usr/src/paperless/src/paperless/flowerconfig.py:ro
+          - /mnt/lotus-land-story/paperless/data:/usr/src/paperless/data
+          - /mnt/lotus-land-story/paperless/media:/usr/src/paperless/media
+          - /mnt/lotus-land-story/paperless/export:/usr/src/paperless/export
+          - /mnt/lotus-land-story/paperless/consume:/usr/src/paperless/consume
+          - /mnt/lotus-land-story/paperless/flowerconfig.py:/usr/src/paperless/src/paperless/flowerconfig.py:ro
         restart_policy: unless-stopped
         networks:
           - name: lotus_land_story
