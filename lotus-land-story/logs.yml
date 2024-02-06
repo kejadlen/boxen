@@ -1,4 +1,5 @@
-# https://www.parseable.com/docs/log-ingestion/agents/logstash
+# https://www.parseable.com/docs/log-ingestion/agents/vector
+# https://vector.dev/docs/setup/installation/platforms/docker/
 
 - name: Set up Parseable
   hosts: lotus-land-story
@@ -15,30 +16,71 @@
         - data
         - staging
 
-    # https://www.parseable.com/logstash/logstash.conf
-    - name: Configure Logstash
+    - name: Configure Vector
       ansible.builtin.copy:
-        dest: /mnt/lotus-land-story/parseable/logstash.conf
+        dest: /mnt/lotus-land-story/parseable/vector.yml
         content: |
-          output {
-              http {
-                  id => "parseable"
-                  format => "json_batch"
-                  codec => "json"
-                  url => "http://parseable:8000/api/v1/ingest"
-                  headers => {
-                      "Authorization" => "Basic YWRtaW46YWRtaW4="
-                      "x-p-stream" => "logstash"
-                  }
-                  http_method => "post"
-                  http_compression => false
-                  automatic_retries => 5
-                  retry_non_idempotent => true
-                  connect_timeout => 30
-                  keepalive => false
-                  content_type => "application/json"
-              }
-          }
+          sources:
+            # vector_metrics:
+            #   type: internal_metrics
+            raw_docker_logs:
+              type: docker_logs
+          transforms:
+            docker_logs:
+              type: remap
+              inputs:
+                - raw_docker_logs
+              source: |
+                if includes(["authelia", "caddy"], .container_name) {
+                  . |= object!(parse_json!(.message))
+                } else if .container_name == "paperless" {
+                  # asctime has trailing milliseconds, which I can't figure out
+                  # how to parse, but I also don't care about it, so drop it
+                  parsed = parse_regex!(
+                    .message,
+                    r'\[(?P<asctime>.*?),\d*\] \[(?P<level>.*?)\] \[(?P<name>.*?)\] (?P<message>.*)',
+                  )
+                  .paperless_time = parse_timestamp!(del(parsed.asctime), format: "%F %T")
+                  . |= parsed
+                } else if includes(["grafana", "loki"], .container_name) {
+                  . |= parse_key_value!(.message)
+                }
+          sinks:
+            # console:
+            #   type: console
+            #   inputs:
+            #     - demo_logs
+            #   encoding:
+            #     codec: json
+            parseable:
+              type: http
+              method: post
+              batch:
+                max_bytes: 10485760
+                max_events: 1000
+                timeout_secs: 10
+              compression: gzip
+              inputs:
+                - docker_logs
+              encoding:
+                codec: json
+              uri: http://parseable:8000/api/v1/ingest
+              auth:
+                strategy: basic
+                user: admin
+                password: admin
+              request:
+                headers:
+                  X-P-Stream: vector
+              healthcheck:
+                enabled: true
+                path: http://parseable/api/v1/liveness
+                port: 8000
+            # prometheus:
+            #   type: prometheus_remote_write
+            #   endpoint: http://prometheus:9090
+            #   inputs:
+            #     - vector_metrics
         mode: "0644"
 
     - name: Get docker network
@@ -64,6 +106,7 @@
           P_OIDC_CLIENT_SECRET: "{{ parseable.oidc_secret }}"
           P_OIDC_ISSUER: https://auth.{{ domain }}
           P_ORIGIN_URI: https://logs.{{ domain }}
+          # RUST_LOG: warning
         volumes:
           - ./data:/parseable/data
           - ./staging:/parseable/staging
@@ -71,16 +114,16 @@
         networks:
           - name: lotus_land_story
 
-    - name: Run Logstash
+    - name: Run Vector
       community.docker.docker_container:
         restart: true
-        name: logstash
-        image: docker.elastic.co/logstash/logstash-oss:8.12.0
-        command: logstash -f /etc/logstash/conf.d/logstash.conf
+        name: vector
+        image: timberio/vector:0.35.0-alpine
         env:
-          LS_JAVA_OPTS: "-Xmx256m -Xms256m"
+          # VECTOR_LOG: debug
         volumes:
-          - /mnt/lotus-land-story/parseable/logstash.conf:/etc/logstash/conf.d/logstash.conf
+          - /mnt/lotus-land-story/parseable/vector.yml:/etc/vector/vector.yaml
+          - /var/run/docker.sock:/var/run/docker.sock # for docker_logs
         restart_policy: unless-stopped
         networks:
           - name: lotus_land_story
