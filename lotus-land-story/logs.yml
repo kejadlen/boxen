@@ -31,7 +31,7 @@
               inputs:
                 - raw_docker_logs
               source: |
-                if includes(["authelia", "caddy"], .container_name) {
+                if includes(["authelia", "caddy", "miniflux"], .container_name) {
                   . |= object!(parse_json!(.message))
                 } else if .container_name == "paperless" {
                   # asctime has trailing milliseconds, which I can't figure out
@@ -67,8 +67,8 @@
               uri: http://parseable:8000/api/v1/ingest
               auth:
                 strategy: basic
-                user: admin
-                password: admin
+                user: alpha
+                password: {{ parseable.password }}
               request:
                 headers:
                   X-P-Stream: vector
@@ -81,7 +81,7 @@
             #   endpoint: http://prometheus:9090
             #   inputs:
             #     - vector_metrics
-        mode: "0644"
+        mode: "0600"
 
     - name: Get docker network
       community.docker.docker_network:
@@ -100,8 +100,8 @@
         env:
           P_FS_DIR: /parseable/data
           P_STAGING_DIR: /parseable/staging
-          P_USERNAME: admin
-          P_PASSWORD: admin
+          P_USERNAME: alpha
+          P_PASSWORD: "{{ parseable.password }}"
           P_OIDC_CLIENT_ID: parseable
           P_OIDC_CLIENT_SECRET: "{{ parseable.oidc_secret }}"
           P_OIDC_ISSUER: https://auth.{{ domain }}
