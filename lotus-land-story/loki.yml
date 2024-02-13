@@ -48,7 +48,7 @@
                 store: inmemory
           compactor:
             retention_enabled: true
-          limits_conrig:
+          limits_config:
             retention_period: 168h
           schema_config:
             configs:
