@@ -15,7 +15,6 @@
       - efm-langserver
       - entr
       - eza
-      - fasd
       - fd
       - fzf
       - git
@@ -26,9 +25,9 @@
       - ripgrep
       - ruby-install
       - shellcheck
-      # - svn # required for source code pro?
       - tmux
       - tree
+      - zoxide
       - zsh
 
       - fabianishere/personal/pam_reattach
