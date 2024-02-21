@@ -77,7 +77,7 @@ books.{{ domain }} {
 	}
 }
 
-paperless.{{ domain }} {
+docs.{{ domain }} {
 	forward_auth authelia:9091 {
 		uri /api/verify?rd=https://auth.{{ domain }}
 		copy_headers Remote-User
@@ -86,13 +86,13 @@ paperless.{{ domain }} {
 		import trusted_proxy_list
 	}
 
-	reverse_proxy paperless:8000 {
+	reverse_proxy paperless-ngx:8000 {
 		import trusted_proxy_list
 	}
 
 	redir /flower /flower/
 	handle /flower/* {
-		reverse_proxy paperless:5555
+		reverse_proxy paperless-ngx:5555
 	}
 }
 
