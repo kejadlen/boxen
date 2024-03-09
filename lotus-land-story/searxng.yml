@@ -22,6 +22,8 @@
           engines:
             - name: brave
               disabled: true
+            - name: stract
+              disabled: false
         mode: "0644"
 
     - name: Get docker network
