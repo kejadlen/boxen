@@ -1,4 +1,6 @@
 {
   "data-root": "/mnt/lotus-land-story/docker",
+  "log-driver": "local",
+  "log-opts": {"max-size": "10m", "max-file": "3"},
   "metrics-addr": "{{ docker_ip.address }}:9323"
 }
