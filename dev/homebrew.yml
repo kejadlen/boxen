@@ -22,6 +22,7 @@
       - jq
       - kitty
       - luarocks
+      - pam-reattach
       - ripgrep
       - ruby-install
       - shellcheck
@@ -29,8 +30,6 @@
       - tree
       - zoxide
       - zsh
-
-      - fabianishere/personal/pam_reattach
 
   - name: Install Homebrew formulae from HEAD
     community.general.homebrew:
