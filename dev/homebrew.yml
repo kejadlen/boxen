@@ -37,7 +37,6 @@
       state: head
     loop:
       - neovim
-      - z.lua
 
   - name: Install Homebrew casks
     community.general.homebrew_cask:
