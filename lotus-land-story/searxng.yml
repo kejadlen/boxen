@@ -19,6 +19,8 @@
           use_default_settings: true
           server:
             secret_key: {{ searxng.secret_key }}
+          search:
+            autocomplete: duckduckgo
           engines:
             - name: brave
               disabled: true
