@@ -9,7 +9,7 @@ terraform {
   required_providers {
     linode = {
       source  = "linode/linode"
-      version = "1.29.4"
+      version = "2.18.0"
     }
   }
 }
@@ -38,8 +38,14 @@ locals {
   lotus_land_story = data.linode_instances.lotus_land_story.instances.0
 }
 
-resource "linode_domain" "kejadlen-dev" {
+resource "linode_domain" "kejadlen_dev" {
   type = "master"
   domain = "kejadlen.dev"
+  soa_email = var.soa_email
+}
+
+resource "linode_domain" "chislan_family" {
+  type = "master"
+  domain = "chislan.family"
   soa_email = var.soa_email
 }
