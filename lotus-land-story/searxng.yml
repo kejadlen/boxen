@@ -21,6 +21,8 @@
             secret_key: {{ searxng.secret_key }}
           search:
             autocomplete: duckduckgo
+          outgoing:
+            enable_http: false
           engines:
             - name: brave
               disabled: true
