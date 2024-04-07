@@ -35,6 +35,12 @@ auth.{{ domain }} {
 	}
 }
 
+auth.chislan.family {
+	reverse_proxy authelia:9091 {
+		import trusted_proxy_list
+	}
+}
+
 search.{{ domain }} {
 	log
 
@@ -90,6 +96,25 @@ books.{{ domain }} {
 
 	reverse_proxy calibre-web:8083 {
 		import trusted_proxy_list
+	}
+}
+
+docs.chislan.family
+	forward_auth authelia:9091 {
+		uri /api/verify?rd=https://auth.chislan.family
+		copy_headers Remote-User
+
+		# This import needs to be included if you're relying on a trusted proxies configuration.
+		import trusted_proxy_list
+	}
+
+	reverse_proxy paperless-ngx:8000 {
+		import trusted_proxy_list
+	}
+
+	redir /flower /flower/
+	handle /flower/* {
+		reverse_proxy paperless-ngx:5555
 	}
 }
 

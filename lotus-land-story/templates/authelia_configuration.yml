@@ -17,9 +17,14 @@ authentication_backend:
 access_control:
   default_policy: deny
   rules:
-    - domain: "*.{{ domain }}"
-      # policy: one_factor
+    - domain: "*.chislan.family"
       policy: two_factor
+      subject:
+        - group:family
+    - domain: "*.kejadlen.dev"
+      policy: two_factor
+      subject:
+        - user:alpha
 
 identity_validation:
   reset_password:
@@ -31,6 +36,8 @@ session:
     - domain: {{ domain }}
       authelia_url: https://auth.{{ domain }}
       # default_redirection_url: https://www.{{ domain }}
+    - domain: chislan.family
+      authelia_url: https://auth.chislan.family
 
 storage:
   encryption_key: {{ authelia.storage_encryption_key }}
@@ -49,8 +56,8 @@ identity_providers:
     jwks:
       - key: |
           {{ authelia.oidc_private_key | indent(10) }}
-    clients:
 
+    clients:
       - client_id: grafana
         client_name: Grafana
         client_secret: $argon2id$v=19$m=65536,t=3,p=4$bHcAAorVdHuZzuz53WfAQA$x+pIDTo6SsGyY9JD4OZ7dT6pkEcPf8Yh6Yb7DXco8aQ
