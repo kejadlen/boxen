@@ -17,6 +17,10 @@ authentication_backend:
 access_control:
   default_policy: deny
   rules:
+    - domain: docs.kejadlen.dev
+      policy: two_factor
+      subject:
+        - group:family
     - domain: "*.chislan.family"
       policy: two_factor
       subject:
