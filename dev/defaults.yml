@@ -8,6 +8,14 @@
       type: "{{ item.type }}"
       value: "{{ item.value }}"
     notify: restart OS X system services
+    vars:
+      mailmate_allowed_image_urls:
+        - https://((i|images|d)\.gr-assets\.com
+        - www\.goodreads\.com
+        - massdrop-s3\.imgix\.net
+        - .*\.cloudfront\.net
+        - s3\.amazonaws\.com
+        - files\.convertkitcdn\.com/assets/pictures)/.*
     with_items:
 
     # NSGlobalDomain defaults
@@ -56,6 +64,11 @@
         key: AppleShowScrollBars
         type: string
         value: WhenScrolling
+      - # move windows by holding ctrl+cmd and dragging any part of the window
+        domain: -g
+        key: NSWindowShouldDragOnGesture
+        type: bool
+        value: true
 
       # Safari
       - # enable Debug menu in Safari
@@ -238,15 +251,7 @@
       - domain: com.freron.MailMate
         key: MmAllowedImageURLRegexp
         type: string
-        value: "{{ regexps | join('|') }}"
-        vars:
-          regexps:
-            - https://((i|images|d)\.gr-assets\.com
-            - www\.goodreads\.com
-            - massdrop-s3\.imgix\.net
-            - .*\.cloudfront\.net
-            - s3\.amazonaws\.com
-            - files\.convertkitcdn\.com/assets/pictures)/.*
+        value: "{{ mailmate_allowed_image_urls | join('|') }}"
 
       - domain: com.freron.MailMate
         key: MmSendMessageDelayEnabled
