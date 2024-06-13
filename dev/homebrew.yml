@@ -6,8 +6,8 @@
     community.general.homebrew:
       name: "{{ item }}"
     loop:
+      - aerospace
       - chruby
-      - colima
       - difftastic
       - direnv
       - docker
@@ -31,6 +31,8 @@
       - zoxide
       - zsh
 
+      - felixkratz/formulae/sketchybar
+
   - name: Install Homebrew formulae from HEAD
     community.general.homebrew:
       name: "{{ item }}"
@@ -43,24 +45,18 @@
       name: "{{ item }}"
     loop:
       - alfred
-      - bartender
-      - dash
+      - arc
       - fantastical
       - firefox-developer-edition
-      - google-chrome
       - hammerspoon
       - mailmate
       - obsidian
+      - orbstack
       - slack
-      - topnotch
       - zoom
 
-      - font-commit-mono
       - font-source-code-pro
       - font-symbols-only-nerd-font
-      # - homebrew/cask-fonts/font-source-code-pro
-      # - homebrew/cask-fonts/font-sauce-code-pro-nerd-font
-      # - homebrew/cask-versions/firefox-developer-edition
 
   - name: Heed docker-compose caveats
     block:
