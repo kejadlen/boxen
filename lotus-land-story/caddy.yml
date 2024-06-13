@@ -2,6 +2,8 @@
   hosts: lotus-land-story
   vars_files:
     - vars.yml
+  vars:
+    version: 2.8.4
   tasks:
 
     - name: Make /mnt/lotus-land-story/caddy
@@ -35,7 +37,7 @@
     - name: Run Caddy
       community.docker.docker_container:
         name: caddy
-        image: caddy:2.7.4
+        image: caddy:{{ version }}
         restart: true
         ports:
           - "80:80"

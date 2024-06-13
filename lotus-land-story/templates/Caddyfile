@@ -6,7 +6,7 @@
 
 # https://www.authelia.com/integration/proxies/caddy/#forwarded-header-trust#trusted-proxies
 (trusted_proxy_list) {
-       trusted_proxies {{ trusted_proxies }}
+	trusted_proxies {{ trusted_proxies }}
 }
 
 :2019 {
@@ -95,7 +95,7 @@ books.{{ domain }} {
 	}
 }
 
-docs.chislan.family
+docs.chislan.family {
 	forward_auth authelia:9091 {
 		uri /api/verify?rd=https://auth.chislan.family
 		copy_headers Remote-User
