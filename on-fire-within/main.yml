@@ -42,6 +42,9 @@
         - /etc/ddclient
         - /etc/minio
         - /etc/mitmproxy
+        - /etc/smokeping
+        - /etc/smokeping/config
+        - /etc/smokeping/data
         - /etc/traefik
         - /mnt/mushu/minio
         - /mnt/mushu/syncthing
@@ -123,6 +126,7 @@
         - debug
 
     - name: Docker ALL the things!
+      tags: [docker]
       community.docker.docker_compose:
         project_name: on-fire-within
         pull: true
@@ -166,7 +170,7 @@
             #     - traefik.http.routers.mitmproxy-web.tls.certresolver=le
             #     - traefik.http.services.mitmproxy-web.loadbalancer.server.port=8081
             pihole:
-              image: pihole/pihole:2024.02.0
+              image: pihole/pihole:2024.06.0
               container_name: pihole
               ports:
                 - 53:53/tcp
@@ -208,6 +212,21 @@
                 - traefik.http.routers.syncthing.tls=true
                 - traefik.http.routers.syncthing.tls.certresolver=le
                 - traefik.http.services.syncthing.loadbalancer.server.port=8384
+              restart: unless-stopped
+            smokeping:
+              image: lscr.io/linuxserver/smokeping:arm32v7-2.7.3-r9-ls36
+              container_name: smokeping
+              environment:
+                - MASTER_URL=https://smokeping.kejadlen.dev/smokeping/
+              volumes:
+                - /etc/smokeping/config:/config
+                - /etc/smokeping/data:/data
+              labels:
+                - traefik.enable=true
+                - traefik.http.routers.smokeping.rule=Host(`smokeping.kejadlen.dev`)
+                - traefik.http.routers.smokeping.tls=true
+                - traefik.http.routers.smokeping.tls.certresolver=le
+                - traefik.http.services.smokeping.loadbalancer.server.port=80
               restart: unless-stopped
             traefik:
               image: traefik:v2.10.4
