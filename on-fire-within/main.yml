@@ -39,7 +39,6 @@
         path: "{{ item }}"
         state: directory
       with_items:
-        - /etc/ddclient
         - /etc/minio
         - /etc/mitmproxy
         - /etc/smokeping
@@ -133,12 +132,6 @@
         definition:
           version: '2'
           services:
-            ddclient:
-              image: kejadlen/ddclient:latest
-              container_name: ddclient
-              volumes:
-                - /etc/ddclient:/etc/ddclient
-              restart: unless-stopped
             minio:
               image: kejadlen/minio:latest
               container_name: minio
@@ -300,12 +293,6 @@
       notify: Restart rsyslog
 
   handlers:
-    - name: Restart ddclient
-      docker_container:
-        name: ddclient
-        restart: yes
-      ignore_errors: yes
-
     - name: Restart Traefik
       docker_container:
         name: traefik
