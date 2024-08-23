@@ -1,44 +1,50 @@
-- hosts: all
+- name: Main playbook
+  hosts: dev
   tasks:
 
-  - group_by: key=os_{{ ansible_distribution }}
-    tags: always
+    - name: Group by OS
+      ansible.builtin.group_by:
+        key: os_{{ ansible_distribution }}
 
-  - ansible.builtin.git:
-      repo: git@git.kejadlen.dev:alpha/dotfiles.git
-      dest: ~/.dotfiles.git
-      bare: true
+    - name: Check out dotfiles
+      ansible.builtin.git:
+        repo: git@git.kejadlen.dev:alpha/dotfiles.git
+        dest: ~/.dotfiles
+        version: main
+        accept_newhostkey: true
+      # repo can have local changes
+      ignore_errors: true # noqa: ignore-errors
 
-  # macOS things
+- name: Import dotfiles playbook
+  import_playbook: dotfiles.yml
 
-  # Not needed anymore since I've switched to kitty
-  #
-  # - name: Import terminal profile
-  #   ansible.builtin.command: open ~/.macos/Alpha.terminal
-  #
-  # - name: Set terminal profile to be the default
-  #   osx_defaults:
-  #     domain: com.apple.Terminal
-  #     key: "{{ item }} Window Settings"
-  #     type: string
-  #     value: Alpha
-  #   with_items:
-  #     - Default
-  #     - Startup
+# First since this installs tooling used later
+- name: Import homebrew playbook
+  import_playbook: homebrew.yml
 
-- import_playbook: homebrew.yml
+- name: Import defaults playbook
+  import_playbook: defaults.yml
 
-- import_playbook: defaults.yml
-- import_playbook: dock.yml
-- import_playbook: macos.yml
+- name: Import dock playbook
+  import_playbook: dock.yml
 
-- hosts: all
+- name: Import macos playbook
+  import_playbook: macos.yml
+
+- name: Misc macOS things
+  hosts: os_MacOSX
   tasks:
+
     # https://tratt.net/laurie/blog/2024/faster_shell_startup_with_shell_switching.html
+    # I'm not sure why this doesn't work on my Linux box, but whatever
     - name: Set default shell to sh
-      user:
+      ansible.builtin.user:
         name: alpha
         shell: /bin/sh --login
-    - ansible.builtin.command: "luarocks install fennel"
+
+    - name: Install Fennel
+      ansible.builtin.command: "luarocks install fennel"
+      args:
+        creates: /opt/homebrew/bin/fennel
 
 # vim: ft=yaml.ansible

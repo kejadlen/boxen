@@ -1,5 +1,5 @@
-- name: Homebrew
-  hosts: all
+- name: Install homebrew formulae
+  hosts: os_MacOSX
   tasks:
 
   - name: Install Homebrew formulae
@@ -61,6 +61,8 @@
   - name: Heed docker-compose caveats
     block:
       - name: Create Docker CLI plugins config dir
-        ansible.buitin.file:
+        ansible.builtin.file:
           dest: ~/.docker/cli-plugins
           state: directory
+
+# vim: ft=yaml.ansible

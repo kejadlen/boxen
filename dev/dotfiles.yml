@@ -1,13 +1,17 @@
-- hosts: all
+- name: Sync dotfiles
+  hosts: dev
   tasks:
 
-  - name: List dotfiles
-    shell: ls -A ~/.dotfiles | grep '^\.'
-    register: ls_dotfiles
+    - name: List dotfiles # noqa: risky-shell-pipe
+      ansible.builtin.shell: ls -A ~/.dotfiles | grep '^\.'
+      register: ls_dotfiles
+      changed_when: false
 
-  - name: Symlink dotfiles
-    file:
-      src: ~/.dotfiles/{{ item }}
-      dest: ~/{{ item }}
-      state: link
-    loop:  "{{ ls_dotfiles.stdout_lines | difference(['.git', '.gitmodules']) }}"
+    - name: Symlink dotfiles
+      ansible.builtin.file:
+        src: ~/.dotfiles/{{ item }}
+        dest: ~/{{ item }}
+        state: link
+      loop: "{{ ls_dotfiles.stdout_lines | difference(['.git', '.gitmodules', '.DS_Store']) }}"
+
+# vim: ft=yaml.ansible
