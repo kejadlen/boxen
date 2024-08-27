@@ -31,6 +31,9 @@
 - name: Import macos playbook
   import_playbook: macos.yml
 
+- name: Import ubuntu playbook
+  import_playbook: ubuntu.yml
+
 - name: Misc macOS things
   hosts: os_MacOSX
   tasks:
