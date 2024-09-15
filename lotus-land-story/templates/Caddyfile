@@ -137,4 +137,12 @@ logs.{{ domain }} {
 	reverse_proxy parseable:8000
 }
 
+hey.kejadlen.dev
+	reverse_proxy gotosocial:8080
+
+	handle /metrics {
+		respond 404
+	}
+}
+
 # vim: ts=4

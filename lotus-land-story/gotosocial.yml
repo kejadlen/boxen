@@ -1,0 +1,58 @@
+# https://docs.gotosocial.org/en/latest/getting_started/installation/container/
+
+- name: Set up GoToSocial
+  hosts: lotus-land-story
+  vars_files:
+    - vars.yml
+  vars:
+    version: snapshot  # temporary, to get import/export functionality
+  tasks:
+
+    - name: Create working directory
+      ansible.builtin.file:
+        path: /mnt/lotus-land-story/gotosocial
+        state: directory
+        mode: "0755"
+
+    - name: Create data directory
+      ansible.builtin.file:
+        path: /mnt/lotus-land-story/gotosocial/data
+        state: directory
+        owner: 1000
+        group: 1000
+        mode: "0755"
+
+    # https://raw.githubusercontent.com/superseriousbusiness/gotosocial/main/example/docker-compose/docker-compose.yaml
+    - name: Run GoToSocial
+      community.docker.docker_container:
+        name: gotosocial
+        image: superseriousbusiness/gotosocial:{{ version }}
+        restart: true
+        restart_policy: unless-stopped
+        env:
+          GTS_HOST: hey.kejadlen.dev
+          GTS_LANDING_PAGE_USER: alpha
+          GTS_DB_TYPE: sqlite
+          GTS_DB_ADDRESS: /gotosocial/storage/sqlite.db
+          GTS_OIDC_ENABLED: "true"
+          GTS_OIDC_IDP_NAME: "Authelia"
+          GTS_OIDC_ISSUER: https://auth.kejadlen.dev
+          GTS_OIDC_CLIENT_ID: gotosocial
+          GTS_OIDC_CLIENT_SECRET: "{{ gotosocial.oidc_client_secret }}"
+          GTS_OIDC_ADMIN_GROUPS: admin
+          GTS_METRICS_ENABLED: "true"
+          GTS_METRICS_AUTH_ENABLED: "true"
+          GTS_METRICS_AUTH_USERNAME: "{{ prometheus.gotosocial.username }}"
+          GTS_METRICS_AUTH_PASSWORD: "{{ prometheus.gotosocial.password }}"
+          # GTS_ADVANCED_RATE_LIMIT_REQUESTS: "0"
+          TZ: UTC
+        volumes:
+          - /mnt/lotus-land-story/gotosocial/data:/gotosocial/storage
+        networks:
+          - name: lotus_land_story
+
+  handlers:
+    - name: Import restarts
+      ansible.builtin.import_tasks: restarts.yml
+
+# vim: ft=yaml.ansible

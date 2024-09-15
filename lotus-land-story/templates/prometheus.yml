@@ -70,4 +70,11 @@ scrape_configs:
     static_configs:
       - targets: ['paperless-ngx:5555']
 
-# vim: ft=yaml.ansible
+  - job_name: gotosocial
+    metrics_path: /metrics
+    scheme: http
+    basic_auth:
+      username: {{ prometheus.gotosocial.username }}
+      password: {{ prometheus.gotosocial.password }}
+    static_configs:
+      - targets: ['gotosocial:8080']

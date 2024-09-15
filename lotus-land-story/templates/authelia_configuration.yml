@@ -62,6 +62,8 @@ identity_providers:
           {{ authelia.oidc_private_key | indent(10) }}
 
     clients:
+      # https://www.authelia.com/reference/guides/generating-secure-values/#generating-a-random-password-hash
+
       - client_id: grafana
         client_name: Grafana
         client_secret: $argon2id$v=19$m=65536,t=3,p=4$bHcAAorVdHuZzuz53WfAQA$x+pIDTo6SsGyY9JD4OZ7dT6pkEcPf8Yh6Yb7DXco8aQ
@@ -105,3 +107,15 @@ identity_providers:
           - openid
           - email
           - profile
+
+      - client_id: gotosocial
+        client_name: GoToSocial
+        client_secret: $argon2id$v=19$m=65536,t=3,p=4$4fkP2O3FYs26yKH/3WLuvQ$JHkaAA+b752/v7rtyhEzGwGutpSZR+7PSmz8psFb8BM
+        public: false
+        redirect_uris:
+          - https://hey.kejadlen.dev/auth/callback
+        scopes:
+          - openid
+          - email
+          - profile
+          - groups
