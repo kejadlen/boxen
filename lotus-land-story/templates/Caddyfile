@@ -13,19 +13,19 @@
 	metrics
 }
 
-loki.{{ domain }} {
+loki.kejadlen.dev {
 	reverse_proxy loki:3100
 }
 
-rss.{{ domain }} {
+rss.kejadlen.dev {
 	reverse_proxy miniflux:8080
 }
 
-prometheus.{{ domain }} {
+prometheus.kejadlen.dev {
 	reverse_proxy prometheus:9090
 }
 
-grafana.{{ domain }} {
+grafana.kejadlen.dev {
 	reverse_proxy grafana:3000
 }
 
@@ -37,7 +37,7 @@ auth.{{ domain }} {
 }
 {% endfor %}
 
-search.{{ domain }} {
+search.kejadlen.dev {
 	log
 
 	handle /opensearch.xml {
@@ -67,7 +67,7 @@ search.{{ domain }} {
 	}
 }
 
-# {{ hledger.subdomain }}.{{ domain }} {
+# {{ hledger.subdomain }}.kejadlen.dev {
 # 	forward_auth authelia:9091 {
 # 		uri /api/verify?rd=https://auth.{{ domain }}
 # 		# copy_headers Remote-User Remote-Groups Remote-Name Remote-Email
@@ -81,7 +81,7 @@ search.{{ domain }} {
 # 	}
 # }
 
-books.{{ domain }} {
+books.kejadlen.dev {
 	forward_auth authelia:9091 {
 		uri /api/verify?rd=https://auth.{{ domain }}
 		copy_headers Remote-User
@@ -114,7 +114,7 @@ docs.chislan.family {
 	}
 }
 
-docs.{{ domain }} {
+docs.kejadlen.dev {
 	forward_auth authelia:9091 {
 		uri /api/verify?rd=https://auth.{{ domain }}
 		copy_headers Remote-User
@@ -133,7 +133,7 @@ docs.{{ domain }} {
 	}
 }
 
-logs.{{ domain }} {
+logs.kejadlen.dev
 	reverse_proxy parseable:8000
 }
 

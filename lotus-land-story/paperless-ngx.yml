@@ -43,7 +43,7 @@
           PAPERLESS_TASK_WORKERS: "1"
           PAPERLESS_THREADS_PER_WORKER: "1"
           PAPERLESS_TIME_ZONE: America/Los_Angeles
-          PAPERLESS_URL: https://docs.kejadlen.dev
+          PAPERLESS_URL: https://docs.chislan.family
           PAPERLESS_WEBSERVER_WORKERS: "1"
         volumes:
           - /mnt/lotus-land-story/paperless-ngx/data:/usr/src/paperless/data
