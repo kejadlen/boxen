@@ -5,7 +5,7 @@
   vars_files:
     - vars.yml
   vars:
-    version: snapshot  # temporary, to get import/export functionality
+    version: 0.17.0-rc1
   tasks:
 
     - name: Create working directory
