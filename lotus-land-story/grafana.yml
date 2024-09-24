@@ -2,6 +2,8 @@
   hosts: lotus-land-story
   vars_files:
     - vars.yml
+  vars:
+    version: 9.2.15
   tasks:
 
     - name: Create Grafana dir
@@ -68,7 +70,7 @@
         # recreate: true
         # restart: true
         name: grafana
-        image: grafana/grafana-oss:9.2.15
+        image: grafana/grafana-oss:{{ version }}
         # ports:
         #   - "3000:3000"
         volumes:
