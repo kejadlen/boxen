@@ -3,7 +3,7 @@
   vars_files:
     - vars.yml
   vars:
-    version: 9.2.15
+    version: 11.0.4
   tasks:
 
     - name: Create Grafana dir
@@ -67,12 +67,8 @@
 
     - name: Run Grafana
       community.docker.docker_container:
-        # recreate: true
-        # restart: true
         name: grafana
         image: grafana/grafana-oss:{{ version }}
-        # ports:
-        #   - "3000:3000"
         volumes:
           - /mnt/lotus-land-story/grafana/grafana.ini:/etc/grafana/grafana.ini
           - /mnt/lotus-land-story/grafana/provisioning:/etc/grafana/provisioning
