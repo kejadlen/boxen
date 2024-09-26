@@ -3,6 +3,8 @@
 
 - name: Set up Loki
   hosts: lotus-land-story
+  vars:
+    version: 2.8.0
   tasks:
 
     - name: Provision Grafana
@@ -48,6 +50,7 @@
                 store: inmemory
           compactor:
             retention_enabled: true
+            # delete_request_store: filesystem
           limits_config:
             retention_period: 168h
           schema_config:
@@ -62,6 +65,15 @@
 
               # https://grafana.com/docs/loki/latest/operations/storage/tsdb/
               - from: 2023-07-17
+                index:
+                  period: 24h
+                  prefix: index_
+                object_store: filesystem
+                schema: v12
+                store: tsdb
+
+              # https://grafana.com/docs/loki/latest/operations/storage/tsdb/
+              - from: 2024-09-27
                 index:
                   period: 24h
                   prefix: index_
@@ -129,7 +141,7 @@
     - name: Run Loki
       community.docker.docker_container:
         name: loki
-        image: grafana/loki:2.8.0
+        image: grafana/loki:{{ version }}
         restart: true
         command: -config.file=/mnt/config/loki.yml
         ports:
@@ -146,7 +158,7 @@
     - name: Run Promtail
       community.docker.docker_container:
         name: promtail
-        image: grafana/promtail:2.8.0
+        image: grafana/promtail:{{ version }}
         restart: true
         command: -config.file=/mnt/config/promtail.yml
         ports:
