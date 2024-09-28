@@ -85,6 +85,7 @@
           - /var/run:/var/run:rw
           - /sys:/sys:ro
           - /var/lib/docker/:/var/lib/docker:ro
+          - /etc/machine-id:/etc/machine-id:ro
         restart_policy: unless-stopped
         networks:
           - name: lotus_land_story
