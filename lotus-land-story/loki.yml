@@ -4,7 +4,7 @@
 - name: Set up Loki
   hosts: lotus-land-story
   vars:
-    version: 2.9.0
+    version: 3.2.0
   tasks:
 
     - name: Provision Grafana
@@ -50,9 +50,12 @@
                 store: inmemory
           compactor:
             retention_enabled: true
-            # delete_request_store: filesystem
+            delete_request_store: filesystem
           limits_config:
             retention_period: 168h
+            volume_enabled: true
+          pattern_ingester: # for Explore Logs
+            enabled: true
           schema_config:
             configs:
               - from: 2020-10-24
@@ -72,13 +75,13 @@
                 schema: v12
                 store: tsdb
 
-              # - from: 2024-09-28
-              #   index:
-              #     period: 24h
-              #     prefix: index_
-              #   object_store: filesystem
-              #   schema: v13
-              #   store: tsdb
+              - from: 2024-09-29
+                index:
+                  period: 24h
+                  prefix: index_
+                object_store: filesystem
+                schema: v13
+                store: tsdb
 
           storage_config:
             filesystem:
