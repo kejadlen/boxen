@@ -38,33 +38,7 @@ auth.{{ domain }} {
 {% endfor %}
 
 search.kejadlen.dev {
-	log
-
-	handle /opensearch.xml {
-		reverse_proxy searxng:8080
-	}
-
-	handle /static/* {
-		reverse_proxy searxng:8080
-	}
-
-	handle /autocompleter {
-		reverse_proxy searxng:8080
-	}
-
-	handle {
-		forward_auth authelia:9091 {
-			uri /api/verify?rd=https://auth.{{ domain }}
-			# copy_headers Remote-User
-
-			# This import needs to be included if you're relying on a trusted proxies configuration.
-			import trusted_proxy_list
-		}
-
-		reverse_proxy searxng:8080 {
-			import trusted_proxy_list
-		}
-	}
+	reverse_proxy searxng:8080
 }
 
 # {{ hledger.subdomain }}.kejadlen.dev {
