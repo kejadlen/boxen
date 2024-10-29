@@ -6,11 +6,17 @@
     version: 11.2.1
   tasks:
 
+    - name: Grafana user
+      ansible.builtin.user:
+        name: grafana
+      register: grafana_user
+
     - name: Create Grafana dir
       ansible.builtin.file:
         path: /mnt/lotus-land-story/grafana/provisioning/{{ item }}
         state: directory
         mode: "0755"
+        owner: "{{ grafana_user.name }}"
       loop:
         - datasources
 
@@ -18,6 +24,9 @@
       ansible.builtin.copy:
         dest: /mnt/lotus-land-story/grafana/grafana.ini
         content: |
+          [log]
+          # level = debug
+
           [metrics]
           enabled             = true
           disable_total_stats = false
@@ -32,6 +41,7 @@
           oauth_allow_insecure_email_lookup = true
           disable_signout_menu = true
 
+          # https://www.authelia.com/integration/openid-connect/grafana/
           [auth.generic_oauth]
           enabled = true
           name = Authelia
@@ -48,7 +58,17 @@
           name_attribute_path = name
           use_pkce = true
           auto_login = true
-        mode: "0644"
+          role_attribute_path = contains(groups, 'admin') && 'Admin' || contains(groups, 'editor') && 'Editor' || 'Viewer'
+          allow_assign_grafana_admin = true
+
+          [smtp]
+          enabled = true
+          host = smtp.sendgrid.net:465
+          user = apikey
+          password = {{ grafana.smtp_password }}
+          from_address = grafana@kejadlen.dev
+        mode: "0600"
+        owner: "{{ grafana_user.name }}"
 
     - name: Provision Prometheus
       ansible.builtin.copy:
@@ -88,5 +108,6 @@
           - name: lotus_land_story
         etc_hosts:
           host.docker.internal: host-gateway
+        user: "{{ grafana_user.uid }}"
 
 # vim: ft=yaml.ansible
