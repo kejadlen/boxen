@@ -28,6 +28,7 @@
       - shellcheck
       - tmux
       - tree
+      - yaml-language-server
       - zoxide
       - zsh
 
@@ -45,7 +46,6 @@
       name: "{{ item }}"
     loop:
       - alfred
-      - arc
       - fantastical
       - firefox-developer-edition
       - hammerspoon
