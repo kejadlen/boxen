@@ -55,6 +55,20 @@ search.kejadlen.dev {
 # 	}
 # }
 
+books.chislan.family {
+	forward_auth authelia:9091 {
+		uri /api/verify?rd=https://auth.chislan.family
+		copy_headers Remote-User
+
+		## This import needs to be included if you're relying on a trusted proxies configuration.
+		import trusted_proxy_list
+	}
+
+	reverse_proxy calibre-web:8083 {
+		import trusted_proxy_list
+	}
+}
+
 books.kejadlen.dev {
 	forward_auth authelia:9091 {
 		uri /api/verify?rd=https://auth.{{ domain }}
