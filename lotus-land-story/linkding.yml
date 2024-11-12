@@ -1,0 +1,40 @@
+- name: Set up linkding
+  hosts: lotus-land-story
+  vars_files:
+    - vars.yml
+  vars:
+    version: 1.36.0-plus
+  tasks:
+
+    - name: Make /mnt/lotus-land-story/linkding
+      ansible.builtin.file:
+        path: /mnt/lotus-land-story/{{ item }}
+        state: directory
+        mode: "0755"
+      loop:
+        - linkding
+
+    - name: Run linkding
+      community.docker.docker_container:
+        name: linkding
+        image: sissbruecker/linkding:{{ version }}
+        restart: true
+        env:
+          LD_ENABLE_OIDC: "True"
+          OIDC_OP_AUTHORIZATION_ENDPOINT: https://auth.kejadlen.dev/api/oidc/authorization
+          OIDC_OP_TOKEN_ENDPOINT: https://auth.kejadlen.dev/api/oidc/token
+          OIDC_OP_USER_ENDPOINT: https://auth.kejadlen.dev/api/oidc/userinfo
+          OIDC_OP_JWKS_ENDPOINT: https://auth.kejadlen.dev/jwks.json
+          OIDC_RP_CLIENT_ID: linkding
+          OIDC_RP_CLIENT_SECRET: "{{ linkding.oidc_rp_client_secret }}"
+        volumes:
+          - /mnt/lotus-land-story/linkding:/etc/linkding/data
+        restart_policy: unless-stopped
+        networks:
+          - name: lotus_land_story
+
+  handlers:
+    - name: Import restarts
+      ansible.builtin.import_tasks: restarts.yml
+
+# vim: ft=yaml.ansible

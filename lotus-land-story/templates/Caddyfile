@@ -143,4 +143,8 @@ cadvisor.kejadlen.dev {
 	}
 }
 
+links.kejadlen.dev {
+	reverse_proxy linkding:9090
+}
+
 # vim: ts=4

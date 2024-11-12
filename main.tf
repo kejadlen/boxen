@@ -19,6 +19,11 @@ variable "soa_email" {
   nullable = false
 }
 
+variable "subdomains" {
+  type = map(list(string))
+  nullable = false
+}
+
 data "linode_instances" "ramble_hard" {
   filter {
     name = "label"
