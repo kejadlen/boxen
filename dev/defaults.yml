@@ -11,12 +11,13 @@
     vars:
       mailmate:
         allowed_image_regexps:
-          - https://((i|images|d)\.gr-assets\.com
+          - (i|images|d)\.gr-assets\.com
           - www\.goodreads\.com
           - massdrop-s3\.imgix\.net
           - .*\.cloudfront\.net
           - s3\.amazonaws\.com
-          - files\.convertkitcdn\.com/assets/pictures)/.*
+          - files\.convertkitcdn\.com/assets/pictures
+          - wizardzines\.com
     with_items:
 
     # NSGlobalDomain defaults
@@ -252,7 +253,7 @@
       - domain: com.freron.MailMate
         key: MmAllowedImageURLRegexp
         type: string
-        value: "{{ mailmate.allowed_image_regexps | join('|') }}"
+        value: "https://({{ mailmate.allowed_image_regexps | join('|') }})"
 
       - domain: com.freron.MailMate
         key: MmSendMessageDelayEnabled
