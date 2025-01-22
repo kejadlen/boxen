@@ -45,7 +45,7 @@
   vars_files:
     - vars.yml
   vars:
-    version: 2.2.4
+    version: 2.2.5
   tasks:
 
     - name: Get docker network
