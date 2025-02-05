@@ -28,7 +28,6 @@
               disabled: true
             - name: stract
               disabled: false
-              weight: 2
         mode: "0644"
 
     - name: Get docker network
