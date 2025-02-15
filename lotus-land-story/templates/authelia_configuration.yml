@@ -93,17 +93,6 @@ identity_providers:
           - email
           - profile
 
-      - client_id: miniflux
-        client_name: Miniflux
-        client_secret: $argon2id$v=19$m=65536,t=3,p=4$tK5aBDAHOmNsEZzSYS88eg$z6tkZVIzB0x6RQjCM0v34lguS454lcQd/Sm0+xRfg7w
-        public: false
-        redirect_uris:
-          - https://rss.{{ domain }}/oauth2/oidc/callback
-        scopes:
-          - openid
-          - email
-          - profile
-
       - client_id: gotosocial
         client_name: GoToSocial
         client_secret: $argon2id$v=19$m=65536,t=3,p=4$4fkP2O3FYs26yKH/3WLuvQ$JHkaAA+b752/v7rtyhEzGwGutpSZR+7PSmz8psFb8BM

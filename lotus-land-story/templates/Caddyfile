@@ -2,6 +2,11 @@
 	servers {
 		metrics
 	}
+
+	tailscale {
+		auth_key {env.TS_AUTHKEY}
+		state_dir /data/tailscale
+	}
 }
 
 # https://www.authelia.com/integration/proxies/caddy/#forwarded-header-trust#trusted-proxies
@@ -17,8 +22,13 @@ loki.kejadlen.dev {
 	reverse_proxy loki:3100
 }
 
-rss.kejadlen.dev {
-	reverse_proxy miniflux:8080
+rss {
+	tls internal
+	bind tailscale/rss
+	tailscale_auth
+	reverse_proxy miniflux:8080 {
+		header_up Remote-User {http.auth.user.tailscale_login}
+	}
 }
 
 prometheus.kejadlen.dev {

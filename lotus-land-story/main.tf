@@ -65,7 +65,6 @@ resource "linode_domain_record" "subdomains" {
     "hledger",
     "loki",
     "prometheus",
-    "rss",
   ])
   name     = each.key
 }
