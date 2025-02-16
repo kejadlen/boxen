@@ -51,20 +51,6 @@ search.kejadlen.dev {
 	reverse_proxy searxng:8080
 }
 
-# {{ hledger.subdomain }}.kejadlen.dev {
-# 	forward_auth authelia:9091 {
-# 		uri /api/verify?rd=https://auth.{{ domain }}
-# 		# copy_headers Remote-User Remote-Groups Remote-Name Remote-Email
-
-# 		## This import needs to be included if you're relying on a trusted proxies configuration.
-# 		import trusted_proxy_list
-# 	}
-
-# 	reverse_proxy hledger:5000 {
-# 		import trusted_proxy_list
-# 	}
-# }
-
 books.chislan.family {
 	forward_auth authelia:9091 {
 		uri /api/verify?rd=https://auth.chislan.family
@@ -79,42 +65,9 @@ books.chislan.family {
 	}
 }
 
-books.kejadlen.dev {
-	forward_auth authelia:9091 {
-		uri /api/verify?rd=https://auth.{{ domain }}
-		copy_headers Remote-User
-
-		## This import needs to be included if you're relying on a trusted proxies configuration.
-		import trusted_proxy_list
-	}
-
-	reverse_proxy calibre-web:8083 {
-		import trusted_proxy_list
-	}
-}
-
 docs.chislan.family {
 	forward_auth authelia:9091 {
 		uri /api/verify?rd=https://auth.chislan.family
-		copy_headers Remote-User
-
-		# This import needs to be included if you're relying on a trusted proxies configuration.
-		import trusted_proxy_list
-	}
-
-	reverse_proxy paperless-ngx:8000 {
-		import trusted_proxy_list
-	}
-
-	redir /flower /flower/
-	handle /flower/* {
-		reverse_proxy paperless-ngx:5555
-	}
-}
-
-docs.kejadlen.dev {
-	forward_auth authelia:9091 {
-		uri /api/verify?rd=https://auth.{{ domain }}
 		copy_headers Remote-User
 
 		# This import needs to be included if you're relying on a trusted proxies configuration.
