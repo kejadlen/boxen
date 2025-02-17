@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en-US">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width" />
+    <title>Chislan Family Setup</title>
+    <style>
+      /* https://perfectmotherfuckingwebsite.com/ */
+      body {
+          max-width: 650px;
+          margin: 40px auto;
+          padding: 0 10px;
+          font: 18px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+          color: #444
+      }
+
+      h1,h2,h3 {
+          line-height: 1.2
+      }
+
+      @media (prefers-color-scheme: dark) {
+          body {
+              color:#c9d1d9;
+              background: #0d1117
+          }
+
+          a:link {
+              color: #58a6ff
+          }
+
+          a:visited {
+              color: #8e96f0
+          }
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Chislan Family Setup</h1>
+    <ol>
+      <li>Download <a href="root.pem">root.pem</a></li>
+      <li>Open Settings -&gt; Profile Downloaded</li>
+      <li>Install the profile</li>
+      <li>Open Settings -&gt; General -&gt; About -&gt; Certificate Trust Settings</li>
+      <li>Enable full trust for the Caddy Local Authority root certificate</li>
+    </ol>
+  </body>
+</html>

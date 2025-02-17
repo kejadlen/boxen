@@ -92,22 +92,55 @@ hey.kejadlen.dev
 	}
 }
 
-cadvisor.kejadlen.dev {
-	forward_auth authelia:9091 {
-		uri /api/verify?rd=https://auth.{{ domain }}
-		copy_headers Remote-User
+cadvisor {
+	tls internal
+	bind tailscale/cadvisor
+	reverse_proxy cadvisor:8080
+}
 
-		# This import needs to be included if you're relying on a trusted proxies configuration.
-		import trusted_proxy_list
-	}
+# cert {
+# 	tls internal
+# 	bind tailscale/cert
+# 	tailscale_auth
+# 	file_server {
+# 		root /data/caddy/pki/authorities/local
+# 	}
+# 	uri path_regexp pem$ crt
+# }
 
-	reverse_proxy cadvisor:8080 {
-		import trusted_proxy_list
+http://config {
+	bind tailscale/config
+	tailscale_auth
+	file_server {
+		root /data/config
+		browse
 	}
 }
 
-links.kejadlen.dev {
-	reverse_proxy linkding:9090
+http://setup {
+	bind tailscale/setup
+	tailscale_auth
+	file_server {
+		root /data/setup
+	}
+}
+
+caddytest {
+	log
+	tls internal
+	bind tailscale/caddytest
+	tailscale_auth
+	reverse_proxy localhost:3333 {
+		header_up Remote-User {http.auth.user.tailscale_login}
+		header_up X-Webauth-User {http.auth.user.tailscale_login}
+		header_up X-Tailscale-Tailnet {http.auth.user.tailscale_tailnet}
+	}
+}
+
+:3333 {
+	log
+	templates
+	respond `Hello, {{ '{{' }}.Req.Header.Get "Remote-User"}} from {{ '{{' }}.Req.Header.Get "X-Tailscale-Tailnet"}}`
 }
 
 # vim: ts=4

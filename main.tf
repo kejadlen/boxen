@@ -89,9 +89,7 @@ resource "linode_domain" "chislan_family" {
 }
 
 resource "pihole_dns_record" "rss" {
-  for_each = toset([
-    "rss",
-  ])
+  for_each = toset([])
 
   domain = each.key
   ip     = data.tailscale_device.lotus_land_story.addresses.0
