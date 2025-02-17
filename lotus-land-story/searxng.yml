@@ -28,6 +28,11 @@
               disabled: true
             - name: stract
               disabled: false
+          enabled_plugins:
+            - Hostname replace
+          hostname_replace:
+            '(.*\.)?w3schools\.com$': false
+            '(.*\.)?geeksforgeeks\.org$': false
         mode: "0644"
 
     - name: Get docker network
