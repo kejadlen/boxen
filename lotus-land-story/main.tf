@@ -60,13 +60,10 @@ resource "linode_domain_record" "subdomains" {
 
   for_each = toset([
     "auth",
-    "books",
-    "grafana",
-    "hledger",
     "loki",
     "prometheus",
   ])
-  name     = each.key
+  name = each.key
 }
 
 resource "linode_domain_record" "prometheus" {
