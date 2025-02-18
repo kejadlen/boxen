@@ -5,7 +5,7 @@
   vars_files:
     - vars.yml
   vars:
-    version: 0.17.2
+    version: 0.17.4
   tasks:
 
     - name: Create working directory
@@ -21,6 +21,31 @@
         owner: 1000
         group: 1000
         mode: "0755"
+
+    - name: Back up before upgrades
+      block:
+
+        - name: Get current version
+          ansible.builtin.command: >
+            docker inspect
+            --format '{{ '{{' }} index .Config.Labels "org.opencontainers.image.version"}}'
+            gotosocial
+          register: gotosocial_version
+          changed_when: false
+
+        - name: Stop and backup gotosocial
+          when: gotosocial_version.stdout | trim != version
+          block:
+            - name: Stop gotosocial
+              community.docker.docker_container:
+                name: gotosocial
+                state: stopped
+            - name: Backup db
+              ansible.builtin.copy:
+                src: /mnt/lotus-land-story/gotosocial/data/sqlite.db
+                dest: /mnt/lotus-land-story/gotosocial/sqlite.db.bak
+                mode: "0400"
+                remote_src: true
 
     # https://raw.githubusercontent.com/superseriousbusiness/gotosocial/main/example/docker-compose/docker-compose.yaml
     - name: Run GoToSocial
