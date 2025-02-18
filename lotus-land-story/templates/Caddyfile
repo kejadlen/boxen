@@ -93,25 +93,6 @@ cadvisor {
 	reverse_proxy cadvisor:8080
 }
 
-# cert {
-# 	tls internal
-# 	bind tailscale/cert
-# 	tailscale_auth
-# 	file_server {
-# 		root /data/caddy/pki/authorities/local
-# 	}
-# 	uri path_regexp pem$ crt
-# }
-
-http://config {
-	bind tailscale/config
-	tailscale_auth
-	file_server {
-		root /data/config
-		browse
-	}
-}
-
 http://setup {
 	bind tailscale/setup
 	tailscale_auth
