@@ -124,9 +124,17 @@
       tags:
         - debug
 
+    - name: Save Tailscale IP addresses
+      tags: [docker]
+      block:
+      - command: tailscale ip -4
+        register: tailscale_ipv4
+      - command: tailscale ip -2
+        register: tailscale_ipv6
+
     - name: Docker ALL the things!
       tags: [docker]
-      community.docker.docker_compose:
+      community.docker.docker_compose_v2:
         project_name: on-fire-within
         pull: true
         definition:
@@ -172,7 +180,8 @@
                 TZ: America/Los_Angeles
                 VIRTUAL_HOST: "{{ pihole.host }}"
                 WEBPASSWORD: "{{ pihole.password }}"
-                LOCAL_IPV4: "{{ ansible_default_ipv4.address }}"
+                LOCAL_IPV4: "{{ tailscale_ipv4 | trim }}"
+                LOCAL_IPV6: "{{ tailscale_ipv6 | trim }}"
               volumes:
                 - /etc/pihole:/etc/pihole
                 - /etc/dnsmasq.d:/etc/dnsmasq.d
