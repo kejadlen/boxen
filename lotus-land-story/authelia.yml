@@ -1,7 +1,7 @@
 - name: Set up Authelia
   hosts: lotus-land-story
   vars:
-    version: 4.38.18
+    version: 4.38.19
   vars_files:
     - vars.yml
   tasks:
