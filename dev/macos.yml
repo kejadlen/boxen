@@ -76,4 +76,21 @@
         - net.inet6.ip6.hlim
       changed_when: true
 
+- name: MacOS-specific things
+  hosts: os_MacOSX
+  tasks:
+
+    - name: Symlink Jujutsu config
+      block:
+        - name: Register Jujutsu config location
+          ansible.builtin.command: jj config path --user
+          register: jj_config_path_user
+          changed_when: false
+
+        - name: Symlink Jujutsu config
+          ansible.builtin.file:
+            src: ~/.config/jj/config.toml
+            dest: "{{ jj_config_path_user | trim }}"
+            state: link
+
 # vim: ft=yaml.ansible

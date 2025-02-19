@@ -19,6 +19,7 @@
       - fzf
       - git
       - git-lfs
+      - jj
       - jq
       - kitty
       - luarocks
