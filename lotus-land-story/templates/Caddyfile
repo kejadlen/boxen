@@ -9,34 +9,51 @@
 	}
 }
 
+### Auth
+
 # https://www.authelia.com/integration/proxies/caddy/#forwarded-header-trust#trusted-proxies
 (trusted_proxy_list) {
 	trusted_proxies {{ trusted_proxies }}
 }
 
+{% for domain in ("kejadlen.dev", "chislan.family") %}
+auth.{{ domain }} {
+	reverse_proxy authelia:9091 {
+		import trusted_proxy_list
+	}
+}
+{% endfor %}
+
+http://setup {
+	bind tailscale/setup
+	tailscale_auth
+	file_server {
+		root /data/setup
+	}
+}
+
+### Monitoring
+
+# TODO Update this, since it's deprecated
 :2019 {
 	metrics
+}
+
+cadvisor {
+	tls internal
+	bind tailscale/cadvisor
+	reverse_proxy cadvisor:8080
 }
 
 loki.kejadlen.dev {
 	reverse_proxy loki:3100
 }
 
-rss {
+prometheus {
 	tls internal
-	bind tailscale/rss
+	bind tailscale/prometheus
 	tailscale_auth
-	reverse_proxy miniflux:8080 {
-		header_up Remote-User {http.auth.user.tailscale_login}
-	}
-}
-
-prometheus.kejadlen.dev {
 	reverse_proxy prometheus:9090
-}
-
-grafana.kejadlen.dev {
-	reverse_proxy grafana:3000
 }
 
 grafana {
@@ -48,17 +65,29 @@ grafana {
 	}
 }
 
-{% for domain in ("kejadlen.dev", "chislan.family") %}
-auth.{{ domain }} {
-	reverse_proxy authelia:9091 {
-		import trusted_proxy_list
+### Services
+
+rss {
+	tls internal
+	bind tailscale/rss
+	tailscale_auth
+	reverse_proxy miniflux:8080 {
+		header_up Remote-User {http.auth.user.tailscale_login}
 	}
 }
-{% endfor %}
+
+search {
+	tls internal
+	bind tailscale/search
+	tailscale_auth
+	reverse_proxy searxng:8080
+}
 
 search.kejadlen.dev {
 	reverse_proxy searxng:8080
 }
+
+### Family
 
 books {
 	tls internal
@@ -88,44 +117,28 @@ docs.chislan.family {
 	}
 }
 
+docs {
+	tls internal
+	bind tailscale/docs
+	tailscale_auth
+	reverse_proxy paperless-ngx:8000 {
+		header_up Remote-User {http.auth.user.tailscale_user}
+	}
+
+	redir /flower /flower/
+	handle /flower/* {
+		reverse_proxy paperless-ngx:5555
+	}
+}
+
+### External
+
 hey.kejadlen.dev
 	reverse_proxy gotosocial:8080
 
 	handle /metrics {
 		respond 404
 	}
-}
-
-cadvisor {
-	tls internal
-	bind tailscale/cadvisor
-	reverse_proxy cadvisor:8080
-}
-
-http://setup {
-	bind tailscale/setup
-	tailscale_auth
-	file_server {
-		root /data/setup
-	}
-}
-
-caddytest {
-	log
-	tls internal
-	bind tailscale/caddytest
-	tailscale_auth
-	reverse_proxy localhost:3333 {
-		header_up Remote-User {http.auth.user.tailscale_login}
-		header_up X-Webauth-User {http.auth.user.tailscale_login}
-		header_up X-Tailscale-Tailnet {http.auth.user.tailscale_tailnet}
-	}
-}
-
-:3333 {
-	log
-	templates
-	respond `Hello, {{ '{{' }}.Req.Header.Get "Remote-User"}} from {{ '{{' }}.Req.Header.Get "X-Tailscale-Tailnet"}}`
 }
 
 # vim: ts=4
