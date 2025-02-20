@@ -53,6 +53,7 @@
           USER_UID: "{{ git_user.uid }}"
           USER_GID: "{{ git_user.group }}"
           GITEA__mailer__PASSWD: "{{ gitea.mailer_password }}"
+          GITEA__metrics__TOKEN: "{{ gitea.metrics_token }}"
         volumes:
           - /mnt/lotus-land-story/gitea:/data
           - /etc/timezone:/etc/timezone:ro
