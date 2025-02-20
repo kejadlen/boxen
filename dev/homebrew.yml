@@ -24,6 +24,7 @@
       - kitty
       - luarocks
       - pam-reattach
+      - restic
       - ripgrep
       - ruby-install
       - shellcheck

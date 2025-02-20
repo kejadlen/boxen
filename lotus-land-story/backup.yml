@@ -1,0 +1,28 @@
+- name: Backup
+  hosts: lotus-land-story
+  vars_files:
+    - vars.yml
+  # vars:
+  #   version: 2.9.1
+  tasks:
+
+    - name: Install Restic
+      ansible.builtin.package:
+        name: restic
+        state: present
+
+    - name: Update Restic
+      ansible.builtin.command: restic self-update
+
+    - name: Generate SSH key
+      community.crypto.openssh_keypair:
+        path: ~/.ssh/id_ed25519
+        type: ed25519
+
+    - name: Set up daily backup
+      ansible.builtin.template:
+        src: templates/backup.sh
+        dest: /etc/cron.daily/backup
+        mode: '0700'
+
+# vim: ft=yaml.ansible
