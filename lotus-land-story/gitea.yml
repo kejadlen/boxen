@@ -1,0 +1,71 @@
+# https://docs.gitea.com/installation/install-with-docker#sshing-shim-with-authorized_keys
+
+- name: Set up Gitea
+  hosts: lotus-land-story
+  vars_files:
+    - vars.yml
+  vars:
+    version: 1.23.1
+  tasks:
+
+    - name: Create git user
+      ansible.builtin.user:
+        name: git
+        create_home: true
+      register: git_user
+
+    - name: Create ssh key
+      community.crypto.openssh_keypair:
+        path: "{{ git_user.home }}/.ssh/id_ecdsa"
+        type: ecdsa
+        owner: "{{ git_user.name }}"
+        group: "{{ git_user.group }}"
+      register: ssh_key
+
+    - name: Set authorized key
+      ansible.posix.authorized_key:
+        user: "{{ git_user.name }}"
+        state: present
+        key: "{{ ssh_key.public_key }}"
+
+    - name: Make /usr/local/bin/gitea
+      ansible.builtin.copy:
+        dest: /usr/local/bin/gitea
+        content: |
+          #!/bin/sh
+          ssh -p 2222 -o StrictHostKeyChecking=no git@127.0.0.1 "SSH_ORIGINAL_COMMAND=\"$SSH_ORIGINAL_COMMAND\" $0 $@"
+        mode: "0755"
+
+    - name: Make /mnt/lotus-land-story/gitea
+      ansible.builtin.file:
+        path: /mnt/lotus-land-story/gitea
+        state: directory
+        mode: "0755"
+        owner: "{{ git_user.uid }}"
+        group: "{{ git_user.group }}"
+
+    - name: Run Gitea
+      community.docker.docker_container:
+        name: gitea
+        image: docker.io/gitea/gitea:{{ version }}
+        restart: true
+        env:
+          USER_UID: "{{ git_user.uid }}"
+          USER_GID: "{{ git_user.group }}"
+          GITEA__mailer__PASSWD: "{{ gitea.mailer_password }}"
+        volumes:
+          - /mnt/lotus-land-story/gitea:/data
+          - /etc/timezone:/etc/timezone:ro
+          - /etc/localtime:/etc/localtime:ro
+          - /home/git/.ssh/:/data/git/.ssh
+        ports:
+          - "2222:22"
+        restart_policy: unless-stopped
+        networks:
+          - name: lotus_land_story
+
+  handlers:
+    - name: Import restarts
+      ansible.builtin.import_tasks: restarts.yml
+
+# vim: ft=yaml.ansible

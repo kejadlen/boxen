@@ -133,6 +133,10 @@ docs {
 
 ### External
 
+git.kejadlen.dev
+	reverse_proxy gitea:3000
+}
+
 hey.kejadlen.dev
 	reverse_proxy gotosocial:8080
 

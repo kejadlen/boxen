@@ -106,6 +106,8 @@
 
 - name: Set up ufw
   hosts: lotus-land-story
+  tags:
+    - ufw
   tasks:
 
     - name: Get docker network for ufw
@@ -117,6 +119,12 @@
       community.general.ufw:
         rule: allow
         from_ip: "{{ docker_network.network.IPAM.Config[0].Subnet }}"
+      notify: Reload ufw
+
+    - name: Allow SSH access
+      community.general.ufw:
+        rule: allow
+        name: OpenSSH
       notify: Reload ufw
 
   handlers:
