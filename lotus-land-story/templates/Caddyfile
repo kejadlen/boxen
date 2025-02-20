@@ -26,7 +26,6 @@ auth.{{ domain }} {
 
 http://setup {
 	bind tailscale/setup
-	tailscale_auth
 	file_server {
 		root /data/setup
 	}
@@ -45,14 +44,15 @@ cadvisor {
 	reverse_proxy cadvisor:8080
 }
 
-loki.kejadlen.dev {
+loki {
+	tls internal
+	bind tailscale/loki
 	reverse_proxy loki:3100
 }
 
 prometheus {
 	tls internal
 	bind tailscale/prometheus
-	tailscale_auth
 	reverse_proxy prometheus:9090
 }
 
@@ -79,7 +79,6 @@ rss {
 search {
 	tls internal
 	bind tailscale/search
-	tailscale_auth
 	reverse_proxy searxng:8080
 }
 
