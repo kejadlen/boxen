@@ -11,7 +11,6 @@
       ansible.builtin.apt:
         pkg:
           - prometheus-node-exporter
-          - prometheus-postgres-exporter
         state: present
 
     - name: Configure node-exporter
@@ -20,14 +19,6 @@
         regexp: '^ARGS='
         # Include filesystems under /mnt
         line: ARGS='--collector.filesystem.ignored-mount-points="^/(dev|proc|run|sys|media|var/lib/docker/.+)($|/)"'
-        state: present
-
-    # /usr/share/doc/prometheus-postgres-exporter/README.Debian
-    - name: Configure postgres-exporter
-      ansible.builtin.lineinfile:
-        dest: /etc/default/prometheus-postgres-exporter
-        regexp: '^DATA_SOURCE_NAME='
-        line: "DATA_SOURCE_NAME='user=prometheus host=/run/postgresql dbname=postgres'"
         state: present
 
     - name: Create Prometheus dir
@@ -94,5 +85,80 @@
         restart_policy: unless-stopped
         networks:
           - name: lotus_land_story
+
+- name: Set up postgres-exporter
+  hosts: lotus-land-story
+  vars_files:
+    - vars.yml
+  vars:
+    version: v0.16.0
+  tags:
+    - postgres-exporter
+  tasks:
+    # https://github.com/prometheus-community/postgres_exporter?tab=readme-ov-file#running-as-non-superuser
+    - name: Set up postgres_exporter user
+      become: true
+      become_user: postgres
+      community.postgresql.postgresql_query:
+        query: |
+          -- To use IF statements, hence to be able to check if the user exists before
+          -- attempting creation, we need to switch to procedural SQL (PL/pgSQL)
+          -- instead of standard SQL.
+          -- More: https://www.postgresql.org/docs/9.3/plpgsql-overview.html
+          -- To preserve compatibility with <9.0, DO blocks are not used; instead,
+          -- a function is created and dropped.
+          CREATE OR REPLACE FUNCTION __tmp_create_user() returns void as $$
+          BEGIN
+            IF NOT EXISTS (
+                    SELECT                       -- SELECT list can stay empty for this
+                    FROM   pg_catalog.pg_user
+                    WHERE  usename = 'postgres_exporter') THEN
+              CREATE USER postgres_exporter;
+            END IF;
+          END;
+          $$ language plpgsql;
+
+          SELECT __tmp_create_user();
+          DROP FUNCTION __tmp_create_user();
+
+          ALTER USER postgres_exporter WITH PASSWORD '{{ prometheus.postgres_exporter.password }}';
+          ALTER USER postgres_exporter SET SEARCH_PATH TO postgres_exporter,pg_catalog;
+
+          -- If deploying as non-superuser (for example in AWS RDS), uncomment the GRANT
+          -- line below and replace <MASTER_USER> with your root user.
+          -- GRANT postgres_exporter TO <MASTER_USER>;
+
+          GRANT CONNECT ON DATABASE postgres TO postgres_exporter;
+          GRANT pg_monitor to postgres_exporter;
+
+    - name: Allow postgres_exporter to connect to postgres
+      community.postgresql.postgresql_pg_hba:
+        dest: /etc/postgresql/13/main/pg_hba.conf
+        contype: host
+        users: postgres_exporter
+        source: samenet # TODO Can this be restricted to docker_ip?
+        databases: postgres
+        create: true
+      notify: Restart postgres
+
+    # https://github.com/prometheus-community/postgres_exporter
+    - name: Run postgres-exporter
+      community.docker.docker_container:
+        name: postgres-exporter
+        image: quay.io/prometheuscommunity/postgres-exporter:{{ version }}
+        restart: true
+        env:
+          DATA_SOURCE_URI: host.docker.internal
+          DATA_SOURCE_USER: postgres_exporter
+          DATA_SOURCE_PASS: "{{ prometheus.postgres_exporter.password }}"
+        restart_policy: unless-stopped
+        networks:
+          - name: lotus_land_story
+        etc_hosts:
+          host.docker.internal: host-gateway
+
+  handlers:
+    - name: Import restarts
+      ansible.builtin.import_tasks: restarts.yml
 
 # vim: ft=yaml.ansible
