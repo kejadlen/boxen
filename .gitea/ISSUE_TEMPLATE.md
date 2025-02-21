@@ -4,7 +4,7 @@
   /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
   ```
 
-- [ ] Load homebriew
+- [ ] Load homebrew
 
   ```sh
   eval "$(/opt/homebrew/bin/brew shellenv)"
@@ -13,12 +13,13 @@
 - [ ] Install bootstrapping tooling
 
   ```sh
-  brew install ansible git jujutsu
+  brew install ansible
   ```
 
 - [ ] Clone dotfiles
 
   ```sh
-  jj git clone --recursive https://github.com/kejadlen/dotfiles.git ~/.dotfiles
+  mkdir ~/src
+  git clone --recursive https://git.kejadlen.dev/alpha/boxen.git ~/src/boxen
   ```
 
