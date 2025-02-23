@@ -130,7 +130,7 @@
       - # set the icon size to 36 pixels
         domain: com.apple.dock
         key: tilesize
-        type: int
+        type: float
         value: 36
       - # no dock delay
         domain: com.apple.dock
@@ -281,7 +281,7 @@
   handlers:
 
   - name: Restart OS X system services
-    command: killall {{ item }}
+    ansible.builtin.shell: pgrep {{ item }} > /dev/null && killall {{ item }}
     with_items:
       - Finder
       - Dock
