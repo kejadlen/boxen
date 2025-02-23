@@ -13,18 +13,27 @@
 
     - name: Symlink dotfiles
       block:
-      - name: List dotfiles # noqa: risky-shell-pipe
-        ansible.builtin.shell: ls -A ~/.dotfiles | grep '^\.'
-        register: ls_dotfiles
-        changed_when: false
+        - name: List dotfiles # noqa: risky-shell-pipe
+          ansible.builtin.shell: ls -A ~/.dotfiles | grep '^\.'
+          register: ls_dotfiles
+          changed_when: false
 
-      - name: Symlink dotfiles
-        ansible.builtin.file:
-          src: ~/.dotfiles/{{ item }}
-          dest: ~/{{ item }}
-          state: link
-        loop: "{{ ls_dotfiles.stdout_lines | difference(['.git', '.gitmodules', '.DS_Store']) }}"
+        - name: Symlink dotfiles
+          ansible.builtin.file:
+            src: ~/.dotfiles/{{ item }}
+            dest: ~/{{ item }}
+            state: link
+          loop: "{{ ls_dotfiles.stdout_lines | difference(['.git', '.gitmodules', '.DS_Store']) }}"
 
-- import_playbook: macos.yml
+- import_playbook: macos.yml # noqa: name[play]
+
+# needs to go after luarocks is installed
+- name: Main playbook
+  hosts: local
+  tasks:
+    - name: Install fennel
+      ansible.builtin.command: luarocks install fennel
+      args:
+        creates: /opt/homebrew/bin/fennel
 
 # vim: ft=yaml.ansible
