@@ -7,20 +7,6 @@
     cadvisor_version: v0.51.0
   tasks:
 
-    - name: Install host exporters
-      ansible.builtin.apt:
-        pkg:
-          - prometheus-node-exporter
-        state: present
-
-    - name: Configure node-exporter
-      ansible.builtin.lineinfile:
-        dest: /etc/default/prometheus-node-exporter
-        regexp: '^ARGS='
-        # Include filesystems under /mnt
-        line: ARGS='--collector.filesystem.ignored-mount-points="^/(dev|proc|run|sys|media|var/lib/docker/.+)($|/)"'
-        state: present
-
     - name: Create Prometheus dir
       ansible.builtin.file:
         path: /mnt/lotus-land-story/prometheus
@@ -166,4 +152,29 @@
     - name: Import restarts
       ansible.builtin.import_tasks: restarts.yml
 
+- name: Set up node-exporter
+  hosts: lotus-land-story
+  vars:
+    version: v1.9.0
+  tags:
+    - node-exporter
+  tasks:
+
+    # https://github.com/prometheus/node_exporter?tab=readme-ov-file#docker
+    - name: Run node-exporter
+      community.docker.docker_container:
+        image: quay.io/prometheus/node-exporter:{{ version }}
+        name: node-exporter
+        command:
+          - "--path.rootfs=/host"
+        network_mode: host
+        pid_mode: host
+        restart_policy: unless-stopped
+        volumes:
+          - "/:/host:ro,rslave"
+        restart: true
+
+  handlers:
+    - name: Import restarts
+      ansible.builtin.import_tasks: restarts.yml
 # vim: ft=yaml.ansible
