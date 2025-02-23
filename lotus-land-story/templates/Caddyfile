@@ -1,6 +1,7 @@
 {
 	servers {
 		metrics
+
 		trusted_proxies static private_ranges {{ trusted_proxies }}
 		trusted_proxies_strict
 	}
@@ -35,27 +36,10 @@ http://setup {
 
 ### Monitoring
 
-# TODO Update this, since it's deprecated
-:2019 {
-	metrics
-}
-
 cadvisor {
 	tls internal
 	bind tailscale/cadvisor
 	reverse_proxy cadvisor:8080
-}
-
-loki {
-	tls internal
-	bind tailscale/loki
-	reverse_proxy loki:3100
-}
-
-prometheus {
-	tls internal
-	bind tailscale/prometheus
-	reverse_proxy prometheus:9090
 }
 
 grafana {
@@ -65,6 +49,22 @@ grafana {
 	reverse_proxy grafana:3000 {
 		header_up X-Webauth-User {http.auth.user.tailscale_user}
 	}
+}
+
+loki {
+	tls internal
+	bind tailscale/loki
+	reverse_proxy loki:3100
+}
+
+:2019 {
+	metrics /metrics
+}
+
+prometheus {
+	tls internal
+	bind tailscale/prometheus
+	reverse_proxy prometheus:9090
 }
 
 ### Services
