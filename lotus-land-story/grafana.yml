@@ -42,7 +42,7 @@
 
           [auth.proxy]
           enabled = true
-          header_name = Remote-User
+          header_name = X-WEBAUTH-USER
           header_property = email
           auto_sign_up = false
 
