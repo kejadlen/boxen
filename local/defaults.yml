@@ -137,6 +137,12 @@
         key: autohide-delay
         type: float
         value: 0
+      - # show hidden apps
+        domain: com.apple.dock
+        key: showhidden
+        type: bool
+        value: true
+
       - # https://nikitabobko.github.io/AeroSpace/guide#a-note-on-displays-have-separate-spaces
         # disable "displays have separate spaces"
         domain: com.apple.spaces
