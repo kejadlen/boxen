@@ -177,4 +177,6 @@
   handlers:
     - name: Import restarts
       ansible.builtin.import_tasks: restarts.yml
+
+# yaml-language-server: $schema=https://raw.githubusercontent.com/ansible/ansible-lint/refs/heads/main/src/ansiblelint/schemas/ansible.json
 # vim: ft=yaml.ansible
