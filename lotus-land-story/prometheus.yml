@@ -91,7 +91,7 @@
   vars_files:
     - vars.yml
   vars:
-    version: v0.16.0
+    version: v0.17.0
   tags:
     - postgres-exporter
   tasks:
@@ -131,15 +131,20 @@
           GRANT CONNECT ON DATABASE postgres TO postgres_exporter;
           GRANT pg_monitor to postgres_exporter;
 
-    - name: Allow postgres_exporter to connect to postgres
-      community.postgresql.postgresql_pg_hba:
-        dest: /etc/postgresql/13/main/pg_hba.conf
-        contype: host
-        users: postgres_exporter
-        source: samenet # TODO Can this be restricted to docker_ip?
-        databases: postgres
-        create: true
-      notify: Restart postgres
+    - block:
+      - name: Get docker network subnet
+        community.docker.docker_network:
+          name: lotus_land_story
+        register: docker_network
+      - name: Allow postgres_exporter to connect to postgres
+        community.postgresql.postgresql_pg_hba:
+          dest: /etc/postgresql/13/main/pg_hba.conf
+          contype: host
+          users: postgres_exporter
+          source: "{{ docker_network.network.IPAM.Config[0].Subnet }}"
+          databases: postgres
+          create: true
+        notify: Restart postgres
 
     # https://github.com/prometheus-community/postgres_exporter
     - name: Run postgres-exporter
@@ -148,7 +153,7 @@
         image: quay.io/prometheuscommunity/postgres-exporter:{{ version }}
         restart: true
         env:
-          DATA_SOURCE_URI: host.docker.internal
+          DATA_SOURCE_URI: host.docker.internal:5432/postgres
           DATA_SOURCE_USER: postgres_exporter
           DATA_SOURCE_PASS: "{{ prometheus.postgres_exporter.password }}"
         restart_policy: unless-stopped
