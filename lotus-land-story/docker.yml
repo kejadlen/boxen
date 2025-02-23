@@ -75,11 +75,6 @@
       community.docker.docker_network:
         name: lotus_land_story
 
-    - name: Create docker network
-      community.docker.docker_network:
-        name: lotus-land-story
-      register: docker_network
-
   handlers:
     - name: Import restarts
       ansible.builtin.import_tasks: restarts.yml
