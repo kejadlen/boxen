@@ -13,10 +13,6 @@
         - books
         - config
 
-    - name: Get docker network
-      community.docker.docker_network:
-        name: lotus_land_story
-
     # https://github.com/linuxserver/docker-calibre-web#docker-compose-recommended-click-here-for-more-info
     - name: Run Calibre-web
       community.docker.docker_container:
