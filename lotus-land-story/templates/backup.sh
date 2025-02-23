@@ -1,9 +1,22 @@
 #!/usr/bin/bash
 
-set -eux pipefail
+set -eu pipefail
 
-RESTIC_REPOSITORY=sftp:restic@on-fire-within:/mnt/mushu/restic
-RESTIC_PASSWORD={{ restic.password }}
+export RESTIC_REPOSITORY=sftp:restic@on-fire-within:/mnt/mushu/restic
+export RESTIC_PASSWORD={{ restic.password }}
 
-restic --verbose backup /mnt/lotus-land-story/
-restic --verbose backup --stdin-filename lotus-land-story.sql --stdin-from-command -- sudo -iu postgres pg_dumpall
+restic --verbose backup \
+  /mnt/lotus-land-story/ \
+  --exclude=/mnt/lotus-land-story/docker
+
+restic --verbose backup \
+  --stdin-filename lotus-land-story.sql \
+  --stdin-from-command \
+  -- \
+  sudo -iu postgres pg_dumpall
+
+restic --verbose forget \
+  --keep-within-daily 1m \
+  --keep-within-weekly 1y \
+  --keep-within-monthly 100y \
+  --prune
