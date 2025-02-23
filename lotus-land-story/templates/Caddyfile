@@ -1,6 +1,8 @@
 {
 	servers {
 		metrics
+		trusted_proxies static private_ranges {{ trusted_proxies }}
+		trusted_proxies_strict
 	}
 
 	tailscale {
@@ -133,6 +135,11 @@ docs {
 ### External
 
 git.kejadlen.dev
+	@perfect-cherry-blossom client_ip {{ perfect_cherry_blossom_ip }}
+	reverse_proxy @perfect-cherry-blossom gitea:3000 {
+		header_up X-Webauth-User alpha
+	}
+
 	reverse_proxy gitea:3000
 }
 

@@ -20,6 +20,10 @@
         name: lotus_land_story
       register: docker_network
 
+    - name: Get Perfect Cherry Blossom IP
+      command: tailscale ip --1 Perfect-Cherry-Blossom
+      register: perfect_cherry_blossom_ip_result
+
     # TODO Reload Caddy when this changes:
     #      docker exec -w /etc/caddy $caddy_container_id caddy reload
     - name: Set up Caddyfile
@@ -29,6 +33,7 @@
         mode: "0644"
       vars:
         trusted_proxies: "{{ docker_network.network.IPAM.Config[0].Subnet }}"
+        perfect_cherry_blossom_ip: "{{ perfect_cherry_blossom_ip_result.stdout }}"
 
     - name: Run Caddy
       community.docker.docker_container:
