@@ -1,10 +1,15 @@
-- import_playbook: homebrew.yml
+- name: Do macOS things
+  hosts: macos
+  tasks:
+    - name: Homebrew bundle
+      ansible.builtin.command: brew bundle --file ~/src/boxen/local/Brewfile
+
 - import_playbook: defaults.yml
 
 - name: Other macOS-specific things
   hosts: macos
   tasks:
-    - name: Symlink Jujutsu config
+    - name: Jujutsu things
       block:
         - name: Register Jujutsu config location
           ansible.builtin.command: jj config path --user
