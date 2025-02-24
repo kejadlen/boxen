@@ -15,6 +15,7 @@
         name: "{{ fonts | join(',') }}"
       vars:
         fonts:
+          - font-sauce-code-pro-nerd-font
           - font-source-code-pro
           - font-symbols-only-nerd-font
 
