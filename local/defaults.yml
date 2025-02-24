@@ -1,13 +1,14 @@
-- hosts: os_MacOSX
+- name: Update macOS defaults
+  hosts: macos
   tasks:
 
-  - name: set OS X defaults
+  - name: Set OS X defaults
     osx_defaults:
       domain: "{{ item.domain | default(omit) }}"
       key: "{{ item.key }}"
       type: "{{ item.type }}"
       value: "{{ item.value }}"
-    notify: restart OS X system services
+    notify: Restart OS X system services
     vars:
       mailmate:
         allowed_image_regexps:
@@ -20,7 +21,7 @@
           - wizardzines\.com
     with_items:
 
-    # NSGlobalDomain defaults
+      # NSGlobalDomain defaults
       - # don't quit idle applications
         domain: -g
         key: NSDisableAutomaticTermination
@@ -136,6 +137,12 @@
         key: autohide-delay
         type: float
         value: 0
+      - # https://nikitabobko.github.io/AeroSpace/guide#a-note-on-displays-have-separate-spaces
+        # disable "displays have separate spaces"
+        domain: com.apple.spaces
+        key: spans-displays
+        type: bool
+        value: true
 
       # Trackpad settings
       - domain: com.apple.driver.AppleBluetoothMultitouch.trackpad
@@ -267,7 +274,7 @@
 
   handlers:
 
-  - name: restart OS X system services
+  - name: Restart OS X system services
     command: killall {{ item }}
     with_items:
       - Finder

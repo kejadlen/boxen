@@ -1,0 +1,27 @@
+- import_playbook: homebrew.yml
+- import_playbook: defaults.yml
+
+- name: Other macOS-specific things
+  hosts: macos
+  tasks:
+    - name: Symlink Jujutsu config
+      block:
+        - name: Register Jujutsu config location
+          ansible.builtin.command: jj config path --user
+          register: jj_config_path_user
+          changed_when: false
+
+        - name: Make sure Jujutsu config dir exists
+          ansible.builtin.file:
+            dest: "{{ path | dirname }}"
+            state: directory
+          vars:
+            path: "{{ jj_config_path_user.stdout }}"
+
+        - name: Symlink Jujutsu config
+          ansible.builtin.file:
+            src: ~/.config/jj/config.toml
+            dest: "{{ dest }}"
+            state: link
+          vars:
+            dest: "{{ jj_config_path_user.stdout }}"

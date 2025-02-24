@@ -1,0 +1,30 @@
+- name: Main playbook
+  hosts: local
+  tasks:
+
+    - name: Check out dotfiles
+      ansible.builtin.git:
+        repo: https://git.kejadlen.dev/alpha/dotfiles.git
+        dest: ~/.dotfiles
+        version: main
+        accept_newhostkey: true
+      # this repo often has local changes
+      ignore_errors: true # noqa: ignore-errors
+
+    - name: Symlink dotfiles
+      block:
+      - name: List dotfiles # noqa: risky-shell-pipe
+        ansible.builtin.shell: ls -A ~/.dotfiles | grep '^\.'
+        register: ls_dotfiles
+        changed_when: false
+
+      - name: Symlink dotfiles
+        ansible.builtin.file:
+          src: ~/.dotfiles/{{ item }}
+          dest: ~/{{ item }}
+          state: link
+        loop: "{{ ls_dotfiles.stdout_lines | difference(['.git', '.gitmodules', '.DS_Store']) }}"
+
+- import_playbook: macos.yml
+
+# vim: ft=yaml.ansible
