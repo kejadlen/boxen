@@ -53,6 +53,11 @@ in place.
 
 ## Settings
 
+- [ ] Control Center
+  - [ ] Automatically hide and show the menu bar -> Always
+- [ ] Desktop & Dock
+- [ ] Displays
+  - [ ] More Space
 - [ ] Keyboard
   - [ ] Remap ⇪ to ⌃ (Keyboard Shortcuts -> Modifier Keys)
 
@@ -60,3 +65,4 @@ in place.
 
 - [ ] Aerospace
 - [ ] Alfred
+- [ ] Tailscale
