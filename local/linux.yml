@@ -1,5 +1,4 @@
-- name: Set up Ubuntu
-  hosts: os_Ubuntu
+- hosts: linux
   tasks:
 
     - name: Add myself to sudoers
