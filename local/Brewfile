@@ -52,6 +52,7 @@ brew "yamllint"
 
 # install from head
 
+brew "tree-sitter", args: ["HEAD"] # install this before neovim
 brew "neovim", args: ["HEAD"]
 brew "universal-ctags", args: ["HEAD"]
 

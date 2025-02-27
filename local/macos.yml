@@ -2,7 +2,7 @@
   hosts: macos
   tasks:
     - name: Homebrew bundle
-      ansible.builtin.command: brew bundle --file ~/src/boxen/local/Brewfile
+      ansible.builtin.command: brew bundle --cleanup --file=~/src/boxen/local/Brewfile --no-lock
 
 - import_playbook: defaults.yml
 
