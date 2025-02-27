@@ -14,7 +14,6 @@ brew "curl"
 brew "difftastic"
 brew "direnv"
 brew "docker"
-brew "dockutil"
 brew "entr"
 brew "eza"
 brew "fd"
@@ -42,6 +41,8 @@ brew "zsh"
 
 ## editor things
 
+brew "ansible-language-server"
+brew "ansible-lint"
 brew "efm-langserver"
 brew "fnlfmt"
 brew "shellcheck"
