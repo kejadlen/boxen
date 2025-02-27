@@ -1,7 +1,5 @@
-- name: Main playbook
-  hosts: local
+- hosts: local
   tasks:
-
     - name: Check out dotfiles
       ansible.builtin.git:
         repo: https://git.kejadlen.dev/alpha/dotfiles.git
@@ -33,11 +31,17 @@
         - .zshrc
 
     - name: Symlink deep dotfiles
+      vars:
+        dotfiles:
+          - .bundle/config
+          - .cargo/config.toml
+          - .docker/config.json
       block:
         - name: Ensure directory exists
           ansible.builtin.file:
             dest: ~/{{ item | dirname }}
             state: directory
+            mode: "0755"
           loop: "{{ dotfiles }}"
         - name: Symlink dotfile
           ansible.builtin.file:
@@ -45,18 +49,20 @@
             dest: ~/{{ item }}
             state: link
           loop: "{{ dotfiles }}"
-      vars:
-        dotfiles:
-          - .bundle/config
-          - .cargo/config.toml
-          - .docker/config.json
 
 - import_playbook: macos.yml # noqa: name[play]
 
-# needs to go after luarocks is installed
-- name: Main playbook
-  hosts: local
+# Misc things that can (or need to) wait on the above to run
+- hosts: local
   tasks:
+
+    # https://tratt.net/laurie/blog/2024/faster_shell_startup_with_shell_switching.html
+    - name: Set default shell to sh
+      ansible.builtin.user:
+        name: alpha
+        shell: /bin/sh --login
+
+    # needs to go after luarocks is installed
     - name: Install fennel
       ansible.builtin.command: luarocks install fennel
       args:
