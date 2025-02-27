@@ -50,7 +50,7 @@
             state: link
           loop: "{{ dotfiles }}"
 
-- import_playbook: macos.yml # noqa: name[play]
+- import_playbook: macos.yml
 
 # Misc things that can (or need to) wait on the above to run
 - hosts: local

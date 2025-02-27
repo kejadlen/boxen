@@ -1,5 +1,4 @@
-- name: Homebrew bundle
-  tags: brew
+- tags: brew
   hosts: macos
   tasks:
     - name: Homebrew bundle
@@ -7,8 +6,7 @@
 
 - import_playbook: defaults.yml
 
-- name: Dock
-  tags: dock
+- tags: dock
   hosts: macos
   tasks:
     - name: Install dockutil
@@ -39,8 +37,7 @@
     - name: Restart dock
       ansible.builtin.command: killall Dock
 
-- name: Jujutsu
-  tags: jujutsu
+- tags: jujutsu
   hosts: macos
   tasks:
     - name: Register Jujutsu config location
