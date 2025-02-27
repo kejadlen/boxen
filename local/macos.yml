@@ -1,4 +1,5 @@
-- name: Do macOS things
+- name: Homebrew bundle
+  tags: brew
   hosts: macos
   tasks:
     - name: Homebrew bundle
@@ -6,27 +7,61 @@
 
 - import_playbook: defaults.yml
 
-- name: Other macOS-specific things
+- name: Dock
+  tags: dock
   hosts: macos
   tasks:
-    - name: Jujutsu things
-      block:
-        - name: Register Jujutsu config location
-          ansible.builtin.command: jj config path --user
-          register: jj_config_path_user
-          changed_when: false
+    - name: Install dockutil
+      homebrew:
+        name: dockutil
+        state: present
 
-        - name: Make sure Jujutsu config dir exists
-          ansible.builtin.file:
-            dest: "{{ path | dirname }}"
-            state: directory
-          vars:
-            path: "{{ jj_config_path_user.stdout }}"
+    - name: Get dock icons
+      ansible.builtin.command: dockutil --list
+      register: dockutil_result
 
-        - name: Symlink Jujutsu config
-          ansible.builtin.file:
-            src: ~/.config/jj/config.toml
-            dest: "{{ dest }}"
-            state: link
-          vars:
-            dest: "{{ jj_config_path_user.stdout }}"
+    - name: Remove all dock icons
+      ansible.builtin.command: dockutil --remove all
+
+    - name: Add ~/Downloads to the Dock
+      ansible.builtin.command: |
+        dockutil --add ~/Downloads
+          --view list
+          --display stack
+          --sort datemodified
+      when: not (dockutil_result.stdout_lines | length == 1 and dockutil_result.stdout is search("^Downloads"))
+
+    - name: Remove dockutil
+      homebrew:
+        name: dockutil
+        state: absent
+
+    - name: Restart dock
+      ansible.builtin.command: killall Dock
+
+- name: Jujutsu
+  tags: jujutsu
+  hosts: macos
+  tasks:
+    - name: Register Jujutsu config location
+      ansible.builtin.command: jj config path --user
+      register: jj_config_path_user
+      changed_when: false
+
+    - name: Make sure Jujutsu config dir exists
+      ansible.builtin.file:
+        dest: "{{ path | dirname }}"
+        state: directory
+        mode: "0700"
+      vars:
+        path: "{{ jj_config_path_user.stdout }}"
+
+    - name: Symlink Jujutsu config
+      ansible.builtin.file:
+        src: ~/.config/jj/config.toml
+        dest: "{{ dest }}"
+        state: link
+      vars:
+        dest: "{{ jj_config_path_user.stdout }}"
+
+# vim: set ft=yaml.ansible
