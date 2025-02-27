@@ -287,5 +287,6 @@
       - Finder
       - Dock
       - SystemUIServer
+    ignore_errors: true
 
 # vim: ft=yaml.ansible

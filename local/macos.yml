@@ -2,10 +2,7 @@
   hosts: macos
   tasks:
     - name: Homebrew bundle
-      ansible.builtin.command: |
-        brew bundle
-          --file=~/src/boxen/local/Brewfile
-          --no-lock
+      ansible.builtin.command: brew bundle --file=~/src/boxen/local/Brewfile
 
 - tags: jujutsu
   hosts: macos
