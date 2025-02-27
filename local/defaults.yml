@@ -131,7 +131,7 @@
       - # set the icon size to 36 pixels
         domain: com.apple.dock
         key: tilesize
-        type: float
+        type: int
         value: 36
       - # no dock delay
         domain: com.apple.dock

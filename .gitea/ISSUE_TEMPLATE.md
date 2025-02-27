@@ -65,6 +65,9 @@ in place.
 
 - [ ] Aerospace
 - [ ] Alfred
+- [ ] Dictionary
+  - [ ] Enable Webster's 1913 dictionary
+  - [ ] Set Webster's 1913 as the first dictionary
 - [ ] Safari
   - [ ] Tab layout: Compact (Settings -> Tabs)
   - [ ] Show features for web developers (Settings -> Advanced)

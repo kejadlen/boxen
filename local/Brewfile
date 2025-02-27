@@ -106,9 +106,10 @@ cask "vmware-fusion"
 cask "zoom"
 cask "zotero"
 
-mas "1Password for Safari", id: 1569813296
-mas "GoodNotes", id: 1444383602
-mas "Little Snitch Mini", id: 1629008763
-mas "PDF Viewer", id: 1120099014
-mas "Shareful", id: 1522267256
-mas "Xcode", id: 497799835
+# TODO Don't assume shared Apple accounts
+# mas "1Password for Safari", id: 1569813296
+# mas "GoodNotes", id: 1444383602
+# mas "Little Snitch Mini", id: 1629008763
+# mas "PDF Viewer", id: 1120099014
+# mas "Shareful", id: 1522267256
+# mas "Xcode", id: 497799835
