@@ -65,4 +65,8 @@ in place.
 
 - [ ] Aerospace
 - [ ] Alfred
+- [ ] Safari
+  - [ ] Tab layout: Compact (Settings -> Tabs)
+  - [ ] Show features for web developers (Settings -> Advanced)
+- [ ] OrbStack
 - [ ] Tailscale

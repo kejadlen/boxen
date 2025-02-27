@@ -2,7 +2,36 @@
   hosts: macos
   tasks:
     - name: Homebrew bundle
-      ansible.builtin.command: brew bundle --cleanup --file=~/src/boxen/local/Brewfile --no-lock
+      ansible.builtin.command: |
+        brew bundle
+          --file=~/src/boxen/local/Brewfile
+          --no-lock
+
+- tags: jujutsu
+  hosts: macos
+  tasks:
+    - name: Register Jujutsu config location
+      ansible.builtin.command: jj config path --user
+      register: jj_config_path_user
+      changed_when: false
+
+    - name: Make sure Jujutsu config dir exists
+      ansible.builtin.file:
+        dest: "{{ path | dirname }}"
+        state: directory
+        mode: "0700"
+      vars:
+        path: "{{ jj_config_path_user.stdout }}"
+
+    - name: Symlink Jujutsu config
+      ansible.builtin.file:
+        src: ~/.config/jj/config.toml
+        dest: "{{ dest }}"
+        state: link
+      vars:
+        dest: "{{ jj_config_path_user.stdout }}"
+
+    # TODO Initialize ~/src/boxen to use jj
 
 - import_playbook: defaults.yml
 
@@ -37,28 +66,32 @@
     - name: Restart dock
       ansible.builtin.command: killall Dock
 
-- tags: jujutsu
+- tags: library
   hosts: macos
   tasks:
-    - name: Register Jujutsu config location
-      ansible.builtin.command: jj config path --user
-      register: jj_config_path_user
-      changed_when: false
 
-    - name: Make sure Jujutsu config dir exists
+    - name: Create ~/Library directories
       ansible.builtin.file:
-        dest: "{{ path | dirname }}"
+        path: ~/Library/{{ item }}
         state: directory
-        mode: "0700"
-      vars:
-        path: "{{ jj_config_path_user.stdout }}"
+        mode: '0755'
+      loop:
+        - Colors
+        - Dictionaries
+        - KeyBindings
 
-    - name: Symlink Jujutsu config
+    - name: Symlink Emacs-style keybindings for OS X
       ansible.builtin.file:
-        src: ~/.config/jj/config.toml
-        dest: "{{ dest }}"
+        src: ~/.dotfiles/macos/DefaultKeyBinding.dict
+        dest: ~/Library/KeyBindings/DefaultKeyBinding.dict
         state: link
-      vars:
-        dest: "{{ jj_config_path_user.stdout }}"
+
+    - name: Symlink OS X colors palettes
+      ansible.builtin.file:
+        src: "{{ item }}"
+        dest: ~/Library/Colors/{{ item | basename }}
+        state: link
+      with_fileglob: ~/.dotfiles/macos/colors/*
+
 
 # vim: set ft=yaml.ansible

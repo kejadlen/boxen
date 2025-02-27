@@ -2,29 +2,6 @@
   hosts: all
   tasks:
 
-    - name: Create ~/Library directories
-      ansible.builtin.file:
-        path: ~/Library/{{ item }}
-        state: directory
-        mode: '0755'
-      loop:
-        - Colors
-        - Dictionaries
-        - KeyBindings
-
-    - name: Symlink Emacs-style keybindings for OS X
-      ansible.builtin.file:
-        src: ~/.dotfiles/macos/DefaultKeyBinding.dict
-        dest: ~/Library/KeyBindings/DefaultKeyBinding.dict
-        state: link
-
-    - name: Symlink OS X colors palettes
-      ansible.builtin.file:
-        src: "{{ item }}"
-        dest: ~/Library/Colors/{{ item | basename }}
-        state: link
-      with_fileglob: ~/.dotfiles/macos/colors/*
-
     - name: Install Webster's 1913 dictionary
       ansible.builtin.copy:
         src: ~/.dotfiles/macos/websters-1913.dictionary/

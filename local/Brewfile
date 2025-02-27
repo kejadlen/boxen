@@ -1,9 +1,7 @@
 tap "kejadlen/tap", "https://git.kejadlen.dev/alpha/homebrew-tap.git"
 
 tap "homebrew/bundle"
-tap "homebrew/cask"
 tap "homebrew/command-not-found"
-tap "homebrew/core"
 tap "homebrew/services"
 
 brew "aider"
@@ -34,7 +32,6 @@ brew "terraform"
 brew "tmux"
 brew "ykman"
 brew "yt-dlp"
-brew "z.lua"
 brew "z3"
 brew "zoxide"
 brew "zsh"
