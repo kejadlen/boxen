@@ -15,6 +15,11 @@ scrape_configs:
           - host.docker.internal:9100
           - on-fire-within:9100
           - ramble-hard:9100
+    relabel_configs:
+      - source_labels: [__address__]
+        regex: 'host\.docker\.internal:9100'
+        target_label: instance
+        replacement: 'lotus-land-story:9100'
 
   - job_name: docker
     static_configs:
