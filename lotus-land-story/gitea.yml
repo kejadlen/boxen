@@ -47,7 +47,7 @@
     - name: Run Gitea
       community.docker.docker_container:
         name: gitea
-        image: docker.io/gitea/gitea:{{ version }}
+        image: docker.gitea.com/gitea:{{ version }}
         restart: true
         env:
           USER_UID: "{{ git_user.uid }}"
