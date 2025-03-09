@@ -84,10 +84,6 @@ search {
 	reverse_proxy searxng:8080
 }
 
-search.kejadlen.dev {
-	reverse_proxy searxng:8080
-}
-
 ### Family
 
 books {
@@ -134,7 +130,21 @@ docs {
 
 ### External
 
-git.kejadlen.dev
+git.kejadlen.dev {
+	rate_limit {
+		zone rate_limit {
+			match {
+				# not tailscale
+				not client_ip 100.64.0.0/10
+			}
+			key static
+			events 25
+			window 1m
+			log_key
+		}
+	}
+
+	# hacky way to reverse auth only from my laptop
 	@perfect-cherry-blossom client_ip {{ perfect_cherry_blossom_ip }}
 	reverse_proxy @perfect-cherry-blossom gitea:3000 {
 		header_up X-Webauth-User alpha
