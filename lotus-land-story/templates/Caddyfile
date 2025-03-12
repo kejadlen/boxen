@@ -1,7 +1,13 @@
 {
-	servers {
-		metrics
+	log default {
+		output stdout
+		format json
+		include http.log.access
+	}
 
+	metrics
+
+	servers {
 		trusted_proxies static private_ranges {{ trusted_proxies }}
 		trusted_proxies_strict
 	}
@@ -21,6 +27,8 @@
 
 {% for domain in ("kejadlen.dev", "chislan.family") %}
 auth.{{ domain }} {
+	log
+
 	reverse_proxy authelia:9091 {
 		import trusted_proxy_list
 	}
@@ -96,6 +104,8 @@ books {
 }
 
 docs.chislan.family {
+	log
+
 	forward_auth authelia:9091 {
 		uri /api/verify?rd=https://auth.chislan.family
 		copy_headers Remote-User
@@ -131,6 +141,8 @@ docs {
 ### External
 
 git.kejadlen.dev {
+	log
+
 	rate_limit {
 		zone rate_limit {
 			match {
@@ -154,6 +166,8 @@ git.kejadlen.dev {
 }
 
 hey.kejadlen.dev
+	log
+
 	reverse_proxy gotosocial:8080
 
 	handle /metrics {
