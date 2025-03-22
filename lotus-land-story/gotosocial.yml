@@ -22,9 +22,7 @@
         group: 1000
         mode: "0755"
 
-    - name: Back up before upgrades
-      block:
-
+    - block:
         - name: Get current version
           ansible.builtin.command: >
             docker inspect
@@ -47,6 +45,11 @@
                 mode: "0400"
                 remote_src: true
 
+    - name: Get docker network for trusted proxies
+      community.docker.docker_network:
+        name: lotus_land_story
+      register: docker_network
+
     # https://raw.githubusercontent.com/superseriousbusiness/gotosocial/main/example/docker-compose/docker-compose.yaml
     - name: Run GoToSocial
       community.docker.docker_container:
@@ -56,6 +59,7 @@
         restart_policy: unless-stopped
         env:
           GTS_HOST: hey.kejadlen.dev
+          GTS_TRUSTED_PROXIES: "{{ docker_network.network.IPAM.Config[0].Subnet }}"
           GTS_LANDING_PAGE_USER: alpha
           GTS_DB_TYPE: sqlite
           GTS_DB_ADDRESS: /gotosocial/storage/sqlite.db
