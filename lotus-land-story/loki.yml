@@ -131,10 +131,25 @@
               type: docker_logs
               include_containers:
                 - caddy
+            docker_gts:
+              type: docker_logs
+              include_containers:
+                - gotosocial
+            docker_miniflux:
+              type: docker_logs
+              include_containers:
+                - miniflux
+            docker_paperless:
+              type: docker_logs
+              include_containers:
+                - paperless
             docker_rest:
               type: docker_logs
               exclude_containers:
                 - caddy
+                - gotosocial
+                - miniflux
+                - paperless
             rsyslog:
               type: syslog
               address: 0.0.0.0:514
@@ -147,7 +162,36 @@
                 - docker_caddy
               source: |
                 . |= object!(parse_json!(.message))
+                del(.message)
                 .user_agent = .request.headers."User-Agent"[0]
+
+            remap_gts:
+              type: remap
+              inputs:
+                - docker_gts
+              source: |
+                . |= parse_key_value!(.message)
+                del(.message)
+
+            remap_miniflux:
+              type: remap
+              inputs:
+                - docker_miniflux
+              source: |
+                . |= object!(parse_json!(.message))
+                del(.message)
+
+            remap_paperless:
+              type: remap
+              inputs:
+                - docker_paperless
+              source: |
+                . |= parse_regex!(.message, r'\[(?P<timestamp>.*?)\] \[(?P<level>.*?)\] \[(?P<name>.*?)\] (?P<message>.*)')
+                .timestamp = parse_timestamp!(
+                  .timestamp,
+                  format: "%F %T,%3f",
+                  timezone: "America/Los_Angeles"
+                )
 
           sinks:
             # console:
@@ -162,6 +206,9 @@
               type: loki
               inputs:
                 - remap_caddy
+                - remap_gts
+                - remap_miniflux
+                - remap_paperless
                 - docker_rest
               endpoint: http://loki:3100
               encoding:
