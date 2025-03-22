@@ -1,5 +1,4 @@
-- name: Set up ufw
-  hosts: lotus-land-story
+- hosts: lotus-land-story
   tasks:
 
     - name: Enable ufw
@@ -22,6 +21,20 @@
         rule: allow
         from_ip: "{{ docker_network.network.IPAM.Config[0].Subnet }}"
       notify: Reload ufw
+
+    # for gitea from work laptop
+    - name: Allow SSH access
+      community.general.ufw:
+        rule: allow
+        name: OpenSSH
+      notify: Reload ufw
+
+    - name: Disable password auth via SSH
+      ansible.builtin.lineinfile:
+        path: /etc/ssh/sshd_config
+        regexp: ^PasswordAuthentication
+        line: PasswordAuthentication no
+      notify: Restart ssh
 
   handlers:
     - name: Import restarts
