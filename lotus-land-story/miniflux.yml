@@ -15,7 +15,7 @@
 
     - name: Create the Miniflux db user
       community.postgresql.postgresql_user:
-        db: miniflux
+        login_db: miniflux
         name: miniflux
         password: "{{ miniflux.db_password }}"
       notify: Restart postgres
@@ -45,7 +45,7 @@
   vars_files:
     - vars.yml
   vars:
-    version: 2.2.6
+    version: 2.2.7
   tasks:
 
     - name: Get docker network
