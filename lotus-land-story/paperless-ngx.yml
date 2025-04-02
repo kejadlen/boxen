@@ -39,7 +39,7 @@
           PAPERLESS_TASK_WORKERS: "1"
           PAPERLESS_THREADS_PER_WORKER: "1"
           PAPERLESS_TIME_ZONE: America/Los_Angeles
-          PAPERLESS_URL: https://docs.chislan.family
+          PAPERLESS_URL: https://docs
           PAPERLESS_WEBSERVER_WORKERS: "1"
         volumes:
           - /mnt/lotus-land-story/paperless-ngx/data:/usr/src/paperless/data
@@ -52,7 +52,6 @@
           - name: lotus_land_story
         etc_hosts:
           host.docker.internal: host-gateway
-
 
   handlers:
     - name: Import restarts
