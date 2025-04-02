@@ -13,6 +13,8 @@ telemetry:
 authentication_backend:
   file:
     path: /config/users_database.yml
+  password_change:
+    disable: true
 
 access_control:
   default_policy: deny
