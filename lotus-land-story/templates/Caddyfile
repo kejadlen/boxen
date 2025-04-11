@@ -122,18 +122,18 @@ docs {
 git.kejadlen.dev {
 	log
 
-	rate_limit {
-		zone rate_limit {
-			match {
-				# not tailscale
-				not client_ip 100.64.0.0/10
-			}
-			key static
-			events 25
-			window 1m
-			log_key
-		}
-	}
+	# rate_limit {
+	# 	zone rate_limit {
+	# 		match {
+	# 			# not tailscale
+	# 			not client_ip 100.64.0.0/10
+	# 		}
+	# 		key static
+	# 		events 50
+	# 		window 1m
+	# 		log_key
+	# 	}
+	# }
 
 	# hacky way to reverse auth only from my laptop
 	@perfect-cherry-blossom client_ip {{ perfect_cherry_blossom_ip }}
@@ -141,7 +141,9 @@ git.kejadlen.dev {
 		header_up X-Webauth-User alpha
 	}
 
-	reverse_proxy gitea:3000
+	reverse_proxy anubis:8923 {
+		header_up X-Real-Ip {remote_host}
+	}
 }
 
 hey.kejadlen.dev

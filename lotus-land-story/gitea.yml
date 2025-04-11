@@ -6,6 +6,8 @@
     - vars.yml
   vars:
     version: 1.23.7
+    anubis:
+      version: v1.15.2
   tasks:
 
     - name: Create git user
@@ -43,6 +45,22 @@
         mode: "0755"
         owner: "{{ git_user.uid }}"
         group: "{{ git_user.group }}"
+
+    - name: Run Anubis
+      community.docker.docker_container:
+        name: anubis
+        image: ghcr.io/techarohq/anubis:{{ anubis.version }}
+        restart: true
+        env:
+          COOKIE_DOMAIN: kejadlen.dev
+          OG_PASSTHROUGH: "true"
+          SERVE_ROBOTS_TXT: "true"
+          TARGET: http://gitea:3000
+        volumes:
+        ports:
+        restart_policy: unless-stopped
+        networks:
+          - name: lotus_land_story
 
     - name: Run Gitea
       community.docker.docker_container:
