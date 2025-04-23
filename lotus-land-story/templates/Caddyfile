@@ -77,6 +77,17 @@ prometheus {
 
 ### Services
 
+irc {
+	tls internal
+	bind tailscale/irc
+	tailscale_auth
+
+	file_server
+	root * /data/gamja/dist
+
+	reverse_proxy /socket soju:3030
+}
+
 rss {
 	tls internal
 	bind tailscale/rss
