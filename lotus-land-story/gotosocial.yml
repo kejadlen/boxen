@@ -5,7 +5,7 @@
   vars_files:
     - vars.yml
   vars:
-    version: 0.18.2
+    version: 0.19.0
   tasks:
 
     - name: Create working directory
@@ -22,7 +22,8 @@
         group: 1000
         mode: "0755"
 
-    - block:
+    - name: Back up gotosocial if needed
+      block:
         - name: Get current version
           ansible.builtin.command: >
             docker inspect
