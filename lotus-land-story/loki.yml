@@ -127,71 +127,42 @@
         dest: /mnt/lotus-land-story/vector/vector.yml
         content: |
           sources:
-            docker_caddy:
-              type: docker_logs
-              include_containers:
-                - caddy
-            docker_gts:
-              type: docker_logs
-              include_containers:
-                - gotosocial
-            docker_miniflux:
-              type: docker_logs
-              include_containers:
-                - miniflux
-            docker_paperless:
-              type: docker_logs
-              include_containers:
-                - paperless
-            docker_rest:
-              type: docker_logs
-              exclude_containers:
-                - caddy
-                - gotosocial
-                - miniflux
-                - paperless
             rsyslog:
               type: syslog
               address: 0.0.0.0:514
               mode: tcp
+            docker:
+              type: docker_logs
 
           transforms:
-            remap_caddy:
+            docker_parsed:
               type: remap
               inputs:
-                - docker_caddy
+                - docker
               source: |
-                . |= object!(parse_json!(.message))
-                del(.message)
-                .user_agent = .request.headers."User-Agent"[0]
+                ._time = del(.timestamp)
 
-            remap_gts:
-              type: remap
-              inputs:
-                - docker_gts
-              source: |
-                . |= parse_key_value!(.message)
+                if .container_name == "caddy" {
+                  . = merge!(., parse_json!(.message))
+                  ._time = del(.ts)
+                  ._msg = del(.msg)
+                } else if .container_name == "gotosocial" {
+                  . = merge!(., parse_key_value!(.message))
+                  ._time = parse_timestamp!(del(.timestamp), format: "%d/%m/%Y %H:%M:%S%.3f")
+                  ._msg = del(.msg)
+                } else if .container_name == "loki" {
+                  . = merge!(., parse_key_value!(.message))
+                  ._time = del(.ts)
+                  ._msg = del(.msg)
+                } else if .container_name == "miniflux" {
+                  . = merge!(., parse_json!(.message))
+                  ._msg = del(.msg)
+                } else {
+                  ._msg = .message
+                }
                 del(.message)
 
-            remap_miniflux:
-              type: remap
-              inputs:
-                - docker_miniflux
-              source: |
-                . |= object!(parse_json!(.message))
-                del(.message)
-
-            remap_paperless:
-              type: remap
-              inputs:
-                - docker_paperless
-              source: |
-                . |= parse_regex!(.message, r'\[(?P<timestamp>.*?)\] \[(?P<level>.*?)\] \[(?P<name>.*?)\] (?P<message>.*)')
-                .timestamp = parse_timestamp!(
-                  .timestamp,
-                  format: "%F %T,%3f",
-                  timezone: "America/Los_Angeles"
-                )
+                ._stream_id = .container_name
 
           sinks:
             # console:
@@ -201,21 +172,6 @@
             #   type: console
             #   encoding:
             #     codec: json
-
-            loki_docker:
-              type: loki
-              inputs:
-                - remap_caddy
-                - remap_gts
-                - remap_miniflux
-                - remap_paperless
-                - docker_rest
-              endpoint: http://loki:3100
-              encoding:
-                codec: json
-              labels:
-                agent: vector
-                container: "{{ '{{' }} container_name }}"
 
             loki_rsyslog:
               type: loki
@@ -230,6 +186,19 @@
                 level: "{{ '{{' }} severity }}"
                 syslog_facility: "{{ '{{' }} facility }}"
                 syslog_identifier: "{{ '{{' }} appname }}"
+
+            victoria_logs:
+              inputs:
+                - docker_parsed
+              type: http
+              uri: http://victoria-logs:9428/insert/jsonline
+              compression: gzip
+              encoding:
+                codec: json
+              framing:
+                method: newline_delimited
+              healthcheck:
+                enabled: false
 
     - name: Run Vector
       community.docker.docker_container:

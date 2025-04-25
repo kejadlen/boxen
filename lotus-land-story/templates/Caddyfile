@@ -69,6 +69,12 @@ loki {
 	metrics /metrics
 }
 
+logs {
+	tls internal
+	bind tailscale/logs
+	reverse_proxy victoria-logs:9428
+}
+
 prometheus {
 	tls internal
 	bind tailscale/prometheus
