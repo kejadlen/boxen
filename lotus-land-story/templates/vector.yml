@@ -1,0 +1,77 @@
+sources:
+  docker:
+    type: docker_logs
+
+transforms:
+  docker_parsed:
+    type: remap
+    inputs:
+      - docker
+    source: |
+      ._time = del(.timestamp)
+
+      if .container_name == "caddy" {
+        . = merge!(., parse_json!(.message))
+        ._time = del(.ts)
+        ._msg = del(.msg)
+      } else if .container_name == "gitea" {
+        # gitea's common log doesn't match the vector common log because of the referer and user agent
+        router, router_err = parse_regex(
+            .message,
+            r'^(?P<remote_host>.*?) - (?P<identity>.*?) \[(?P<datetime>.*?)\] "(?P<request>.*?)" (?P<status>.*?) (?P<size>.*?) "(?P<referer>.*?)" "(?P<user_agent>.*?)"$',
+        )
+        if router_err == null {
+            . = merge(., router)
+
+            request = parse_regex!(.request, r'^(?P<method>.*?) (?P<request_uri>.*?) (?P<proto>.*?)$')
+            . = merge(., request)
+
+            ._time = parse_timestamp!(del(.datetime), format: "%d/%b/%Y:%H:%M:%S %z")
+            ._msg = del(.request)
+        } else {
+          ._msg = .message
+        }
+      } else if .container_name == "gotosocial" {
+        . = merge!(., parse_key_value!(.message))
+        ._time = parse_timestamp!(del(.timestamp), format: "%d/%m/%Y %H:%M:%S%.3f")
+        ._msg = del(.msg)
+      } else if .container_name == "grafana" {
+        . = merge!(., parse_key_value!(.message))
+        ._time = del(.t)
+        ._msg = del(.msg)
+      } else if .container_name == "loki" {
+        . = merge!(., parse_key_value!(.message))
+        ._time = del(.ts)
+        ._msg = del(.msg)
+      } else if .container_name == "miniflux" {
+        . = merge!(., parse_json!(.message))
+        ._msg = del(.msg)
+      } else {
+        ._msg = .message
+      }
+      del(.message)
+
+      ._stream_id = .container_name
+      ._stream = { "container_name": .container_name }
+
+sinks:
+  # console:
+  #   inputs:
+  #     - remap_caddy
+  #   target: stdout
+  #   type: console
+  #   encoding:
+  #     codec: json
+
+  victoria_logs:
+    inputs:
+      - docker_parsed
+    type: http
+    uri: http://victoria-logs:9428/insert/jsonline
+    compression: gzip
+    encoding:
+      codec: json
+    framing:
+      method: newline_delimited
+    healthcheck:
+      enabled: false

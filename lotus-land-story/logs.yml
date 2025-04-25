@@ -1,9 +1,41 @@
+- name: Set up Vector
+  tags: vector
+  hosts: lotus-land-story
+  vars:
+    version: 0.45.0-debian
+  tasks:
+
+    - name: Create Vector config dir
+      ansible.builtin.file:
+        path: /mnt/lotus-land-story/vector
+        state: directory
+        mode: "0700"
+
+    - name: Configure Vector
+      ansible.builtin.copy:
+        src: templates/vector.yml
+        dest: /mnt/lotus-land-story/vector/vector.yml
+
+    - name: Run Vector
+      community.docker.docker_container:
+        name: vector
+        image: timberio/vector:{{ version }}
+        restart: true
+        command: -c /etc/vector/*.yml
+        volumes:
+          - /mnt/lotus-land-story/vector:/etc/vector:ro
+          # - /var/log:/var/log
+          - /var/run/docker.sock:/var/run/docker.sock
+        restart_policy: unless-stopped
+        networks:
+          - name: lotus_land_story
+
 - name: VictoriaLogs
   hosts: lotus-land-story
   vars_files:
     - vars.yml
   vars:
-    victoria_logs_version: 1.20.0
+    version: 1.20.0
   tasks:
 
     - name: Make directories
@@ -23,14 +55,50 @@
       community.docker.docker_container:
         restart: true
         name: victoria-logs
-        image: docker.io/victoriametrics/victoria-logs:v{{ victoria_logs_version }}-victorialogs
+        image: docker.io/victoriametrics/victoria-logs:v{{ version }}-victorialogs
+        command: -storageDataPath=/data -syslog.listenAddr.tcp=:514
         restart_policy: unless-stopped
+        ports:
+          - "514:514"   # syslog
+          - "9428:9428" # journald
         volumes:
           - /mnt/lotus-land-story/victoria-logs:/data
         networks:
           - name: lotus_land_story
-        # etc_hosts:
-        #   host.docker.internal: host-gateway
+
+    - name: Ship syslogs
+      ansible.builtin.copy:
+        content: |
+          *.* action(type="omfwd"
+                     protocol="tcp"
+                     target="127.0.0.1"
+                     port="514"
+                     Template="RSYSLOG_SyslogProtocol23Format"
+                     TCP_Framing="octet-counted"
+                     KeepAlive="on")
+        dest: /etc/rsyslog.d/50-promtail.conf
+        mode: "0644"
+      notify: Restart rsyslog
+
+    - name: Ship journald logs
+      block:
+
+        - name: Install systemd-journal-remote
+          ansible.builtin.apt:
+            name: systemd-journal-remote
+            state: present
+
+        - name: Set remote URL for uploading
+          ansible.builtin.lineinfile:
+            path: /etc/systemd/journal-upload.conf
+            regexp: '^URL='
+            insertafter: '^# URL='
+            line: URL=http://localhost:9428/insert/journald
+
+        - name: Run systemd-journal-remote
+          ansible.builtin.service:
+            name: systemd-journal-upload
+            state: started
 
   handlers:
     - name: Import restarts
