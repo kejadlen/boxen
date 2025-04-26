@@ -50,7 +50,7 @@
   vars_files:
     - vars.yml
   vars:
-    version: 1.20.0
+    version: 1.22.2
   tasks:
 
     - name: Make directories
