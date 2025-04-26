@@ -5,7 +5,7 @@
   vars_files:
     - vars.yml
   vars:
-    version: 0.19.0
+    version: 0.19.1
   tasks:
 
     - name: Create working directory
