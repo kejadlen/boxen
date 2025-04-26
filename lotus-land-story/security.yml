@@ -42,6 +42,8 @@
     - name: Import restarts
       ansible.builtin.import_tasks: restarts.yml
 
+
+# Can use `fail2ban-client status sshd` to check on this
 - name: Set up Fail2Ban
   tags: fail2ban
   hosts: lotus-land-story
@@ -52,13 +54,43 @@
         name: fail2ban
         state: present
 
-    - name: Configure Fail2Ban
+    # TODO Reload fail2ban if this changes
+
+    - name: Configure Fail2Ban for sshd
       ansible.builtin.copy:
-        dest: /etc/jail.local
+        dest: /etc/fail2ban/jail.d/sshd.local
         content: |
           [sshd]
           enabled = true
+          mode = aggressive
+          bantime = 24h
+          findtime = 12h
         mode: "0600"
+
+    - name: Configure Fail2Ban for gitea
+      block:
+        - name: Create gitea filter
+          ansible.builtin.copy:
+            dest: /etc/fail2ban/filter.d/gitea.local
+            content: |
+              [Definition]
+              failregex = .*(Disconnected from invalid user).* <HOST> port
+              ignoreregex =
+            mode: "0600"
+
+        - name: Create gitea jail
+          ansible.builtin.copy:
+            dest: /etc/fail2ban/jail.d/gitea.local
+            content: |
+              [gitea]
+              enabled = true
+              filter = gitea
+              logpath = /var/log/gitea.log
+              maxretry = 3
+              bantime = 24h
+              findtime = 12h
+              action = iptables-allports[chain="FORWARD"]
+            mode: "0600"
 
     - name: Start Fail2Ban
       ansible.builtin.service:

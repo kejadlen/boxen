@@ -1,6 +1,10 @@
 sources:
   docker:
     type: docker_logs
+  varlogs:
+    type: file
+    include:
+      - /var/log/fail2ban.log
 
 transforms:
   docker_parsed:
@@ -54,18 +58,50 @@ transforms:
       ._stream_id = .container_name
       ._stream = { "container_name": .container_name }
 
+  varlogs_parsed:
+    type: remap
+    inputs:
+      - varlogs
+    source: |
+      ._time = del(.timestamp)
+      ._msg = del(.message)
+      ._stream_id = .file
+      ._stream = { "file": .file }
+
+  # A subset of gitea logs from docker that contain SSH information
+  gitea_ssh:
+    type: remap
+    inputs:
+      - docker
+    source: |
+      if .container_name == "gitea" && contains(string!(.message), "[preauth]") {
+        . = join!(
+          [
+            format_timestamp!(now(), "%b %d %H:%M:%S"),
+            .message,
+          ],
+          separator: " ",
+        )
+      } else {
+        . = []
+      }
+
 sinks:
   # console:
   #   inputs:
-  #     - remap_caddy
-  #   target: stdout
+  #     - gitea_ssh
   #   type: console
   #   encoding:
-  #     codec: json
+  #     codec: csv
+  #     csv:
+  #       fields:
+  #         - message
+  #       quote_style: never
 
   victoria_logs:
     inputs:
       - docker_parsed
+      - varlogs_parsed
     type: http
     uri: http://victoria-logs:9428/insert/jsonline
     compression: gzip
@@ -75,3 +111,19 @@ sinks:
       method: newline_delimited
     healthcheck:
       enabled: false
+
+  # Since ssh logs from gitea only show up in docker logs and not gitea logs,
+  # ship them to /var/log for use with fail2ban
+  gitea_log:
+    inputs:
+      - gitea_ssh
+    type: file
+    path: /var/log/gitea.log
+    encoding:
+      # Surely there must be a better way to do unstructured logging than using
+      # CSV rows with a single field?
+      codec: csv
+      csv:
+        fields:
+          - message
+        quote_style: never

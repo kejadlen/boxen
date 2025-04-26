@@ -24,11 +24,26 @@
         command: -c /etc/vector/*.yml
         volumes:
           - /mnt/lotus-land-story/vector:/etc/vector:ro
-          # - /var/log:/var/log
+          - /var/log:/var/log
           - /var/run/docker.sock:/var/run/docker.sock
         restart_policy: unless-stopped
         networks:
           - name: lotus_land_story
+
+    - name: Set up logrotate for gitea.log
+      ansible.builtin.copy:
+        content: |
+          /var/log/gitea.log
+          {
+            rotate 4
+            weekly
+            missingok
+            notifempty
+            compress
+            delaycompress
+          }
+        dest: /etc/logrotate.d/gitea-ssh
+        mode: "0600"
 
 - name: VictoriaLogs
   hosts: lotus-land-story
@@ -60,7 +75,10 @@
         restart_policy: unless-stopped
         ports:
           - "514:514"   # syslog
-          - "9428:9428" # journald
+          # Exposed for journald via systemd-journal-upload - at some point, it
+          # might be nice to have journald go through vector, but would need to
+          # figure out how to make that work through docker.
+          - "9428:9428"
         volumes:
           - /mnt/lotus-land-story/victoria-logs:/data
         networks:
