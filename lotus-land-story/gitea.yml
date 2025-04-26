@@ -6,7 +6,7 @@
     - vars.yml
   vars:
     version: 1.23.7
-    anubis_version: v1.17.1
+    anubis_version: v1.18.0
   tasks:
 
     - name: Create git user
