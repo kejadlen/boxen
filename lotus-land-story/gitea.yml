@@ -6,8 +6,7 @@
     - vars.yml
   vars:
     version: 1.23.7
-    anubis:
-      version: v1.15.2
+    anubis_version: v1.17.1
   tasks:
 
     - name: Create git user
@@ -47,9 +46,10 @@
         group: "{{ git_user.group }}"
 
     - name: Run Anubis
+      tags: anubis
       community.docker.docker_container:
         name: anubis
-        image: ghcr.io/techarohq/anubis:{{ anubis.version }}
+        image: ghcr.io/techarohq/anubis:{{ anubis_version }}
         restart: true
         env:
           COOKIE_DOMAIN: kejadlen.dev
