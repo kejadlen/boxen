@@ -3,7 +3,7 @@
   vars_files:
     - vars.yml
   vars:
-    version: 11.6.0
+    version: 12.0.1
   tasks:
 
     - name: Grafana user
