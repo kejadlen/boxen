@@ -63,7 +63,7 @@
           [sshd]
           enabled = true
           mode = aggressive
-          bantime = 24h
+          bantime = 1w
           findtime = 12h
         mode: "0600"
 
@@ -87,7 +87,7 @@
               filter = gitea
               logpath = /var/log/gitea.log
               maxretry = 3
-              bantime = 24h
+              bantime = 1w
               findtime = 12h
               action = iptables-allports[chain="FORWARD"]
             mode: "0600"

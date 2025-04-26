@@ -52,6 +52,9 @@
           user = apikey
           password = {{ grafana.smtp_password }}
           from_address = grafana@kejadlen.dev
+
+          [plugins]
+          plugin_admin_enabled = true
         mode: "0600"
         owner: "{{ grafana_user.name }}"
 
@@ -74,6 +77,32 @@
                 prometheusVersion: 2.37.0
         mode: "0644"
 
+    - name: Provision VictoriaMetrics
+      ansible.builtin.copy:
+        dest: /mnt/lotus-land-story/grafana/provisioning/datasources/victoria-metrics.yml
+        content: |
+          apiVersion: 1
+
+          # List of data sources to insert/update depending on what's
+          # available in the database.
+          datasources:
+            # <string, required> Name of the VictoriaMetrics datasource
+            # displayed in Grafana panels and queries.
+            - name: VictoriaMetrics
+              # <string, required> Sets the data source type.
+              type: victoriametrics-metrics-datasource
+                # <string, required> Sets the access mode, either
+                # proxy or direct (Server or Browser in the UI).
+                # Some data sources are incompatible with any setting
+              # but proxy (Server).
+              access: proxy
+              # <string> Sets default URL of the single node version of VictoriaMetrics
+              url: http://victoria-metrics:8428
+              # <string> Sets the pre-selected datasource for new panels.
+              # You can set only one default data source per organization.
+              isDefault: true
+        mode: "0644"
+
     - name: Create Grafana volume
       community.docker.docker_volume:
         name: grafana
@@ -87,7 +116,7 @@
           - /mnt/lotus-land-story/grafana/provisioning:/etc/grafana/provisioning
           - grafana:/var/lib/grafana
         env:
-          # GF_INSTALL_PLUGINS: https://storage.googleapis.com/integration-artifacts/grafana-lokiexplore-app/grafana-lokiexplore-app-latest.zip;grafana-lokiexplore-app
+          GF_INSTALL_PLUGINS=victoriametrics-metrics-datasource
         restart_policy: unless-stopped
         networks:
           - name: lotus_land_story

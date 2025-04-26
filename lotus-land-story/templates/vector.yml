@@ -14,11 +14,19 @@ transforms:
     source: |
       ._time = del(.timestamp)
 
-      if .container_name == "caddy" {
+      if .container_name == "anubis" {
+        parsed, err = parse_json(.message)
+        if err == null {
+          . = merge!(., parsed)
+          ._time = del(.time)
+          ._msg = del(.msg)
+        }
+      } else if .container_name == "caddy" {
         . = merge!(., parse_json!(.message))
         ._time = del(.ts)
         ._msg = del(.msg)
       } else if .container_name == "gitea" {
+        # TODO handle router logs: https://github.com/go-gitea/gitea/pull/33814
         # gitea's common log doesn't match the vector common log because of the referer and user agent
         router, router_err = parse_regex(
             .message,
@@ -32,8 +40,6 @@ transforms:
 
             ._time = parse_timestamp!(del(.datetime), format: "%d/%b/%Y:%H:%M:%S %z")
             ._msg = del(.request)
-        } else {
-          ._msg = .message
         }
       } else if .container_name == "gotosocial" {
         . = merge!(., parse_key_value!(.message))
@@ -50,20 +56,30 @@ transforms:
       } else if .container_name == "miniflux" {
         . = merge!(., parse_json!(.message))
         ._msg = del(.msg)
-      } else {
+      } else if .container_name == "prometheus" {
+        . = merge!(., parse_json!(.message))
+        ._time = del(.time)
+        ._msg = del(.msg)
+      }
+
+      if ._msg == null {
         ._msg = .message
       }
       del(.message)
 
-      ._stream_id = .container_name
-      ._stream = { "container_name": .container_name }
+      ._stream_id = .container_id
 
   varlogs_parsed:
     type: remap
     inputs:
       - varlogs
     source: |
-      ._time = del(.timestamp)
+      parsed = parse_regex!(del(.message), r'^(?P<date>.*?) (?P<time>.*?) (?P<component>.*?) *\[(?P<proc_id>.*?)\]: (?P<level>.*?) +(?P<message>.*?)$')
+      . = merge(., parsed)
+
+      t = join!([del(.date), del(.time)], separator: " ")
+      ._time = parse_timestamp!(t, format: "%Y-%m-%d %H:%M:%S,%3f")
+
       ._msg = del(.message)
       ._stream_id = .file
       ._stream = { "file": .file }
@@ -103,7 +119,7 @@ sinks:
       - docker_parsed
       - varlogs_parsed
     type: http
-    uri: http://victoria-logs:9428/insert/jsonline
+    uri: http://victoria-logs:9428/insert/jsonline?_stream_fields=container_name
     compression: gzip
     encoding:
       codec: json

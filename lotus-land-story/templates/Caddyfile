@@ -75,6 +75,13 @@ logs {
 	reverse_proxy victoria-logs:9428
 }
 
+# need scheme here since `metrics` is a directive
+https://metrics {
+ 	tls internal
+ 	bind tailscale/metrics
+ 	reverse_proxy victoria-metrics:8428
+}
+
 prometheus {
 	tls internal
 	bind tailscale/prometheus
@@ -133,6 +140,15 @@ docs {
 		reverse_proxy paperless-ngx:5555
 	}
 }
+
+# homeassistant {
+# 	tls internal
+# 	bind tailscale/homeassistant
+# 	tailscale_auth
+# 	reverse_proxy calibre-web:8083 {
+# 		header_up Remote-User {http.auth.user.tailscale_user}
+# 	}
+# }
 
 ### External
 
