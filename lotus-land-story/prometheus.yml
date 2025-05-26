@@ -3,7 +3,7 @@
   vars_files:
     - vars.yml
   vars:
-    prometheus_version: v2.54.1
+    prometheus_version: v3.4.0
     cadvisor_version: v0.51.0
   tasks:
 
