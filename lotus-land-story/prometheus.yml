@@ -4,7 +4,7 @@
     - vars.yml
   vars:
     prometheus_version: v3.4.1
-    cadvisor_version: v0.52.1
+    cadvisor_version: v0.53.0
   tasks:
 
     - name: Create Prometheus dir
@@ -53,6 +53,7 @@
           host.docker.internal: host-gateway
 
     - name: Run cAdvisor
+      tags: cadvisor
       community.docker.docker_container:
         name: cadvisor
         image: gcr.io/cadvisor/cadvisor:{{ cadvisor_version }}
