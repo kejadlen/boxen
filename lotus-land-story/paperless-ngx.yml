@@ -3,7 +3,7 @@
   vars_files:
     - vars.yml
   vars:
-    version: 2.16.3
+    version: 2.17.1
   tasks:
 
     - name: Create directories for volume mounting
