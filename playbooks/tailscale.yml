@@ -1,53 +1,57 @@
-# https://tailscale.com/download/linux/debian-bullseye
+# https://tailscale.com/download/linux/debian-bookworm
 - name: Install Tailscale
+  tags: tailscale
   hosts: all
   become: true
   tasks:
 
-    # curl -fsSL https://pkgs.tailscale.com/stable/debian/bullseye.noarmor.gpg | sudo tee /usr/share/keyrings/tailscale-archive-keyring.gpg >/dev/null
+    - name: Assert distribution is Debian
+      ansible.builtin.assert:
+        that:
+          - ansible_distribution == "Debian"
+        fail_msg: "This playbook only supports Debian distributions"
+
+    # curl -fsSL https://pkgs.tailscale.com/stable/debian/bookworm.noarmor.gpg | sudo tee /usr/share/keyrings/tailscale-archive-keyring.gpg >/dev/null
     - name: Download Tailscale package signing key
       ansible.builtin.get_url:
-        url: https://pkgs.tailscale.com/stable/debian/bullseye.noarmor.gpg
+        url: https://pkgs.tailscale.com/stable/debian/{{ ansible_distribution_release }}.noarmor.gpg
         dest: /usr/share/keyrings/tailscale-archive-keyring.gpg
         mode: "0644"
 
-    # curl -fsSL https://pkgs.tailscale.com/stable/debian/bullseye.tailscale-keyring.list | sudo tee /etc/apt/sources.list.d/tailscale.list
+    # curl -fsSL https://pkgs.tailscale.com/stable/debian/bookworm.tailscale-keyring.list | sudo tee /etc/apt/sources.list.d/tailscale.list
     - name: Add Tailscale repository
       ansible.builtin.apt_repository:
-        repo: deb [signed-by=/usr/share/keyrings/tailscale-archive-keyring.gpg] https://pkgs.tailscale.com/stable/debian bullseye main
+        repo: deb [signed-by=/usr/share/keyrings/tailscale-archive-keyring.gpg] https://pkgs.tailscale.com/stable/debian {{ ansible_distribution_release }} main
         state: present
 
     # sudo apt-get update
-    - name: Update apt-get
-      ansible.builtin.apt:
-        update_cache: true
-
     # sudo apt-get install tailscale
     - name: Install Tailscale
-      ansible.builtin.package:
+      ansible.builtin.apt:
         name: tailscale
         state: present
+        update_cache: true
 
-- name: Restrict tailscaled logging
-  hosts: all
-  become: true
-  tasks:
-
-    - name: Create systemd override dir for tailscaled
-      ansible.builtin.file:
-        path: /etc/systemd/system/tailscaled.service.d
-        state: directory
-        mode: "0644"
-
-    - name: Create systemd override
-      ansible.builtin.copy:
-        content: |
-          [Service]
-          LogLevelMax=notice
-        dest: /etc/systemd/system/tailscaled.service.d/override.conf
-        mode: "0644"
-      notify:
-        - Restart Tailscale
+# - name: Restrict tailscaled logging
+#   hosts: all
+#   become: true
+#   tasks:
+#
+#     - name: Create systemd override dir for tailscaled
+#       ansible.builtin.file:
+#         path: /etc/systemd/system/tailscaled.service.d
+#         state: directory
+#         mode: "0644"
+#
+#     - name: Create systemd override
+#       ansible.builtin.copy:
+#         content: |
+#           [Service]
+#           LogLevelMax=notice
+#         dest: /etc/systemd/system/tailscaled.service.d/override.conf
+#         mode: "0644"
+#       notify:
+#         - Restart Tailscale
 
   handlers:
 

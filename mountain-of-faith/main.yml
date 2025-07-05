@@ -1,0 +1,125 @@
+- name: Update system things
+  hosts: mountain-of-faith
+  become: true
+  tasks:
+
+    - name: Remove big packages
+      ansible.builtin.apt:
+        name: "{{ item }}"
+        state: absent
+        update_cache: true
+        autoremove: true
+      loop:
+        - chromium
+
+    - name: Update all packages to their latest version
+      ansible.builtin.apt:
+        name: "*"
+        state: latest
+        update_cache: true
+        autoremove: true
+
+    - name: Upgrade the OS (apt-get dist-upgrade)
+      ansible.builtin.apt:
+        upgrade: dist
+
+- import_playbook: ../playbooks/tailscale.yml
+- import_playbook: ../playbooks/docker.yml
+
+- name: Mount USB drive
+  hosts: mountain-of-faith
+  become: true
+  tasks:
+
+    # Use `lsblk -f` to find the device
+    - name: Mount /dev/sda to /mnt/mountain-of-faith
+      ansible.posix.mount:
+        path: /mnt/mountain-of-faith
+        src: /dev/sda
+        fstype: ext4
+        state: mounted
+
+- name: Set up Restic
+  tags: restic
+  hosts: mountain-of-faith
+  become: true
+  tasks:
+
+    - name: Create Restic user
+      ansible.builtin.user:
+        name: restic
+        system: true
+        state: present
+
+    - name: Add SSH key for restic user
+      ansible.posix.authorized_key:
+        user: restic
+        key: "{{ item }}"
+      loop:
+        - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILrlVay1GlpCuhYSUup/K/gRYmltycViPBAdZ8t9OKtu # lotus-land-story
+        - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPgX0tA28NO3djYaV++JxggR0t47xou+R0HQVwVjzj8s # 1password
+
+    - name: Create Restic directory
+      ansible.builtin.file:
+        path: /mnt/mountain-of-faith/restic
+        state: directory
+        owner: restic
+        group: restic
+        mode: "0755"
+
+
+- name: Create Docker network
+  hosts: mountain-of-faith
+  become: true
+  tasks:
+    - name: Create IPv6 Docker network
+      community.docker.docker_network:
+        name: mountain-of-faith
+        enable_ipv6: true
+        state: present
+
+- name: Run Pi-Hole
+  tags: pihole
+  hosts: mountain-of-faith
+  vars_files:
+    - vars.private
+  vars:
+    version: 2025.06.2
+  tasks:
+
+    - name: Run the Pi-Hole container
+      become: true
+      community.docker.docker_container:
+        name: pihole
+        image: pihole/pihole:{{ version }}
+        ports:
+          - "53:53/tcp"
+          - "53:53/udp"
+          - "80:80/tcp"
+          - "443:443/tcp"
+          #- "67:67/udp" # DHCP
+          #- "123:123/udp" # NTP
+        networks:
+          - name: mountain-of-faith
+        env:
+          TZ: "America/Los_Angeles"
+          FTLCONF_webserver_api_password: "{{ pihole.password }}"
+          FTLCONF_dns_listeningMode: "all"
+          FTLCONF_dns_upstreams: "1.1.1.1;1.0.0.1;2606:4700:4700::1111;2606:4700:4700::1001" # cloudflare
+        volumes:
+          - "./etc-pihole:/etc/pihole"
+        capabilities:
+          - NET_ADMIN
+          - SYS_TIME
+          - SYS_NICE
+        restart_policy: unless-stopped
+        state: started
+
+- import_playbook: minio.yml
+
+# TODO smokeping
+# TODO syncthing
+
+- import_playbook: caddy.yml
+
+# vim: ft=yaml.ansible

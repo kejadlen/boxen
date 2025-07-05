@@ -2,7 +2,7 @@
 
 set -eu pipefail
 
-export RESTIC_REPOSITORY=sftp:restic@on-fire-within:/mnt/mushu/restic
+export RESTIC_REPOSITORY=sftp:restic@mountain-of-faith:/mnt/mountain-of-faith/restic
 export RESTIC_PASSWORD={{ restic.password }}
 
 restic --verbose backup \

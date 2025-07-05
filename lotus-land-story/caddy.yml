@@ -51,7 +51,7 @@
         volumes:
           - /mnt/lotus-land-story/caddy/Caddyfile:/etc/caddy/Caddyfile
           - /mnt/lotus-land-story/caddy/data:/data
-          - caddy-config:/config
+          - caddy-config:/config # TODO probably put this somewhere else???
         restart_policy: unless-stopped
         networks:
           - name: lotus_land_story

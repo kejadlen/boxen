@@ -14,7 +14,9 @@ terraform {
 
     pihole = {
       source  = "ryanwholey/pihole"
-      version = "~> 0.2"
+
+      # https://github.com/ryanwholey/terraform-provider-pihole/issues/86#issuecomment-2828469631
+      version = "2.0.0-beta.1"
     }
 
     tailscale = {
@@ -29,7 +31,8 @@ provider "linode" {
 }
 
 provider "pihole" {
-  url = "https://pihole.kejadlen.dev"
+  # url = "https://pihole.kejadlen.dev" # on-fire-within
+  url = "http://mountain-of-faith"
   # api_token = # PIHOLE_API_TOKEN
 }
 
@@ -67,6 +70,10 @@ data "tailscale_device" "lotus_land_story" {
   hostname = "lotus-land-story"
 }
 
+data "tailscale_device" "mountain_of_faith" {
+  hostname = "mountain-of-faith"
+}
+
 data "tailscale_device" "on_fire_within" {
   hostname = "on-fire-within"
 }
@@ -88,9 +95,17 @@ resource "linode_domain" "chislan_family" {
   soa_email = var.soa_email
 }
 
-resource "pihole_dns_record" "rss" {
+resource "pihole_dns_record" "git_kejadlen_dev" {
   for_each = toset(["git.kejadlen.dev"])
 
   domain = each.key
   ip     = data.tailscale_device.lotus_land_story.addresses.0
 }
+
+# doesn't seem to work
+# resource "pihole_dns_record" "pi_hole" {
+#   for_each = toset(["pi.hole"])
+#
+#   domain = each.key
+#   ip     = data.tailscale_device.mountain_of_faith.addresses.0
+# }
