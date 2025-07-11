@@ -14,5 +14,8 @@ ansible-playbook -l mountain-of-faith mountain-of-faith/main.yml
 
 ```sh
 mc alias set minio http://mountain-of-faith:9000 root $MINIO_PASSWORD
+
+# arq
+mc mb minio/arq
 mc admin accesskey create minio root --policy mountain-of-faith/minio/arq.json
 ```

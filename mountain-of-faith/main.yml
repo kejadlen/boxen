@@ -12,6 +12,14 @@
       loop:
         - chromium
 
+    - name: Install things
+      ansible.builtin.apt:
+        name: "{{ item }}"
+        state: present
+        update_cache: true
+      loop:
+        - neovim
+
     - name: Update all packages to their latest version
       ansible.builtin.apt:
         name: "*"
@@ -116,10 +124,9 @@
         state: started
 
 - import_playbook: minio.yml
+- import_playbook: syncthing.yml
 
-# TODO smokeping
-# TODO syncthing
-
-- import_playbook: caddy.yml
+# TODO smokeping (or blackbox_exporter?)
+# TODO caddy?
 
 # vim: ft=yaml.ansible

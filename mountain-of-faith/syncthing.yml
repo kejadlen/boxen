@@ -1,0 +1,77 @@
+# https://apt.syncthing.net/
+
+- name: Install Syncthing
+  tags: syncthing
+  hosts: mountain-of-faith
+  become: true
+  tasks:
+
+    - name: Assert distribution is Debian
+      ansible.builtin.assert:
+        that:
+          - ansible_distribution == "Debian"
+        fail_msg: "This playbook only supports Debian distributions"
+
+    # sudo mkdir -p /etc/apt/keyrings
+    # sudo curl -L -o /etc/apt/keyrings/syncthing-archive-keyring.gpg https://syncthing.net/release-key.gpg
+    - name: Add Syncthing GPG key
+      ansible.builtin.apt_key:
+        url: https://syncthing.net/release-key.gpg
+        state: present
+
+    # echo "deb [signed-by=/etc/apt/keyrings/syncthing-archive-keyring.gpg] https://apt.syncthing.net/ syncthing stable" | sudo tee /etc/apt/sources.list.d/syncthing.list
+    - name: Add Syncthing repository
+      ansible.builtin.apt_repository:
+        repo: deb https://apt.syncthing.net/ syncthing stable
+        state: present
+
+    # sudo apt-get update
+    # sudo apt-get install syncthing
+    - name: Install Syncthing
+      ansible.builtin.apt:
+        name: syncthing
+        state: present
+        update_cache: true
+
+    - name: Create Syncthing group
+      ansible.builtin.group:
+        name: syncthing
+        system: true
+        state: present
+
+    - name: Create Syncthing user
+      ansible.builtin.user:
+        name: syncthing
+        group: syncthing
+        system: true
+
+    - name: Create Syncthing data directory
+      ansible.builtin.file:
+        path: /mnt/mountain-of-faith/syncthing
+        state: directory
+        owner: syncthing
+        group: syncthing
+        mode: "0755"
+
+    - name: Enable and start Syncthing service
+      ansible.builtin.systemd:
+        name: syncthing@syncthing.service
+        enabled: true
+        state: started
+        daemon_reload: true
+
+    - name: Update GUI listen address in config.xml
+      ansible.builtin.lineinfile:
+        path: /home/syncthing/.local/state/syncthing/config.xml
+        regexp: '^\s*<address>.*:8384</address>'
+        line: '        <address>0.0.0.0:8384</address>'
+        backup: true
+      notify: restart syncthing
+
+  handlers:
+    - name: restart syncthing
+      ansible.builtin.systemd:
+        name: syncthing@syncthing.service
+        state: restarted
+
+# vim: ft=yaml.ansible
