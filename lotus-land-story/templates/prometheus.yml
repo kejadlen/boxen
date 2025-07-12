@@ -87,3 +87,23 @@ scrape_configs:
   - job_name: anubis
     static_configs:
       - targets: ['anubis:9090']
+
+  - job_name: syncthing
+    bearer_token: {{ syncthing.api_key }}
+    static_configs:
+      - targets: ['mountain-of-faith:8384']
+
+  - job_name: minio-job
+    bearer_token: {{ minio.cluster_token }}
+    metrics_path: /minio/v2/metrics/cluster
+    scheme: http
+    static_configs:
+    - targets: ['mountain-of-faith:9000']
+
+  - job_name: minio-job-bucket
+    bearer_token: {{ minio.bucket_token }}
+    metrics_path: /minio/v2/metrics/bucket
+    scheme: http
+    static_configs:
+    - targets: ['mountain-of-faith:9000']
+
