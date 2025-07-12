@@ -19,6 +19,7 @@
         update_cache: true
       loop:
         - neovim
+        - prometheus-node-exporter
 
     - name: Update all packages to their latest version
       ansible.builtin.apt:
@@ -75,7 +76,6 @@
         group: restic
         mode: "0755"
 
-
 - name: Create Docker network
   hosts: mountain-of-faith
   become: true
@@ -126,7 +126,67 @@
 - import_playbook: minio.yml
 - import_playbook: syncthing.yml
 
-# TODO smokeping (or blackbox_exporter?)
+- name: Set up metrics
+  tags: blackbox
+  hosts: mountain-of-faith
+  become: true
+  tasks:
+
+    - name: Create Blackbox config directory
+      ansible.builtin.file:
+        path: /mnt/mountain-of-faith/blackbox-exporter
+        state: directory
+        mode: "0755"
+
+    - name: Create Blackbox configuration file
+      ansible.builtin.copy:
+        dest: /mnt/mountain-of-faith/blackbox-exporter/blackbox.yml
+        content: |
+          modules:
+            http:
+              prober: http
+              http:
+                preferred_ip_protocol: ip4
+            http_ipv6:
+              prober: http
+            dns:
+              prober: dns
+              dns:
+                preferred_ip_protocol: ip4
+                query_name: kejadlen.dev
+                query_type: A # https://blog.cloudflare.com/rfc8482-saying-goodbye-to-any/
+            dns_ipv6:
+              prober: dns
+              dns:
+                query_name: kejadlen.dev
+                query_type: A # https://blog.cloudflare.com/rfc8482-saying-goodbye-to-any/
+        mode: "0644"
+      notify: restart blackbox-exporter
+
+    - name: Run Blackbox exporter container
+      community.docker.docker_container:
+        name: blackbox-exporter
+        image: quay.io/prometheus/blackbox-exporter:latest
+        ports:
+          - "9115:9115"
+        networks:
+          - name: mountain-of-faith
+        volumes:
+          - "/mnt/mountain-of-faith/blackbox-exporter:/config:ro"
+        command:
+          - --config.file=/config/blackbox.yml
+          # - --log.level=debug
+          # - --log.prober=debug
+        restart_policy: unless-stopped
+        state: started
+
+  handlers:
+    - name: Restart Blackbox exporter
+      community.docker.docker_container:
+        name: blackbox-exporter
+        restart: true
+
 # TODO caddy?
+# TODO node-exporter
 
 # vim: ft=yaml.ansible
