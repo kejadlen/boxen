@@ -1,0 +1,111 @@
+scrape_configs:
+
+  - job_name: anubis
+    static_configs:
+      - targets: ['anubis:9090']
+
+  - job_name: authelia
+    static_configs:
+      - targets: ['authelia:9959']
+
+  - job_name: blackbox-exporter-dns
+    metrics_path: /probe
+    params:
+      module: [ dns ]
+    static_configs:
+      - targets:
+        - 8.8.8.8
+        - 8.8.4.4
+        - 1.1.1.1
+        - 1.0.0.1
+        - 9.9.9.9
+        - 149.112.112.112
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: instance
+      - source_labels: [__param_target]
+        target_label: target # for the dashboard
+      - target_label: __address__
+        replacement: mountain-of-faith:9115
+
+  - job_name: cadvisor
+    scrape_interval: 5s
+    static_configs:
+      - targets:
+          - cadvisor:8080
+
+  - job_name: caddy
+    static_configs:
+      - targets: ['caddy:2019']
+
+  - job_name: docker
+    static_configs:
+      - targets: ['host.docker.internal:9323']
+
+  - job_name: gitea
+    bearer_token: {{ gitea.metrics.token }}
+    static_configs:
+      - targets: ['gitea:3000']
+
+  - job_name: gotosocial
+    metrics_path: /metrics
+    scheme: http
+    basic_auth:
+      username: {{ gotosocial.metrics.username }}
+      password: {{ gotosocial.metrics.password }}
+    static_configs:
+      - targets: ['gotosocial:8080']
+
+  - job_name: grafana
+    static_configs:
+      - targets: ['grafana:3000']
+
+  - job_name: miniflux
+    static_configs:
+      - targets: ['miniflux:8080']
+
+  - job_name: minio-job
+    bearer_token: {{ minio.cluster_token }}
+    metrics_path: /minio/v2/metrics/cluster
+    scheme: http
+    static_configs:
+    - targets: ['mountain-of-faith:9000']
+
+  - job_name: minio-job-bucket
+    bearer_token: {{ minio.bucket_token }}
+    metrics_path: /minio/v2/metrics/bucket
+    scheme: http
+    static_configs:
+    - targets: ['mountain-of-faith:9000']
+
+  - job_name: node-exporter
+    static_configs:
+      - targets:
+          - host.docker.internal:9100
+          - mountain-of-faith:9100
+          - ramble-hard:9100
+    relabel_configs:
+      - source_labels: [__address__]
+        regex: 'host\.docker\.internal:9100'
+        target_label: instance
+        replacement: 'lotus-land-story:9100'
+
+  - job_name: paperless
+    metrics_path: /flower/metrics
+    static_configs:
+      - targets: ['paperless-ngx:5555']
+
+  - job_name: postgres
+    static_configs:
+      - targets: ['postgres-exporter:9187']
+
+  - job_name: victoria-logs
+    static_configs:
+      - targets: ['victoria-logs:9428']
+
+  - job_name: syncthing
+    bearer_token: {{ syncthing.api_key }}
+    static_configs:
+      - targets: ['mountain-of-faith:8384']

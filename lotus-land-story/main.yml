@@ -48,12 +48,10 @@
 
 - import_playbook: golink.yml      # noqa: name[play]
 - import_playbook: grafana.yml     # noqa: name[play]
-- import_playbook: loki.yml        # noqa: name[play]
 - import_playbook: miniflux.yml    # noqa: name[play]
 - import_playbook: gotosocial.yml  # noqa: name[play]
 - import_playbook: caddy.yml       # noqa: name[play]
 - import_playbook: security.yml    # noqa: name[play]
 - import_playbook: backup.yml      # noqa: name[play]
-- import_playbook: prometheus.yml  # noqa: name[play]
 
 # vim: ft=yaml.ansible

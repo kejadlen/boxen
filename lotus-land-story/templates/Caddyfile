@@ -59,12 +59,6 @@ grafana {
 	}
 }
 
-loki {
-	tls internal
-	bind tailscale/loki
-	reverse_proxy loki:3100
-}
-
 :2019 {
 	metrics /metrics
 }
@@ -80,12 +74,6 @@ https://metrics {
  	tls internal
  	bind tailscale/metrics
  	reverse_proxy victoria-metrics:8428
-}
-
-prometheus {
-	tls internal
-	bind tailscale/prometheus
-	reverse_proxy prometheus:9090
 }
 
 ### Services

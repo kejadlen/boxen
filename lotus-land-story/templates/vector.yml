@@ -49,16 +49,8 @@ transforms:
         . = merge!(., parse_key_value!(.message))
         ._time = del(.t)
         ._msg = del(.msg)
-      } else if .container_name == "loki" {
-        . = merge!(., parse_key_value!(.message))
-        ._time = del(.ts)
-        ._msg = del(.msg)
       } else if .container_name == "miniflux" {
         . = merge!(., parse_json!(.message))
-        ._msg = del(.msg)
-      } else if .container_name == "prometheus" {
-        . = merge!(., parse_json!(.message))
-        ._time = del(.time)
         ._msg = del(.msg)
       }
 

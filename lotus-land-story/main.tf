@@ -60,17 +60,8 @@ resource "linode_domain_record" "subdomains" {
 
   for_each = toset([
     "auth",
-    "loki",
-    "prometheus",
   ])
   name = each.key
-}
-
-resource "linode_domain_record" "prometheus" {
-  domain_id   = data.linode_domain.domain.id
-  name        = "prometheus"
-  record_type = "A"
-  target      = resource.linode_instance.lotus_land_story.ip_address
 }
 
 output "lotus_land_story_ip" {

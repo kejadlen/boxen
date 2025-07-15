@@ -72,8 +72,8 @@
           GTS_OIDC_ADMIN_GROUPS: admin
           GTS_METRICS_ENABLED: "true"
           GTS_METRICS_AUTH_ENABLED: "true"
-          GTS_METRICS_AUTH_USERNAME: "{{ prometheus.gotosocial.username }}"
-          GTS_METRICS_AUTH_PASSWORD: "{{ prometheus.gotosocial.password }}"
+          GTS_METRICS_AUTH_USERNAME: "{{ gotosocial.metrics.username }}"
+          GTS_METRICS_AUTH_PASSWORD: "{{ gotosocial.metrics.password }}"
           # GTS_ADVANCED_RATE_LIMIT_REQUESTS: "0"
           TZ: UTC
         volumes:
