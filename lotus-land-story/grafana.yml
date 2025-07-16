@@ -58,17 +58,6 @@
         mode: "0600"
         owner: "{{ grafana_user.name }}"
 
-    - name: Provision Prometheus
-      ansible.builtin.copy:
-        dest: /mnt/lotus-land-story/grafana/provisioning/datasources/prometheus.yml
-        content: |
-          apiVersion: 1
-
-          deleteDatasources:
-            - name: Prometheus
-        mode: "0644"
-        state: absent
-
     - name: Provision VictoriaMetrics
       ansible.builtin.copy:
         dest: /mnt/lotus-land-story/grafana/provisioning/datasources/victoria-metrics.yml
