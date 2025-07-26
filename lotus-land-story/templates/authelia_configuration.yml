@@ -52,7 +52,8 @@ notifier:
   smtp:
     username: {{ authelia.smtp_username }}
     password: {{ authelia.smtp_password }}
-    address: smtp://email-smtp.us-west-2.amazonaws.com:25
+    # address: smtp://email-smtp.us-west-2.amazonaws.com:25
+    address: smtp://mail.smtp2go.com:2525
     sender: authelia@kejadlen.dev
 
 identity_providers:
