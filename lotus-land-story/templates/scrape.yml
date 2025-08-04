@@ -62,6 +62,17 @@ scrape_configs:
     static_configs:
       - targets: ['grafana:3000']
 
+  - job_name: home-assistant
+    scrape_interval: 60s
+    metrics_path: /api/prometheus
+
+    authorization:
+      credentials: {{ home_assistant.access_token }}
+
+    scheme: http
+    static_configs:
+      - targets: ['homeassistant:8123']
+
   - job_name: miniflux
     static_configs:
       - targets: ['miniflux:8080']
