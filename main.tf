@@ -7,13 +7,18 @@ terraform {
   }
 
   required_providers {
+    dnsimple = {
+      source  = "dnsimple/dnsimple"
+      version = "1.10.0"
+    }
+
     linode = {
       source  = "linode/linode"
       version = "~> 2.18"
     }
 
     pihole = {
-      source  = "ryanwholey/pihole"
+      source = "ryanwholey/pihole"
 
       # https://github.com/ryanwholey/terraform-provider-pihole/issues/86#issuecomment-2828469631
       version = "2.0.0-beta.1"
@@ -24,6 +29,11 @@ terraform {
       version = "~> 0.17.2"
     }
   }
+}
+
+provider "dnsimple" {
+  token = "${var.dnsimple.token}"
+  account = "${var.dnsimple.account}"
 }
 
 provider "linode" {
@@ -40,6 +50,14 @@ provider "tailscale" {
   tailnet = "-"
   # oauth_client_id = TAILSCALE_OAUTH_CLIENT_ID
   # oauth_client_secret = TAILSCALE_OAUTH_CLIENT_SECRET
+}
+
+variable "dnsimple" {
+  type = object({
+    token   = string
+    account = string
+  })
+  nullable = false
 }
 
 variable "soa_email" {
