@@ -22,7 +22,7 @@
       register: docker_network
 
     - name: Get Perfect Cherry Blossom IP
-      command: tailscale ip --1 Perfect-Cherry-Blossom
+      command: tailscale ip --1 perfect-cherry-blossom
       register: perfect_cherry_blossom_ip_result
 
     # TODO Reload Caddy when this changes:

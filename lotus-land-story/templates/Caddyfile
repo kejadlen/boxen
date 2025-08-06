@@ -138,6 +138,20 @@ docs {
 # 	}
 # }
 
+### Internal
+
+home-assistant {
+	tls internal
+	bind tailscale/home-assistant
+	reverse_proxy homeassistant:8123
+}
+
+pihole {
+	tls internal
+	bind tailscale/pihole
+	reverse_proxy mountain-of-faith:80
+}
+
 ### External
 
 git.kejadlen.dev {
