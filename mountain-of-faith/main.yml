@@ -19,7 +19,6 @@
         update_cache: true
       loop:
         - neovim
-        - prometheus-node-exporter
 
     - name: Update all packages to their latest version
       ansible.builtin.apt:
@@ -127,10 +126,18 @@
 - import_playbook: syncthing.yml
 
 - name: Set up metrics
-  tags: blackbox
+  tags: metrics
   hosts: mountain-of-faith
   become: true
   tasks:
+
+    - name: Install blackbox-exporter
+      ansible.builtin.apt:
+        name: "{{ item }}"
+        state: present
+      loop:
+        - prometheus-blackbox-exporter
+        - prometheus-node-exporter
 
     - name: Create Blackbox config directory
       ansible.builtin.file:
@@ -143,12 +150,6 @@
         dest: /mnt/mountain-of-faith/blackbox-exporter/blackbox.yml
         content: |
           modules:
-            http:
-              prober: http
-              http:
-                preferred_ip_protocol: ip4
-            http_ipv6:
-              prober: http
             dns:
               prober: dns
               dns:
@@ -160,33 +161,38 @@
               dns:
                 query_name: kejadlen.dev
                 query_type: A # https://blog.cloudflare.com/rfc8482-saying-goodbye-to-any/
+            http:
+              prober: http
+              http:
+                preferred_ip_protocol: ip4
+            http_ipv6:
+              prober: http
+            icmp:
+              prober: icmp
+              timeout: 5s
+              icmp:
+                preferred_ip_protocol: "ip4"
         mode: "0644"
       notify: restart blackbox-exporter
 
-    - name: Run Blackbox exporter container
-      community.docker.docker_container:
-        name: blackbox-exporter
-        image: quay.io/prometheus/blackbox-exporter:latest
-        ports:
-          - "9115:9115"
-        networks:
-          - name: mountain-of-faith
-        volumes:
-          - "/mnt/mountain-of-faith/blackbox-exporter:/config:ro"
-        command:
-          - --config.file=/config/blackbox.yml
-          # - --log.level=debug
-          # - --log.prober=debug
-        restart_policy: unless-stopped
-        state: started
+    - name: Configure blackbox-exporter service
+      ansible.builtin.lineinfile:
+        path: /etc/default/prometheus-blackbox-exporter
+        regexp: '^ARGS='
+        line: 'ARGS="--config.file=/mnt/mountain-of-faith/blackbox-exporter/blackbox.yml"'
+      notify: restart blackbox-exporter
+
+    # Not sure if this actually works, but can alternatively use
+    # `dpkg-reconfigure prometheus-blackbox-exporter`
+    - name: Enable ICMP capabilities for blackbox-exporter
+      ansible.builtin.command: setcap cap_net_raw+ep /usr/bin/prometheus-blackbox-exporter
+      changed_when: false
+      notify: restart blackbox-exporter
 
   handlers:
-    - name: Restart Blackbox exporter
-      community.docker.docker_container:
-        name: blackbox-exporter
-        restart: true
-
-# TODO caddy?
-# TODO node-exporter
+    - name: restart blackbox-exporter
+      ansible.builtin.systemd:
+        name: prometheus-blackbox-exporter
+        state: restarted
 
 # vim: ft=yaml.ansible

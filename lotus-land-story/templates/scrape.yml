@@ -30,6 +30,46 @@ scrape_configs:
       - target_label: __address__
         replacement: mountain-of-faith:9115
 
+  - job_name: blackbox-exporter-http
+    metrics_path: /probe
+    params:
+      module: [ http ]
+    static_configs:
+      - targets:
+        - https://www.facebook.com
+        - https://www.google.com
+        - https://www.linuxserver.io
+        - https://www.youtube.com
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: instance
+      - source_labels: [__param_target]
+        target_label: target # for the dashboard
+      - target_label: __address__
+        replacement: mountain-of-faith:9115
+
+  - job_name: blackbox-exporter-icmp
+    metrics_path: /probe
+    params:
+      module: [ icmp ]
+    static_configs:
+      - targets:
+        - facebook.com
+        - google.com
+        - linuxserver.io
+        - youtube.com
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: instance
+      - source_labels: [__param_target]
+        target_label: target # for the dashboard
+      - target_label: __address__
+        replacement: mountain-of-faith:9115
+
   - job_name: cadvisor
     scrape_interval: 5s
     static_configs:
