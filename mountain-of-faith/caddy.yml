@@ -1,0 +1,96 @@
+# https://caddyserver.com/docs/install#debian-ubuntu-raspbian
+
+- name: Run Caddy
+  tags: caddy
+  hosts: mountain-of-faith
+  become: true
+  tasks:
+
+    # sudo apt install -y debian-keyring debian-archive-keyring apt-transport-https curl
+    - name: Install prerequisites
+      ansible.builtin.apt:
+        pkg:
+          - apt-transport-https
+          - curl
+          - debian-archive-keyring
+          - debian-keyring
+        state: present
+        update_cache: true
+
+    # curl -1sLf 'https://dl.cloudsmith.io/public/caddy/stable/gpg.key' | sudo gpg --dearmor -o /usr/share/keyrings/caddy-stable-archive-keyring.gpg
+    # chmod o+r /usr/share/keyrings/caddy-stable-archive-keyring.gpg
+    - name: Add Caddy GPG key
+      ansible.builtin.apt_key:
+        url: https://dl.cloudsmith.io/public/caddy/stable/gpg.key
+        keyring: /usr/share/keyrings/caddy-stable-archive-keyring.gpg
+        state: present
+
+    - name: Set permissions on Caddy keyring
+      ansible.builtin.file:
+        path: /usr/share/keyrings/caddy-stable-archive-keyring.gpg
+        mode: '0644'
+
+    # curl -1sLf 'https://dl.cloudsmith.io/public/caddy/stable/debian.deb.txt' | sudo tee /etc/apt/sources.list.d/caddy-stable.list
+    # chmod o+r /etc/apt/sources.list.d/caddy-stable.list
+    - name: Add Caddy repository
+      ansible.builtin.apt_repository:
+        repo: "deb [signed-by=/usr/share/keyrings/caddy-stable-archive-keyring.gpg] https://dl.cloudsmith.io/public/caddy/stable/deb/debian any-version main"
+        filename: caddy-stable
+        state: present
+
+    # sudo apt update
+    # sudo apt install caddy
+    - name: Install Caddy
+      ansible.builtin.apt:
+        name: caddy
+        state: present
+        update_cache: true
+
+    # https://github.com/caddyserver/caddy/issues/5372#issuecomment-1755730902
+    - name: Allow Caddy to resolve mDNS
+      block:
+
+        - name: Install systemd-resolved
+          ansible.builtin.apt:
+            name: systemd-resolved
+
+        - name: Configure resolved.conf to enable MulticastDNS
+          ansible.builtin.lineinfile:
+            path: /etc/systemd/resolved.conf
+            regexp: '^#?MulticastDNS='
+            line: 'MulticastDNS=yes'
+          notify: Restart systemd-resolved
+
+    - name: Configure Caddy
+      ansible.builtin.copy:
+        content: |
+          {
+            debug
+          }
+
+          :80 {
+            reverse_proxy hopeless-masquerade.local
+          }
+
+          http://pihole {
+            reverse_proxy :8080
+          }
+        dest: /etc/caddy/Caddyfile
+        mode: "0644"
+      notify: Restart Caddy
+
+  handlers:
+    - name: Restart Caddy
+      ansible.builtin.systemd:
+        name: caddy
+        state: restarted
+        enabled: true
+
+    - name: Restart systemd-resolved
+      ansible.builtin.systemd:
+        name: systemd-resolved
+        state: restarted
+        enabled: true
+
+
+# vim: ft=yaml.ansible
