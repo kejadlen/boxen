@@ -46,34 +46,21 @@
         state: present
         update_cache: true
 
-    # https://github.com/caddyserver/caddy/issues/5372#issuecomment-1755730902
-    - name: Allow Caddy to resolve mDNS
-      block:
-
-        - name: Install systemd-resolved
-          ansible.builtin.apt:
-            name: systemd-resolved
-
-        - name: Configure resolved.conf to enable MulticastDNS
-          ansible.builtin.lineinfile:
-            path: /etc/systemd/resolved.conf
-            regexp: '^#?MulticastDNS='
-            line: 'MulticastDNS=yes'
-          notify: Restart systemd-resolved
-
     - name: Configure Caddy
       ansible.builtin.copy:
         content: |
-          {
-            debug
-          }
-
-          :80 {
-            reverse_proxy hopeless-masquerade.local
-          }
-
-          http://pihole {
-            reverse_proxy :8080
+          # Since I don't want to run Tailscale on the BirdNET-Pi, this uses
+          # mountain-of-faith as a passthrough since they're on the same
+          # network.
+          :8081 {
+            # It would be nice for this to be hopeless-masquerade.local, but
+            # Caddy can't resolve mDNS (see below issue). The workaround in the
+            # issue of using systemd-resolved also doesn't work since then we
+            # have contention over /etc/resolv.conf between systemd-resolved
+            # and Tailscale. So we use just the raw IP for now.
+            #
+            # https://github.com/caddyserver/caddy/issues/5372
+            reverse_proxy 192.168.2.161
           }
         dest: /etc/caddy/Caddyfile
         mode: "0644"

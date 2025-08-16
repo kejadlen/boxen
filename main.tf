@@ -41,9 +41,8 @@ provider "linode" {
 }
 
 provider "pihole" {
-  # url = "https://pihole.kejadlen.dev" # on-fire-within
-  url = "http://mountain-of-faith"
-  # api_token = # PIHOLE_API_TOKEN
+  url = "http://mountain-of-faith:8080"
+  password = var.pihole.password
 }
 
 provider "tailscale" {
@@ -60,13 +59,15 @@ variable "dnsimple" {
   nullable = false
 }
 
-variable "soa_email" {
-  type     = string
+variable "pihole" {
+  type = object({
+    password   = string
+  })
   nullable = false
 }
 
-variable "subdomains" {
-  type     = map(list(string))
+variable "soa_email" {
+  type     = string
   nullable = false
 }
 
@@ -113,11 +114,14 @@ resource "linode_domain" "chislan_family" {
   soa_email = var.soa_email
 }
 
-resource "pihole_dns_record" "git_kejadlen_dev" {
-  for_each = toset(["git.kejadlen.dev"])
+resource "pihole_dns_record" "domains" {
+  for_each = {
+    "birdnetpi" = data.tailscale_device.mountain_of_faith.addresses.0
+    "git.kejadlen.dev" = data.tailscale_device.lotus_land_story.addresses.0
+  }
 
   domain = each.key
-  ip     = data.tailscale_device.lotus_land_story.addresses.0
+  ip     = each.value
 }
 
 # doesn't seem to work

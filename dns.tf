@@ -11,10 +11,11 @@ resource "dnsimple_zone" "zones" {
   active = true
 }
 
-resource "dnsimple_zone_record" "subdomains" {
+resource "dnsimple_zone_record" "chislan_family_subdomains" {
   for_each = {
-    auth = { zone = dnsimple_zone.zones["chislan_family"], ip = local.lotus_land_story.ip_address }
-    docs = { zone = dnsimple_zone.zones["chislan_family"], ip = local.lotus_land_story.ip_address }
+    auth      = { zone = dnsimple_zone.zones["chislan_family"], ip = local.lotus_land_story.ip_address }
+    birdnetpi = { zone = dnsimple_zone.zones["chislan_family"], ip = local.lotus_land_story.ip_address }
+    docs      = { zone = dnsimple_zone.zones["chislan_family"], ip = local.lotus_land_story.ip_address }
   }
 
   zone_name = each.value.zone.name
