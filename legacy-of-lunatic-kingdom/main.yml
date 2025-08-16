@@ -1,0 +1,48 @@
+- name: Basic requirements
+  hosts: legacy-of-lunatic-kingdom
+  become: true
+  tasks:
+
+    - name: Install basic packages
+      apt:
+        name:
+          - git
+          - net-tools # ifconfig
+          - neovim
+        state: present
+        update_cache: true
+
+- name: Secure the system
+  hosts: legacy-of-lunatic-kingdom
+  become: true
+  tasks:
+
+    - name: Disable SSH password logins
+      lineinfile:
+        path: /etc/ssh/sshd_config
+        regexp: '^(#\s*)?{{ item }} '
+        line: "{{ item }} no"
+      with_items:
+        - ChallengeResponseAuthentication
+        - PasswordAuthentication
+        - UsePAM
+      notify: Restart sshd
+
+    - name: Allow sudo without password
+      lineinfile:
+        path: /etc/sudoers
+        regexp: '^%sudo'
+        line: '%sudo ALL=(ALL:ALL) NOPASSWD:ALL'
+        validate: 'visudo -cf %s'
+
+  handlers:
+    - name: Restart sshd
+      systemd:
+        name: sshd
+        state: restarted
+
+# TODO disallow network access from non-tailscale interfaces
+- import_playbook: ../playbooks/tailscale.yml # noqa: name[play]
+- import_playbook: ../playbooks/docker.yml    # noqa: name[play]
+
+# vim: ft=yaml.ansible
