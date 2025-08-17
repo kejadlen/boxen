@@ -5,13 +5,15 @@
 
     - name: Install basic packages
       apt:
-        name:
+        pkg:
           - git
           - net-tools # ifconfig
           - neovim
+          - prometheus-node-exporter
         state: present
         update_cache: true
 
+# TODO Standardize these into a shared playbook
 - name: Secure the system
   hosts: legacy-of-lunatic-kingdom
   become: true

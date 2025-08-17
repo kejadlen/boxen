@@ -135,6 +135,7 @@ scrape_configs:
     static_configs:
       - targets:
           - host.docker.internal:9100
+          - legacy-of-lunatic-kingdom:9100
           - mountain-of-faith:9100
           - ramble-hard:9100
     relabel_configs:
