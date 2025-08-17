@@ -58,6 +58,19 @@
         mode: "0600"
         owner: "{{ grafana_user.name }}"
 
+    - name: Provision VictoriaLogs
+      ansible.builtin.copy:
+        dest: /mnt/lotus-land-story/grafana/provisioning/datasources/victoria-logs.yml
+        content: |
+          apiVersion: 1
+
+          datasources:
+            - name: VictoriaLogs
+              type: victoriametrics-logs-datasource
+              access: proxy
+              url: http://victoria-logs:9428
+        mode: "0644"
+
     - name: Provision VictoriaMetrics
       ansible.builtin.copy:
         dest: /mnt/lotus-land-story/grafana/provisioning/datasources/victoria-metrics.yml
@@ -97,7 +110,7 @@
           - /mnt/lotus-land-story/grafana/provisioning:/etc/grafana/provisioning
           - grafana:/var/lib/grafana
         env:
-          GF_INSTALL_PLUGINS=victoriametrics-metrics-datasource
+          GF_PLUGINS_PREINSTALL: victoriametrics-logs-datasource, victoriametrics-metrics-datasource
         restart_policy: unless-stopped
         networks:
           - name: lotus_land_story
