@@ -1,0 +1,50 @@
+# TODO Consolidate this into a basic playbook
+- name: Basic requirements
+  hosts: hopeless-masquerade
+  become: true
+  tasks:
+
+    - name: Install basic packages
+      apt:
+        pkg:
+          - git
+          - net-tools # ifconfig
+          - neovim
+          - prometheus-node-exporter
+        state: present
+        update_cache: true
+
+# TODO Standardize these into a shared playbook
+- name: Secure the system
+  hosts: legacy-of-lunatic-kingdom
+  become: true
+  tasks:
+
+    - name: Disable SSH password logins
+      lineinfile:
+        path: /etc/ssh/sshd_config
+        regexp: '^(#\s*)?{{ item }} '
+        line: "{{ item }} no"
+      with_items:
+        - ChallengeResponseAuthentication
+        - PasswordAuthentication
+        - UsePAM
+      notify: Restart sshd
+
+    - name: Allow sudo without password
+      lineinfile:
+        path: /etc/sudoers
+        regexp: '^%sudo'
+        line: '%sudo ALL=(ALL:ALL) NOPASSWD:ALL'
+        validate: 'visudo -cf %s'
+
+  handlers:
+    - name: Restart sshd
+      systemd:
+        name: sshd
+        state: restarted
+
+# TODO disallow network access from non-tailscale interfaces
+- import_playbook: ../playbooks/tailscale.yml # noqa: name[play]
+
+# vim: ft=yaml.ansible
