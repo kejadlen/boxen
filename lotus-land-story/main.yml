@@ -25,7 +25,10 @@
 
 - import_playbook: ../playbooks/tailscale.yml # noqa: name[play]
 - import_playbook: ../playbooks/docker.yml    # noqa: name[play]
+
+# TODO consolidate this into the other playbook?
 - import_playbook: docker.yml                 # noqa: name[play]
+
 - import_playbook: postgres.yml               # noqa: name[play]
 - import_playbook: redis.yml                  # noqa: name[play]
 

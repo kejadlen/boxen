@@ -102,7 +102,7 @@
         ports:
           - "53:53/tcp"
           - "53:53/udp"
-          - "8080:80/tcp"
+          - "80:80/tcp"
           # - "443:443/tcp"
           # - "67:67/udp" # DHCP
           # - "123:123/udp" # NTP
@@ -122,7 +122,6 @@
         restart_policy: unless-stopped
         state: started
 
-- import_playbook: caddy.yml
 - import_playbook: minio.yml
 - import_playbook: syncthing.yml
 

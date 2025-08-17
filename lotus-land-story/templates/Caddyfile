@@ -149,7 +149,7 @@ home-assistant {
 pihole {
 	tls internal
 	bind tailscale/pihole
-	reverse_proxy mountain-of-faith:8080
+	reverse_proxy mountain-of-faith:80
 }
 
 ### External
@@ -157,7 +157,7 @@ pihole {
 birdnetpi.chislan.family
 	log
 
-	reverse_proxy mountain-of-faith:8081
+	reverse_proxy hopeless-masquerade:80
 }
 
 git.kejadlen.dev {
