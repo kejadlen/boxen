@@ -5,7 +5,7 @@
   tasks:
 
     - name: Install basic packages
-      apt:
+      ansible.builtin.apt:
         pkg:
           - git
           - net-tools # ifconfig
@@ -21,7 +21,7 @@
   tasks:
 
     - name: Disable SSH password logins
-      lineinfile:
+      ansible.builtin.lineinfile:
         path: /etc/ssh/sshd_config
         regexp: '^(#\s*)?{{ item }} '
         line: "{{ item }} no"
@@ -32,7 +32,7 @@
       notify: Restart sshd
 
     - name: Allow sudo without password
-      lineinfile:
+      ansible.builtin.lineinfile:
         path: /etc/sudoers
         regexp: '^%sudo'
         line: '%sudo ALL=(ALL:ALL) NOPASSWD:ALL'
@@ -40,11 +40,81 @@
 
   handlers:
     - name: Restart sshd
-      systemd:
+      ansible.builtin.systemd:
         name: sshd
         state: restarted
 
 # TODO disallow network access from non-tailscale interfaces
 - import_playbook: ../playbooks/tailscale.yml # noqa: name[play]
+
+- import_playbook: vector.yml # noqa: name[play]
+
+# https://grafana.com/blog/2024/07/12/obirdability-how-to-build-an-observability-system-for-bird-songs/
+- name: Ship birdnet logs
+  tags: birdnet_o11y
+  hosts: hopeless-masquerade
+  become: true
+  tasks:
+
+    - name: Create Vector configuration
+      ansible.builtin.copy:
+        content: |
+          sources:
+            journald:
+              type: journald
+
+          transforms:
+            birdnet:
+              type: remap
+              inputs:
+                - journald
+              source: |
+                if ._SYSTEMD_UNIT != "birdnet_analysis.service" {
+                  abort
+                }
+
+                parsed, err = parse_regex(.message, r'.+\(\'(?P<species_latin>.+?)_(?P<species>.+?)\', (?P<confidence>.+?)\)')
+                if err != null {
+                  abort
+                }
+
+                . |= parsed
+
+                if includes(["Engine", "Human"], .species) {
+                  abort
+                }
+
+                # actually probably unnecessary?
+                .confidence_interval = round(to_float!(.confidence), precision: 1)
+
+          sinks:
+            console:
+              type: console
+              inputs:
+                - birdnet
+              encoding:
+                codec: json
+            vlogs:
+              inputs:
+                - birdnet
+              type: http
+              uri: http://lotus-land-story:9428/insert/jsonline?_stream_fields=host&_msg_field=message&_time_field=timestamp
+              compression: gzip
+              encoding:
+                codec: json
+              framing:
+                method: newline_delimited
+              healthcheck:
+                enabled: false
+        dest: /etc/vector/vector.yaml
+        mode: '0644'
+        backup: true
+      notify: Restart Vector
+
+  handlers:
+    - name: Restart Vector
+      ansible.builtin.systemd:
+        name: vector
+        state: restarted
 
 # vim: ft=yaml.ansible
