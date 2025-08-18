@@ -5,7 +5,7 @@
   vars_files:
     - vars.yml
   vars:
-    version: 1.24.4
+    version: 1.24.5
     anubis_version: v1.21.3
   tasks:
 
