@@ -187,6 +187,10 @@ git.kejadlen.dev {
 	}
 }
 
+grafana.kejadlen.dev {
+	reverse_proxy grafana:3000
+}
+
 hey.kejadlen.dev
 	log
 

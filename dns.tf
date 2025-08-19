@@ -28,11 +28,12 @@ resource "dnsimple_zone_record" "chislan_family_subdomains" {
 # - mitmproxy?
 resource "dnsimple_zone_record" "kejadlen_dev_subdomains" {
   for_each = {
-    auth   = local.lotus_land_story.ip_address
-    git    = local.lotus_land_story.ip_address
-    hey    = local.lotus_land_story.ip_address
-    monica = local.ramble_hard.ip_address
-    social = local.ramble_hard.ip_address
+    auth    = local.lotus_land_story.ip_address
+    git     = local.lotus_land_story.ip_address
+    grafana = local.lotus_land_story.ip_address
+    hey     = local.lotus_land_story.ip_address
+    monica  = local.ramble_hard.ip_address
+    social  = local.ramble_hard.ip_address
   }
 
   zone_name = dnsimple_zone.zones["kejadlen_dev"].name

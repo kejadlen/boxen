@@ -41,7 +41,7 @@ provider "linode" {
 }
 
 provider "pihole" {
-  url = "http://mountain-of-faith:8080"
+  url = "http://mountain-of-faith:80"
   password = var.pihole.password
 }
 
