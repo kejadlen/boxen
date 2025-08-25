@@ -8,6 +8,7 @@
         pkg:
           - postgresql
           - postgresql-client
+          - prometheus-postgres-exporter
         state: present
 
     - name: Make data directory
