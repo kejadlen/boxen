@@ -73,7 +73,7 @@
                   abort
                 }
 
-                parsed, err = parse_regex(.message, r'.+\(\'(?P<species_latin>.+?)_(?P<species>.+?)\', (?P<confidence>.+?)\)')
+                parsed, err = parse_regex(.message, r'.+\((\'|")(?P<species_latin>.+?)_(?P<species>.+?)(\'|"), (?P<confidence>.+?)\)')
                 if err != null {
                   abort
                 }
