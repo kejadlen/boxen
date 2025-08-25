@@ -4,7 +4,7 @@
     - vars.yml
   vars:
     # don't forget to update docker-caddy-tailscale first!
-    version: 2.10.0
+    version: 2.10.2
   tasks:
 
     - name: Make /mnt/lotus-land-story/caddy
