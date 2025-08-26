@@ -1,0 +1,37 @@
+- name: Set up Homebox
+  hosts: lotus-land-story
+  vars:
+    version: 0.21.0
+  vars_files:
+    - vars.yml
+  tasks:
+
+    - name: Create data directory for Homebox
+      ansible.builtin.file:
+        path: /mnt/lotus-land-story/homebox
+        state: directory
+        mode: "0755"
+        owner: "65532"
+        group: "65532"
+
+    - name: Run Homebox
+      community.docker.docker_container:
+        name: homebox
+        image: ghcr.io/sysadminsmedia/homebox:{{ version }}
+        restart: true
+        env:
+          TZ: America/Los_Angeles
+          HBOX_OPTIONS_ALLOW_ANALYTICS: "false"
+          HBOX_OPTIONS_ALLOW_REGISTRATION: "false"
+          HBOX_MAILER_HOST: mail.smtp2go.com
+          HBOX_MAILER_PORT: "2525"
+          HBOX_MAILER_USERNAME: "{{ homebox.mailer.username }}"
+          HBOX_MAILER_PASSWORD: "{{ homebox.mailer.password }}"
+          HBOX_MAILER_FROM: homebox@kejadlen.dev
+        volumes:
+          - /mnt/lotus-land-story/homebox:/data
+        restart_policy: unless-stopped
+        networks:
+          - name: lotus_land_story
+
+# vim: ft=yaml.ansible
