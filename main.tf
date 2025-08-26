@@ -32,8 +32,8 @@ terraform {
 }
 
 provider "dnsimple" {
-  token = "${var.dnsimple.token}"
-  account = "${var.dnsimple.account}"
+  token   = var.dnsimple.token
+  account = var.dnsimple.account
 }
 
 provider "linode" {
@@ -41,7 +41,7 @@ provider "linode" {
 }
 
 provider "pihole" {
-  url = "http://mountain-of-faith:80"
+  url      = "http://mountain-of-faith:80"
   password = var.pihole.password
 }
 
@@ -61,7 +61,7 @@ variable "dnsimple" {
 
 variable "pihole" {
   type = object({
-    password   = string
+    password = string
   })
   nullable = false
 }
@@ -116,7 +116,7 @@ resource "linode_domain" "chislan_family" {
 
 resource "pihole_dns_record" "domains" {
   for_each = {
-    "birdnetpi" = data.tailscale_device.mountain_of_faith.addresses.0
+    "birdnetpi"        = data.tailscale_device.mountain_of_faith.addresses.0
     "git.kejadlen.dev" = data.tailscale_device.lotus_land_story.addresses.0
   }
 
