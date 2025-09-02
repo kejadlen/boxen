@@ -3,7 +3,7 @@
   vars_files:
     - vars.yml
   vars:
-    version: v1.124.0
+    version: v1.125.0
   tasks:
 
     - name: Make directories
