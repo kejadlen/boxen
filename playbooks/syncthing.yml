@@ -13,16 +13,23 @@
         fail_msg: "This playbook only supports Debian distributions"
 
     # sudo mkdir -p /etc/apt/keyrings
-    # sudo curl -L -o /etc/apt/keyrings/syncthing-archive-keyring.gpg https://syncthing.net/release-key.gpg
-    - name: Add Syncthing GPG key
-      ansible.builtin.apt_key:
-        url: https://syncthing.net/release-key.gpg
-        state: present
+    - name: Create APT keyrings directory
+      ansible.builtin.file:
+        path: /etc/apt/keyrings
+        state: directory
+        mode: '0755'
 
-    # echo "deb [signed-by=/etc/apt/keyrings/syncthing-archive-keyring.gpg] https://apt.syncthing.net/ syncthing stable" | sudo tee /etc/apt/sources.list.d/syncthing.list
+    # sudo curl -L -o /etc/apt/keyrings/syncthing-archive-keyring.gpg https://syncthing.net/release-key.gpg
+    - name: Download Syncthing GPG key
+      ansible.builtin.get_url:
+        url: https://syncthing.net/release-key.gpg
+        dest: /etc/apt/keyrings/syncthing-archive-keyring.gpg
+        mode: '0644'
+
+    # echo "deb [signed-by=/etc/apt/keyrings/syncthing-archive-keyring.gpg] https://apt.syncthing.net/ syncthing stable-v2" | sudo tee /etc/apt/sources.list.d/syncthing.list
     - name: Add Syncthing repository
       ansible.builtin.apt_repository:
-        repo: deb https://apt.syncthing.net/ syncthing stable
+        repo: deb [signed-by=/etc/apt/keyrings/syncthing-archive-keyring.gpg] https://apt.syncthing.net/ syncthing stable-v2
         state: present
 
     # sudo apt-get update
@@ -60,13 +67,21 @@
         state: started
         daemon_reload: true
 
-    - name: Update GUI listen address in config.xml
-      ansible.builtin.lineinfile:
+    - name: Update configuration in config.xml
+      community.general.xml:
         path: /home/syncthing/.local/state/syncthing/config.xml
-        regexp: '^\s*<address>.*:8384</address>'
-        line: '        <address>0.0.0.0:8384</address>'
+        xpath: "/configuration/{{ item.key }}"
+        value: "{{ item.value }}"
+        attribute: "{{ item.attribute | default(omit) }}"
         backup: true
       notify: restart syncthing
+      loop:
+        - { key: "gui/address", value: "0.0.0.0:8384" }
+        - { key: "gui/user", value: "{{ syncthing.user }}" }
+        - { key: "gui/password", value: '{{ syncthing.password | password_hash("bcrypt") }}' }
+        - { key: "options/minHomeDiskFree", value: "0" }
+        - { key: "defaults/folder/minDiskFree", value: "75" }
+        - { key: "defaults/folder/minDiskFree", attribute: "unit", value: "%" }
 
   handlers:
     - name: restart syncthing

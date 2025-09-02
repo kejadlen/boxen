@@ -10,6 +10,7 @@
           - net-tools # ifconfig
           - neovim
           - prometheus-node-exporter
+          - python3-lxml # ansible bcrypt
         state: present
         update_cache: true
 
@@ -46,5 +47,6 @@
 # TODO disallow network access from non-tailscale interfaces
 - import_playbook: ../playbooks/tailscale.yml # noqa: name[play]
 - import_playbook: ../playbooks/docker.yml    # noqa: name[play]
+- import_playbook: ../playbooks/syncthing.yml # noqa: name[play]
 
 # vim: ft=yaml.ansible
