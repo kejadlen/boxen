@@ -2,7 +2,7 @@
 
 - name: Install Syncthing
   tags: syncthing
-  hosts: mountain-of-faith
+  hosts: all
   become: true
   tasks:
 
@@ -47,7 +47,7 @@
 
     - name: Create Syncthing data directory
       ansible.builtin.file:
-        path: /mnt/mountain-of-faith/syncthing
+        path: "{{ (data_dir, 'syncthing') | path_join }}"
         state: directory
         owner: syncthing
         group: syncthing

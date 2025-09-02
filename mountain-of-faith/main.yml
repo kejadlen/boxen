@@ -123,7 +123,7 @@
         state: started
 
 - import_playbook: minio.yml
-- import_playbook: syncthing.yml
+- import_playbook: ../playbooks/syncthing.yml
 
 - name: Set up metrics
   tags: metrics

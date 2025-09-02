@@ -158,11 +158,11 @@ scrape_configs:
         target_label: instance
         replacement: 'lotus-land-story:9187'
 
-  - job_name: victoria-logs
-    static_configs:
-      - targets: ['victoria-logs:9428']
-
   - job_name: syncthing
     bearer_token: {{ syncthing.api_key }}
     static_configs:
       - targets: ['mountain-of-faith:8384']
+
+  - job_name: victoria-logs
+    static_configs:
+      - targets: ['victoria-logs:9428']
