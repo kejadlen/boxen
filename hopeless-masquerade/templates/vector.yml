@@ -1,0 +1,80 @@
+sources:
+  journald:
+    type: journald
+  bird_db_txt:
+    type: file
+    include:
+      - "/home/alpha/BirdNET-Pi/BirdDB.txt"
+
+transforms:
+  birdnet:
+    type: remap
+    inputs:
+      - journald
+    source: |
+      if ._SYSTEMD_UNIT != "birdnet_analysis.service" {
+        abort
+      }
+
+      parsed, err = parse_regex(.message, r'.+\((\'|")(?P<species_latin>.+?)_(?P<species>.+?)(\'|"), (?P<confidence>.+?)\)')
+      if err != null {
+        abort
+      }
+
+      . |= parsed
+
+      if includes(["Engine", "Human"], .species) {
+        abort
+      }
+
+      # actually probably unnecessary?
+      .confidence_interval = round(to_float!(.confidence), precision: 1)
+  bird_db:
+    type: remap
+    inputs:
+      - bird_db_txt
+    source: |
+      keys = split("Date;Time;Sci_Name;Com_Name;Confidence;Lat;Lon;Cutoff;Week;Sens;Overlap", ";")
+      parsed = object_from_array(
+        split!(.message, ";"),
+        keys: keys,
+      )
+
+      # handle headers
+      if parsed.Date == "Date" {
+        abort
+      }
+
+      date = string!(parsed.Date)
+      time = string!(parsed.Time)
+      ts = "{{date}}T{{time}}"
+      .timestamp = parse_timestamp!(
+          ts,
+          format: "%Y-%m-%dT%H:%M:%S",
+          timezone: "America/Los_Angeles",
+      )
+
+      .com_name = parsed.Com_Name
+      .sci_name = parsed.Sci_Name
+      .confidence = parsed.Confidence
+
+sinks:
+  console:
+    type: console
+    inputs:
+      - bird_db
+      - bird_db_txt
+    encoding:
+      codec: json
+  vlogs:
+    inputs:
+      - birdnet
+    type: http
+    uri: http://lotus-land-story:9428/insert/jsonline?_stream_fields=host&_msg_field=message&_time_field=timestamp
+    compression: gzip
+    encoding:
+      codec: json
+    framing:
+      method: newline_delimited
+    healthcheck:
+      enabled: false

@@ -197,7 +197,7 @@ gists.kejadlen.dev {
 	}
 }
 
-birdnetpi.chislan.family {
+birbs.chislan.family {
 	log
 
 	reverse_proxy hopeless-masquerade:80

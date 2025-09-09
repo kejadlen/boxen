@@ -44,7 +44,7 @@ scrape_configs:
         # personal
         - https://auth.chislan.family
         - https://auth.kejadlen.dev
-        - https://birdnetpi.chislan.family
+        - https://birbs.chislan.family
         - https://git.kejadlen.dev
         - https://hey.kejadlen.dev
     relabel_configs:

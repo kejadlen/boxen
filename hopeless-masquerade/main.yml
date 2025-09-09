@@ -16,7 +16,7 @@
 
 # TODO Standardize these into a shared playbook
 - name: Secure the system
-  hosts: legacy-of-lunatic-kingdom
+  hosts: hopeless-masquerade
   become: true
   tasks:
 
@@ -47,74 +47,106 @@
 # TODO disallow network access from non-tailscale interfaces
 - import_playbook: ../playbooks/tailscale.yml # noqa: name[play]
 
-- import_playbook: vector.yml # noqa: name[play]
-
+# https://setup.vector.dev
 # https://grafana.com/blog/2024/07/12/obirdability-how-to-build-an-observability-system-for-bird-songs/
-- name: Ship birdnet logs
-  tags: birdnet_o11y
+- name: Vector
+  tags: vector
   hosts: hopeless-masquerade
   become: true
   tasks:
 
-    - name: Create Vector configuration
+    - name: Install required dependencies
+      ansible.builtin.apt:
+        pkg:
+          - apt-transport-https
+          - curl
+          - gnupg
+          - python3-debian # for ansible.builtin.deb822_repository
+        state: present
+        update_cache: true
+
+    - name: Create keyrings directory
+      ansible.builtin.file:
+        path: /usr/share/keyrings
+        state: directory
+        mode: '0755'
+
+    - name: Download Vector GPG key
+      ansible.builtin.get_url:
+        url: https://keys.datadoghq.com/DATADOG_APT_KEY_CURRENT.public
+        dest: /tmp/vector_key.public
+        mode: '0644'
+
+    - name: Import Vector GPG key
+      ansible.builtin.command: gpg --dearmor --output /usr/share/keyrings/datadog-archive-keyring.gpg /tmp/vector_key.public
+      args:
+        creates: /usr/share/keyrings/datadog-archive-keyring.gpg
+
+    # Left behind by ansible.builtin.apt_repository; apt reads both formats, so
+    # leaving it would configure the repository twice.
+    - name: Remove one-line Vector repository
+      ansible.builtin.file:
+        path: /etc/apt/sources.list.d/vector.list
+        state: absent
+
+    - name: Add Vector repository
+      ansible.builtin.deb822_repository:
+        name: vector
+        types: deb
+        uris: https://apt.vector.dev/
+        suites: stable
+        components: vector-0
+        signed_by: /usr/share/keyrings/datadog-archive-keyring.gpg
+        state: present
+
+    - name: Install Vector
+      ansible.builtin.apt:
+        name: vector
+        state: present
+        update_cache: true
+
+    - name: Configure Vector
       ansible.builtin.copy:
-        content: |
-          sources:
-            journald:
-              type: journald
-
-          transforms:
-            birdnet:
-              type: remap
-              inputs:
-                - journald
-              source: |
-                if ._SYSTEMD_UNIT != "birdnet_analysis.service" {
-                  abort
-                }
-
-                parsed, err = parse_regex(.message, r'.+\((\'|")(?P<species_latin>.+?)_(?P<species>.+?)(\'|"), (?P<confidence>.+?)\)')
-                if err != null {
-                  abort
-                }
-
-                . |= parsed
-
-                if includes(["Engine", "Human"], .species) {
-                  abort
-                }
-
-                # actually probably unnecessary?
-                .confidence_interval = round(to_float!(.confidence), precision: 1)
-
-          sinks:
-            console:
-              type: console
-              inputs:
-                - birdnet
-              encoding:
-                codec: json
-            vlogs:
-              inputs:
-                - birdnet
-              type: http
-              uri: http://lotus-land-story:9428/insert/jsonline?_stream_fields=host&_msg_field=message&_time_field=timestamp
-              compression: gzip
-              encoding:
-                codec: json
-              framing:
-                method: newline_delimited
-              healthcheck:
-                enabled: false
+        src: templates/vector.yml
         dest: /etc/vector/vector.yaml
         mode: '0644'
         backup: true
       notify: Restart Vector
+
+    - name: Enable and start Vector service
+      ansible.builtin.systemd:
+        name: vector
+        enabled: true
+        state: started
+        daemon_reload: true
+
+    - name: Clean up temporary key file
+      ansible.builtin.file:
+        path: /tmp/vector_key.public
+        state: absent
 
   handlers:
     - name: Restart Vector
       ansible.builtin.systemd:
         name: vector
         state: restarted
+
+# - name: birbnet
+#   tags: birbnet
+#   hosts: hopeless-masquerade
+#   tasks:
+#
+#     - name: Install pipx
+#       become: true
+#       ansible.builtin.apt:
+#         pkg:
+#           - pipx
+#         state: present
+#         update_cache: true
+#
+#     - name: Install uv
+#       ansible.builtin.command: pipx install uv
+#       args:
+#         creates: /home/alpha/.local/bin/uv
 
 # vim: ft=yaml.ansible
