@@ -98,12 +98,6 @@ rss {
 	}
 }
 
-search {
-	tls internal
-	bind tailscale/search
-	reverse_proxy searxng:8080
-}
-
 ### Family
 
 books {
@@ -182,10 +176,6 @@ git.kejadlen.dev {
 	reverse_proxy anubis:8923 {
 		header_up X-Real-Ip {remote_host}
 	}
-}
-
-grafana.kejadlen.dev {
-	reverse_proxy grafana:3000
 }
 
 hey.kejadlen.dev
