@@ -165,6 +165,13 @@
               prober: http
               http:
                 preferred_ip_protocol: ip4
+            http_internal:
+              prober: http
+              http:
+                preferred_ip_protocol: ip4
+                tls_config:
+                  # TODO use ca_file instead
+                  insecure_skip_verify: true
             http_ipv6:
               prober: http
             icmp:
