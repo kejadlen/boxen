@@ -20,3 +20,12 @@ restic --verbose forget \
   --keep-within-weekly 1y \
   --keep-within-monthly 100y \
   --prune
+
+curl \
+  --fail \
+  --silent \
+  --show-error \
+  --max-time 10 \
+  --retry 5 \
+  --output /dev/null \
+  https://hc-ping.com/459ab86c-7845-404a-a00f-ea1cfb99f788
