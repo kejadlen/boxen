@@ -2,10 +2,8 @@
 
 - name: Set up Gitea
   hosts: lotus-land-story
-  vars_files:
-    - vars.yml
   vars:
-    version: 1.24.5
+    version: 1.24.6
     anubis_version: v1.21.3
   tasks:
 
