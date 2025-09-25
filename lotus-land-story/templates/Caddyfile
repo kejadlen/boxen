@@ -140,6 +140,8 @@ home-assistant {
 pihole {
 	tls internal
 	bind tailscale/pihole
+	
+	redir / /admin/
 	reverse_proxy mountain-of-faith:80
 }
 
