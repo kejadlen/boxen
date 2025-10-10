@@ -5,7 +5,7 @@
   vars_files:
     - vars.yml
   vars:
-    version: 0.19.2
+    version: 0.20.0
   tasks:
 
     - name: Create working directory
@@ -71,9 +71,9 @@
           GTS_OIDC_CLIENT_SECRET: "{{ gotosocial.oidc_client_secret }}"
           GTS_OIDC_ADMIN_GROUPS: admin
           GTS_METRICS_ENABLED: "true"
-          GTS_METRICS_AUTH_ENABLED: "true"
-          GTS_METRICS_AUTH_USERNAME: "{{ gotosocial.metrics.username }}"
-          GTS_METRICS_AUTH_PASSWORD: "{{ gotosocial.metrics.password }}"
+          OTEL_METRICS_PRODUCERS: prometheus
+          OTEL_METRICS_EXPORTER: prometheus
+          OTEL_EXPORTER_PROMETHEUS_HOST: gotosocial
           # GTS_ADVANCED_RATE_LIMIT_REQUESTS: "0"
           TZ: UTC
         volumes:
