@@ -12,6 +12,8 @@ transforms:
     inputs:
       - docker
     source: |
+      ._stream_id = .container_id
+
       ._time = del(.timestamp)
 
       if .container_name == "anubis" {
@@ -59,8 +61,6 @@ transforms:
       }
       del(.message)
 
-      ._stream_id = .container_id
-
   varlogs_parsed:
     type: remap
     inputs:
@@ -69,12 +69,12 @@ transforms:
       parsed = parse_regex!(del(.message), r'^(?P<date>.*?) (?P<time>.*?) (?P<component>.*?) *\[(?P<proc_id>.*?)\]: (?P<level>.*?) +(?P<message>.*?)$')
       . = merge(., parsed)
 
+      ._msg = del(.message)
+
       t = join!([del(.date), del(.time)], separator: " ")
       ._time = parse_timestamp!(t, format: "%Y-%m-%d %H:%M:%S,%3f")
 
-      ._msg = del(.message)
       ._stream_id = .file
-      ._stream = { "file": .file }
 
   # A subset of gitea logs from docker that contain SSH information
   gitea_ssh:
@@ -111,7 +111,7 @@ sinks:
       - docker_parsed
       - varlogs_parsed
     type: http
-    uri: http://victoria-logs:9428/insert/jsonline?_stream_fields=container_name
+    uri: http://victoria-logs:9428/insert/jsonline?_stream_fields=container_id,container_name,file
     compression: gzip
     encoding:
       codec: json
