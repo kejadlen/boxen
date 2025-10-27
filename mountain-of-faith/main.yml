@@ -91,7 +91,7 @@
   vars_files:
     - vars.private
   vars:
-    version: 2025.08.0
+    version: 2025.10.1
   tasks:
 
     - name: Run the Pi-Hole container
