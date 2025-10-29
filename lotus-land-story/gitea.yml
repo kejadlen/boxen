@@ -3,7 +3,7 @@
 - name: Set up Gitea
   hosts: lotus-land-story
   vars:
-    version: 1.24.6
+    version: 1.24.7
     anubis_version: v1.22.0
   tasks:
 
@@ -66,8 +66,8 @@
         image: docker.gitea.com/gitea:{{ version }}
         restart: true
         env:
-          USER_UID: "{{ git_user.uid }}"
-          USER_GID: "{{ git_user.group }}"
+          USER_UID: "\"{{ git_user.uid }}\""
+          USER_GID: "\"{{ git_user.group }}\""
           GITEA__mailer__PASSWD: "{{ gitea.mailer_password }}"
           GITEA__metrics__TOKEN: "{{ gitea.metrics.token }}"
         volumes:
