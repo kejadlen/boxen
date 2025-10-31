@@ -3,7 +3,7 @@
 - name: Set up Gitea
   hosts: lotus-land-story
   vars:
-    version: 1.24.7
+    version: 1.25.0
     anubis_version: v1.23.0
   tasks:
 
@@ -60,14 +60,39 @@
         networks:
           - name: lotus_land_story
 
+    # TODO back this up using restic
+    - name: Back up gitea if needed
+      block:
+        - name: Get current version
+          ansible.builtin.command: >
+            docker inspect
+            --format '{{ '{{' }} index .Config.Labels "org.opencontainers.image.version"}}'
+            gitea
+          register: gitea_version
+          changed_when: false
+
+        - name: Stop and backup gitea
+          when: gitea_version.stdout | trim != version
+          block:
+            - name: Stop gitea
+              community.docker.docker_container:
+                name: gitea
+                state: stopped
+            - name: Backup db
+              ansible.builtin.copy:
+                src: /mnt/lotus-land-story/gitea/gitea/gitea.db
+                dest: /mnt/lotus-land-story/gitea/gitea/gitea.db.bak
+                mode: "0400"
+                remote_src: true
+
     - name: Run Gitea
       community.docker.docker_container:
         name: gitea
         image: docker.gitea.com/gitea:{{ version }}
         restart: true
         env:
-          USER_UID: "\"{{ git_user.uid }}\""
-          USER_GID: "\"{{ git_user.group }}\""
+          USER_UID: "{{ git_user.uid | string }}"
+          USER_GID: "{{ git_user.group | string }}"
           GITEA__mailer__PASSWD: "{{ gitea.mailer_password }}"
           GITEA__metrics__TOKEN: "{{ gitea.metrics.token }}"
         volumes:
