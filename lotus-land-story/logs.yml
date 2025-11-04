@@ -2,7 +2,7 @@
   tags: vector
   hosts: lotus-land-story
   vars:
-    version: 0.45.0-debian
+    version: 0.51.0
   tasks:
 
     - name: Create Vector config dir
@@ -19,7 +19,7 @@
     - name: Run Vector
       community.docker.docker_container:
         name: vector
-        image: timberio/vector:{{ version }}
+        image: timberio/vector:{{ version }}-debian
         restart: true
         command: -c /etc/vector/*.yml
         volumes:

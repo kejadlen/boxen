@@ -44,11 +44,11 @@ transforms:
             ._msg = del(.request)
         }
       } else if .container_name == "gotosocial" {
-        . = merge!(., parse_key_value!(.message))
+        . = merge(., parse_key_value!(.message))
         ._time = parse_timestamp!(del(.timestamp), format: "%d/%m/%Y %H:%M:%S%.3f")
         ._msg = del(.msg)
       } else if .container_name == "grafana" {
-        . = merge!(., parse_key_value!(.message))
+        . = merge(., parse_key_value!(.message))
         ._time = del(.t)
         ._msg = del(.msg)
       } else if .container_name == "miniflux" {
