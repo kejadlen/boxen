@@ -1,11 +1,8 @@
 - name: Run IRC
   hosts: lotus-land-story
-  vars_files:
-    - vars.yml
   vars:
     gamja_version: caf6e99
-    # remember to update the docker-soju image to bump this
-    soju_version: 0.9.0
+    soju_version: 0.10.0 # remember to update the docker-soju image to bump this
   tasks:
 
     - name: Make directories
