@@ -1,9 +1,5 @@
 - name: Backup
   hosts: lotus-land-story
-  vars_files:
-    - vars.yml
-  # vars:
-  #   version: 2.9.1
   tasks:
 
     - name: Install Restic

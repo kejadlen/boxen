@@ -28,4 +28,4 @@ curl \
   --max-time 10 \
   --retry 5 \
   --output /dev/null \
-  https://hc-ping.com/459ab86c-7845-404a-a00f-ea1cfb99f788
+  https://hc-ping.com/{{ healthchecks_io.backup_sh }}
