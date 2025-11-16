@@ -2,7 +2,7 @@
   hosts: lotus-land-story
   vars:
     gamja_version: caf6e99
-    soju_version: 0.10.0 # remember to update the docker-soju image to bump this
+    soju_version: 0.10.1 # remember to update the docker-soju image to bump this
   tasks:
 
     - name: Make directories
@@ -49,8 +49,6 @@
           - "6697:6697"
         networks:
           - name: lotus_land_story
-        # etc_hosts:
-        #   host.docker.internal: host-gateway
 
   handlers:
     - name: Import restarts
