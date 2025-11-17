@@ -2,7 +2,7 @@
   tags: vector
   hosts: lotus-land-story
   vars:
-    version: 0.51.0
+    version: 0.51.1
   tasks:
 
     - name: Create Vector config dir
