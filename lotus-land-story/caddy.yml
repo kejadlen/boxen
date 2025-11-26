@@ -21,9 +21,9 @@
         name: lotus_land_story
       register: docker_network
 
-    - name: Get Perfect Cherry Blossom IP
-      command: tailscale ip --1 perfect-cherry-blossom
-      register: perfect_cherry_blossom_ip_result
+    - name: Get Undefined Fantastic Object IP
+      command: tailscale ip --1 undefined-fantastic-object
+      register: undefined_fantastic_object_ip_result
 
     # TODO Reload Caddy when this changes:
     #      docker exec -w /etc/caddy $caddy_container_id caddy reload
@@ -34,7 +34,7 @@
         mode: "0644"
       vars:
         trusted_proxies: "{{ docker_network.network.IPAM.Config[0].Subnet }}"
-        perfect_cherry_blossom_ip: "{{ perfect_cherry_blossom_ip_result.stdout }}"
+        undefined_fantastic_object_ip: "{{ undefined_fantastic_object_ip_result.stdout }}"
 
     - name: Run Caddy
       community.docker.docker_container:

@@ -170,8 +170,8 @@ git.kejadlen.dev {
 	# }
 
 	# hacky way to reverse auth only from my laptop
-	@perfect-cherry-blossom client_ip {{ perfect_cherry_blossom_ip }}
-	reverse_proxy @perfect-cherry-blossom gitea:3000 {
+	@undefined-fantastic-object client_ip {{ undefined_fantastic_object_ip }}
+	reverse_proxy @undefined-fantastic-object gitea:3000 {
 		header_up X-Webauth-User alpha
 	}
 
