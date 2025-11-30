@@ -3,7 +3,7 @@
   vars_files:
     - vars.yml
   vars:
-    version: 12.2.1
+    version: 12.3.0
   tasks:
 
     - name: Grafana user
@@ -104,7 +104,7 @@
     - name: Run Grafana
       community.docker.docker_container:
         name: grafana
-        image: grafana/grafana-oss:{{ version }}
+        image: grafana/grafana:{{ version }}
         volumes:
           - /mnt/lotus-land-story/grafana/grafana.ini:/etc/grafana/grafana.ini
           - /mnt/lotus-land-story/grafana/provisioning:/etc/grafana/provisioning
