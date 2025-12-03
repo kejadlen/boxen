@@ -31,6 +31,48 @@
       ansible.builtin.apt:
         upgrade: dist
 
+# What a pain in the ass - useful things for debugging:
+#
+# - https://tailscale.com/blog/sisyphean-dns-client-linux
+# - https://wiki.archlinux.org/title/Systemd-resolved
+# - resolvectl status
+# - resolvectl query DOMAIN_NAME
+- name: Configure systemd-resolved
+  tags: resolved
+  hosts: mountain-of-faith
+  become: true
+  vars_files:
+    - vars.private
+  tasks:
+
+    - name: Disable NetworkManager
+      ansible.builtin.systemd:
+        name: NetworkManager
+        enabled: false
+        state: stopped
+
+    - name: Configure systemd-resolved
+      ansible.builtin.copy:
+        dest: /etc/systemd/resolved.conf
+        content: |
+          [Resolve]
+          DNS=100.100.100.100
+          Domains={{ tailscale.tailnet_name }}.ts.net
+        mode: "0644"
+      notify: restart systemd-resolved
+
+    - name: Enable and start systemd-resolved
+      ansible.builtin.systemd:
+        name: systemd-resolved
+        enabled: true
+        state: started
+
+  handlers:
+    - name: restart systemd-resolved
+      ansible.builtin.systemd:
+        name: systemd-resolved
+        state: restarted
+
 - import_playbook: ../playbooks/tailscale.yml
 - import_playbook: ../playbooks/docker.yml
 
