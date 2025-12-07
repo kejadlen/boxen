@@ -8,20 +8,21 @@
     - name: Assert distribution is Debian
       ansible.builtin.assert:
         that:
-          - ansible_distribution == "Debian"
+          - ansible_facts["distribution"] == "Debian"
         fail_msg: "This playbook only supports Debian distributions"
 
     # curl -fsSL https://pkgs.tailscale.com/stable/debian/bookworm.noarmor.gpg | sudo tee /usr/share/keyrings/tailscale-archive-keyring.gpg >/dev/null
     - name: Download Tailscale package signing key
       ansible.builtin.get_url:
-        url: https://pkgs.tailscale.com/stable/debian/{{ ansible_distribution_release }}.noarmor.gpg
+        url: https://pkgs.tailscale.com/stable/debian/{{ ansible_facts["distribution_release"] }}.noarmor.gpg
         dest: /usr/share/keyrings/tailscale-archive-keyring.gpg
         mode: "0644"
 
     # curl -fsSL https://pkgs.tailscale.com/stable/debian/bookworm.tailscale-keyring.list | sudo tee /etc/apt/sources.list.d/tailscale.list
     - name: Add Tailscale repository
       ansible.builtin.apt_repository:
-        repo: deb [signed-by=/usr/share/keyrings/tailscale-archive-keyring.gpg] https://pkgs.tailscale.com/stable/debian {{ ansible_distribution_release }} main
+        repo: deb [signed-by=/usr/share/keyrings/tailscale-archive-keyring.gpg] https://pkgs.tailscale.com/stable/debian {{ ansible_facts["distribution_release"] }} main
+        filename: tailscale
         state: present
 
     # sudo apt-get update

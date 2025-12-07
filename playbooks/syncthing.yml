@@ -9,7 +9,7 @@
     - name: Assert distribution is Debian
       ansible.builtin.assert:
         that:
-          - ansible_distribution == "Debian"
+          - ansible_facts["distribution"] == "Debian"
         fail_msg: "This playbook only supports Debian distributions"
 
     # sudo mkdir -p /etc/apt/keyrings

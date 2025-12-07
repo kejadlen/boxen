@@ -14,7 +14,7 @@
     - name: Assert distribution is Debian
       ansible.builtin.assert:
         that:
-          - ansible_distribution == "Debian"
+          - ansible_facts["distribution"] == "Debian"
         fail_msg: "This playbook only supports Debian distributions"
 
     # wget https://dl.min.io/server/minio/release/linux-arm64/archive/minio_20250613113347.0.0_arm64.deb -O minio.deb

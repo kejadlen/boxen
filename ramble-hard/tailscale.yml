@@ -15,6 +15,7 @@
     - name: Add Tailscale repository
       ansible.builtin.apt_repository:
         repo: deb [signed-by=/usr/share/keyrings/tailscale-archive-keyring.gpg] https://pkgs.tailscale.com/stable/debian bullseye main
+        filename: tailscale
         state: present
 
     # sudo apt-get update

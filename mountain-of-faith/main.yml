@@ -164,7 +164,9 @@
         restart_policy: unless-stopped
         state: started
 
+# TODO Remove Minio
 - import_playbook: minio.yml
+
 - import_playbook: ../playbooks/syncthing.yml
 
 - name: Set up metrics

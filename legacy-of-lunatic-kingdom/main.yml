@@ -64,7 +64,6 @@
 - import_playbook: ../playbooks/syncthing.yml # noqa: name[play]
 
 # TODO
-# - minio
 # - restic
 
 # vim: ft=yaml.ansible
