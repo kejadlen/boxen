@@ -1,3 +1,7 @@
+# TODO
+# - [ ] migrate backend from cloud to local
+# - [ ] migrate to opentofu
+
 terraform {
   cloud {
     organization = "kejadlen"
@@ -93,10 +97,6 @@ data "tailscale_device" "mountain_of_faith" {
   hostname = "mountain-of-faith"
 }
 
-data "tailscale_device" "on_fire_within" {
-  hostname = "on-fire-within"
-}
-
 locals {
   ramble_hard      = data.linode_instances.ramble_hard.instances.0
   lotus_land_story = data.linode_instances.lotus_land_story.instances.0
@@ -116,7 +116,6 @@ resource "linode_domain" "chislan_family" {
 
 resource "pihole_dns_record" "domains" {
   for_each = {
-    "birdnetpi"        = data.tailscale_device.mountain_of_faith.addresses.0
     "git.kejadlen.dev" = data.tailscale_device.lotus_land_story.addresses.0
   }
 

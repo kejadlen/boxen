@@ -41,23 +41,19 @@
   tags: resolved
   hosts: mountain-of-faith
   become: true
-  vars_files:
-    - vars.private
   tasks:
-
-    - name: Disable NetworkManager
-      ansible.builtin.systemd:
-        name: NetworkManager
-        enabled: false
-        state: stopped
 
     - name: Configure systemd-resolved
       ansible.builtin.copy:
         dest: /etc/systemd/resolved.conf
         content: |
           [Resolve]
+          # tailscale
           DNS=100.100.100.100
           Domains={{ tailscale.tailnet_name }}.ts.net
+
+          # pihole
+          DNSStubListener=no
         mode: "0644"
       notify: restart systemd-resolved
 
@@ -130,10 +126,8 @@
 - name: Run Pi-Hole
   tags: pihole
   hosts: mountain-of-faith
-  vars_files:
-    - vars.private
   vars:
-    version: 2025.10.1
+    version: 2025.11.1
   tasks:
 
     - name: Run the Pi-Hole container
