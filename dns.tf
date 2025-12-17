@@ -5,6 +5,7 @@ resource "dnsimple_zone" "zones" {
     chislan_family        = "chislan.family"
     islan_me              = "islan.me"
     kejadlen_dev          = "kejadlen.dev"
+    overthinking_club     = "overthinking.club"
   }
 
   name   = each.value
@@ -90,6 +91,15 @@ resource "dnsimple_zone_record" "kejadlen_dev_smtp2go" {
   name      = each.key
   value     = each.value
   type      = "CNAME"
+}
+
+resource "dnsimple_zone_record" "overthinking_club" {
+  for_each = toset(["", "blog", "email", "www"])
+
+  zone_name = dnsimple_zone.zones["overthinking_club"].name
+  name      = each.key
+  value     = "138.199.218.242"
+  type      = "A"
 }
 
 module "fastmail" {
