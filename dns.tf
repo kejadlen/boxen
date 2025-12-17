@@ -94,7 +94,7 @@ resource "dnsimple_zone_record" "kejadlen_dev_smtp2go" {
 }
 
 resource "dnsimple_zone_record" "overthinking_club" {
-  for_each = toset(["", "blog", "email", "www"])
+  for_each = toset(["", "blog", "email", "wallabag", "www"])
 
   zone_name = dnsimple_zone.zones["overthinking_club"].name
   name      = each.key
