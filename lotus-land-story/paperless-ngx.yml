@@ -50,8 +50,16 @@
           - name: lotus_land_story
         etc_hosts:
           host.docker.internal: host-gateway
+      # paperless images are huge, so clean them up after we update the container
+      notify: Prune unused Docker images
 
   handlers:
+    - name: Prune unused Docker images
+      community.docker.docker_prune:
+        images: true
+        images_filters:
+          dangling: false
+
     - name: Import restarts
       ansible.builtin.import_tasks: restarts.yml
 
