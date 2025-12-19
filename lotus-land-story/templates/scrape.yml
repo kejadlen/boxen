@@ -188,6 +188,19 @@ scrape_configs:
         target_label: instance
         replacement: 'lotus-land-story:9187'
 
+  - job_name: "prusalink"
+    scrape_timeout: 60s
+    scrape_interval: 60s # giving API some time to respond
+    metrics_path: "/metrics/prusalink"
+    static_configs:
+      - targets: ["mountain-of-faith:10009"]
+
+  - job_name: "prusaudp"
+    scrape_interval: 1s
+    metrics_path: "/metrics/udp"
+    static_configs:
+      - targets: ["mountain-of-faith:10009"]
+
   - job_name: syncthing-legacy-of-lunatic-kingdom
     bearer_token: {{ syncthing.legacy_of_lunatic_kingdom.api_key }}
     static_configs:

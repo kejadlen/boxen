@@ -240,4 +240,57 @@
         name: prometheus-blackbox-exporter
         state: restarted
 
+- name: Run Prusa Exporter
+  tags: prusa-exporter
+  hosts: mountain-of-faith
+  become: true
+  vars:
+    version: 2.0.0-rc1
+  tasks:
+
+    - name: Create Prusa Exporter config directory
+      ansible.builtin.file:
+        path: /mnt/mountain-of-faith/prusa-exporter
+        state: directory
+        mode: "0755"
+
+    - name: Create Prusa Exporter configuration file
+      ansible.builtin.template:
+        src: templates/prusa.yml
+        dest: /mnt/mountain-of-faith/prusa-exporter/prusa.yml
+        mode: "0644"
+      vars:
+        # can we get this dynamically?
+        address: 192.168.1.210
+      notify: restart prusa-exporter
+
+    - name: Run the Prusa Exporter container
+      community.docker.docker_container:
+        name: prusa-exporter
+        image: pubeldev/prusa_exporter:{{ version }}
+        ports:
+          - "10009:10009/tcp"
+          - "8514:8514/udp"
+        volumes:
+          - "/mnt/mountain-of-faith/prusa-exporter/prusa.yml:/app/prusa.yml:ro"
+        command:
+          - "--config.file=/app/prusa.yml"
+          - "--log.level=info"
+          - "--prusalink.scrape-timeout=5"
+          - "--udp.ip-override={{ host_ip }}"
+          - "--udp.gcode-enabled"
+          # TODO?
+          # - "--loki.push-url=http://localhost:9428/insert/loki/api/v1/push"
+        restart_policy: unless-stopped
+        state: started
+      vars:
+        host_ip: "{{ ansible_facts.default_ipv4.address }}"
+
+  handlers:
+    - name: restart prusa-exporter
+      community.docker.docker_container:
+        name: prusa-exporter
+        state: started
+        restart: true
+
 # vim: ft=yaml.ansible

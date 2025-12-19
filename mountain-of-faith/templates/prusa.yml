@@ -1,0 +1,6 @@
+printers:
+  - address: {{ address }}
+    username: maker
+    password: {{ prusa.link.password }}
+    name: Mini
+    type: MINI
