@@ -261,7 +261,7 @@
         mode: "0644"
       vars:
         # can we get this dynamically?
-        address: 192.168.1.210
+        address: 192.168.1.208
       notify: restart prusa-exporter
 
     - name: Run the Prusa Exporter container
