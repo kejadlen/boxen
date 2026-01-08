@@ -43,7 +43,7 @@
 - name: Run Miniflux
   hosts: lotus-land-story
   vars:
-    version: 2.2.15
+    version: 2.2.16
   tasks:
 
     - name: Get docker network
@@ -64,6 +64,7 @@
           ADMIN_PASSWORD: "{{ miniflux.password }}"
           AUTH_PROXY_HEADER: Remote-User
           AUTH_PROXY_USER_CREATION: "0"
+          TRUSTED_REVERSE_PROXY_NETWORKS: "{{ docker_network.network.IPAM.Config[0].Subnet }}"
           BASE_URL: https://rss/
           DISABLE_LOCAL_AUTH: "0"
           METRICS_COLLECTOR: "1"
