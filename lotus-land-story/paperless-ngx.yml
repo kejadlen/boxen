@@ -1,7 +1,7 @@
 - name: Set up Paperless-ngx
   hosts: lotus-land-story
   vars:
-    version: 2.20.2
+    version: 2.20.4
   tasks:
 
     - name: Create directories for volume mounting
