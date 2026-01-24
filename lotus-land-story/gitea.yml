@@ -3,7 +3,7 @@
 - name: Set up Gitea
   hosts: lotus-land-story
   vars:
-    version: 1.25.3
+    version: 1.25.4
     anubis_version: v1.24.0
   tasks:
 
