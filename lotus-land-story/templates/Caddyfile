@@ -131,6 +131,13 @@ homebox {
 
 ### Internal
 
+dockhand {
+	tls internal
+	bind tailscale/dockhand
+	tailscale_auth
+	reverse_proxy dockhand:3000
+}
+
 home-assistant {
 	tls internal
 	bind tailscale/home-assistant

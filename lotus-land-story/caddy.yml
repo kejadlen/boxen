@@ -1,7 +1,5 @@
 - name: Set up Caddy
   hosts: lotus-land-story
-  vars_files:
-    - vars.yml
   vars:
     # don't forget to update docker-caddy-tailscale first!
     version: 2.10.2
