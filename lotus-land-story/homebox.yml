@@ -1,7 +1,7 @@
 - name: Set up Homebox
   hosts: lotus-land-story
   vars:
-    version: 0.22.3
+    version: 0.23.0
   vars_files:
     - vars.yml
   tasks:
