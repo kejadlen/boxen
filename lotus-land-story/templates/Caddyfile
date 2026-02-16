@@ -98,6 +98,16 @@ rss {
 	}
 }
 
+ketchup {
+	tls internal
+	bind tailscale/ketchup
+	tailscale_auth
+	reverse_proxy ketchup:9292 {
+		header_up Tailscale-User-Login {http.auth.user.tailscale_login}
+		header_up Tailscale-User-Name {http.auth.user.tailscale_user}
+	}
+}
+
 ### Family
 
 books {
