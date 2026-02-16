@@ -19,6 +19,9 @@
         env:
           DATABASE_URL: /data/ketchup.db
           SESSION_SECRET: "{{ ketchup.session_secret }}"
+          OTEL_EXPORTER_OTLP_PROTOCOL: http/protobuf
+          OTEL_EXPORTER_OTLP_ENDPOINT: https://api.honeycomb.io
+          OTEL_EXPORTER_OTLP_HEADERS: "{{ ketchup.otel_exporter_otlp_headers }}"
         volumes:
           - /mnt/lotus-land-story/ketchup:/data
         restart_policy: unless-stopped
