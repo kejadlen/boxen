@@ -22,6 +22,7 @@
           OTEL_EXPORTER_OTLP_PROTOCOL: http/protobuf
           OTEL_EXPORTER_OTLP_ENDPOINT: https://api.honeycomb.io
           OTEL_EXPORTER_OTLP_HEADERS: "{{ ketchup.otel_exporter_otlp_headers }}"
+          TZ: America/Los_Angeles
         volumes:
           - /mnt/lotus-land-story/ketchup:/data
         restart_policy: unless-stopped
