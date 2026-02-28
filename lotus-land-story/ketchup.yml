@@ -1,7 +1,7 @@
 - name: Set up Ketchup
   hosts: lotus-land-story
   vars:
-    version: 20260216-49781d4
+    version: 20260228-e7f922d
   tasks:
 
     - name: Create data directory for Ketchup
@@ -17,6 +17,7 @@
         pull: true
         restart: true
         env:
+          AUTH_HEADER: Tailscale-User-Login
           DATABASE_URL: /data/ketchup.db
           SESSION_SECRET: "{{ ketchup.session_secret }}"
           OTEL_EXPORTER_OTLP_PROTOCOL: http/protobuf
