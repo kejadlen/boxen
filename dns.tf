@@ -6,6 +6,7 @@ resource "dnsimple_zone" "zones" {
     islan_me              = "islan.me"
     kejadlen_dev          = "kejadlen.dev"
     overthinking_club     = "overthinking.club"
+    issues_cooking        = "issues.cooking"
   }
 
   name   = each.value
@@ -100,6 +101,59 @@ resource "dnsimple_zone_record" "overthinking_club" {
   name      = each.key
   value     = "138.199.218.242"
   type      = "A"
+}
+
+resource "dnsimple_zone_record" "github" {
+  zone_name = dnsimple_zone.zones["kejadlen_dev"].name
+  type      = "TXT"
+  name      = "_github-pages-challenge-kejadlen"
+  value     = "083e1baf52b9ff89a4fef9328a16aa"
+}
+
+resource "dnsimple_zone_record" "low_quality_transcripts" {
+  zone_name = dnsimple_zone.zones["kejadlen_dev"].name
+  name      = "low-quality-transcripts"
+  value     = "kejadlen.github.io"
+  type      = "CNAME"
+}
+
+resource "dnsimple_zone_record" "goatcounter" {
+  zone_name = dnsimple_zone.zones["kejadlen_dev"].name
+  name      = "goat"
+  value     = "kejadlen.goatcounter.com"
+  type      = "CNAME"
+}
+
+resource "dnsimple_zone_record" "issues_cooking_github" {
+  for_each = {
+    a_0    = { type = "A", value = "185.199.108.153" }
+    a_1    = { type = "A", value = "185.199.109.153" }
+    a_2    = { type = "A", value = "185.199.110.153" }
+    a_3    = { type = "A", value = "185.199.111.153" }
+    aaaa_0 = { type = "AAAA", value = "2606:50c0:8000::153" }
+    aaaa_1 = { type = "AAAA", value = "2606:50c0:8001::153" }
+    aaaa_2 = { type = "AAAA", value = "2606:50c0:8002::153" }
+    aaaa_3 = { type = "AAAA", value = "2606:50c0:8003::153" }
+  }
+
+  zone_name = dnsimple_zone.zones["issues_cooking"].name
+  name      = ""
+  value     = each.value.value
+  type      = each.value.type
+}
+
+resource "dnsimple_zone_record" "issues_cooking_github_challenge" {
+  zone_name = dnsimple_zone.zones["issues_cooking"].name
+  name      = "_github-pages-challenge-kejadlen"
+  value     = "1c2996553fef1408b8d060f4976696"
+  type      = "TXT"
+}
+
+resource "dnsimple_zone_record" "issues_cooking_github_www" {
+  zone_name = dnsimple_zone.zones["issues_cooking"].name
+  name      = "www"
+  value     = "kejadlen.github.io"
+  type      = "CNAME"
 }
 
 module "fastmail" {
