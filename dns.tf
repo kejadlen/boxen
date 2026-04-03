@@ -117,13 +117,6 @@ resource "dnsimple_zone_record" "low_quality_transcripts" {
   type      = "CNAME"
 }
 
-resource "dnsimple_zone_record" "goatcounter" {
-  zone_name = dnsimple_zone.zones["kejadlen_dev"].name
-  name      = "goat"
-  value     = "kejadlen.goatcounter.com"
-  type      = "CNAME"
-}
-
 resource "dnsimple_zone_record" "issues_cooking_github" {
   for_each = {
     a_0    = { type = "A", value = "185.199.108.153" }
@@ -154,6 +147,20 @@ resource "dnsimple_zone_record" "issues_cooking_github_www" {
   name      = "www"
   value     = "kejadlen.github.io"
   type      = "CNAME"
+}
+
+resource "dnsimple_zone_record" "issues_cooking_goatcounter" {
+  zone_name = dnsimple_zone.zones["issues_cooking"].name
+  name      = "stats"
+  value     = "low-quality-transcripts.goatcounter.com"
+  type      = "CNAME"
+}
+
+resource "dnsimple_zone_record" "issues_cooking_google" {
+  zone_name = dnsimple_zone.zones["issues_cooking"].name
+  name      = ""
+  value     = "google-site-verification=iK-byKyu145FcOGAzPFLurySmxidNiZ4vTX_HJcs1c0"
+  type      = "TXT"
 }
 
 module "fastmail" {
