@@ -1,7 +1,7 @@
 - name: Set up Grafana
   hosts: lotus-land-story
   vars:
-    version: 12.3.3
+    version: 12.4.3
   tasks:
 
     - name: Grafana user
@@ -95,9 +95,12 @@
               isDefault: true
         mode: "0644"
 
-    - name: Create Grafana volume
-      community.docker.docker_volume:
-        name: grafana
+    - name: Create Grafana data dir
+      ansible.builtin.file:
+        path: /mnt/lotus-land-story/grafana/data
+        state: directory
+        mode: "0755"
+        owner: "{{ grafana_user.name }}"
 
     - name: Run Grafana
       community.docker.docker_container:
@@ -106,7 +109,7 @@
         volumes:
           - /mnt/lotus-land-story/grafana/grafana.ini:/etc/grafana/grafana.ini
           - /mnt/lotus-land-story/grafana/provisioning:/etc/grafana/provisioning
-          - grafana:/var/lib/grafana
+          - /mnt/lotus-land-story/grafana/data:/var/lib/grafana
         env:
           GF_PLUGINS_PREINSTALL: victoriametrics-logs-datasource, victoriametrics-metrics-datasource
         restart_policy: unless-stopped
