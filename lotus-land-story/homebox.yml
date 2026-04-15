@@ -14,6 +14,31 @@
         owner: "65532"
         group: "65532"
 
+    # TODO back this up using restic
+    - name: Back up homebox if needed
+      block:
+        - name: Get current version
+          ansible.builtin.command: >
+            docker inspect
+            --format '{{ '{{' }} index .Config.Labels "org.opencontainers.image.version"}}'
+            homebox
+          register: homebox_version
+          changed_when: false
+
+        - name: Stop and backup homebox
+          when: homebox_version.stdout | trim != version
+          block:
+            - name: Stop homebox
+              community.docker.docker_container:
+                name: homebox
+                state: stopped
+            - name: Backup db
+              ansible.builtin.copy:
+                src: /mnt/lotus-land-story/homebox/homebox.db
+                dest: /mnt/lotus-land-story/homebox/homebox.db.bak
+                mode: "0400"
+                remote_src: true
+
     - name: Run Homebox
       community.docker.docker_container:
         name: homebox
