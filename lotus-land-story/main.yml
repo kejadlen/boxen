@@ -65,5 +65,7 @@
 - import_playbook: security.yml    # noqa: name[play]
 - import_playbook: backup.yml      # noqa: name[play]
 - import_playbook: homebox.yml     # noqa: name[play]
+- import_playbook: vector.yml      # noqa: name[play]
+- import_playbook: logs.yml        # noqa: name[play]
 
 # vim: ft=yaml.ansible

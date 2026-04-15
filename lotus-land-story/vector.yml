@@ -1,0 +1,48 @@
+- name: Vector
+  tags: vector
+  hosts: lotus-land-story
+  vars:
+    version: 0.54.0
+  tasks:
+
+    - name: Create Vector config dir
+      ansible.builtin.file:
+        path: /mnt/lotus-land-story/vector
+        state: directory
+        mode: "0700"
+
+    - name: Configure Vector
+      ansible.builtin.copy:
+        src: templates/vector.yml
+        dest: /mnt/lotus-land-story/vector/vector.yml
+
+    - name: Run Vector
+      community.docker.docker_container:
+        name: vector
+        image: timberio/vector:{{ version }}-debian
+        restart: true
+        command: -c /etc/vector/*.yml
+        volumes:
+          - /mnt/lotus-land-story/vector:/etc/vector:ro
+          - /var/log:/var/log
+          - /var/run/docker.sock:/var/run/docker.sock
+        restart_policy: unless-stopped
+        networks:
+          - name: lotus_land_story
+
+    - name: Set up logrotate for gitea.log
+      ansible.builtin.copy:
+        content: |
+          /var/log/gitea.log
+          {
+            rotate 4
+            weekly
+            missingok
+            notifempty
+            compress
+            delaycompress
+          }
+        dest: /etc/logrotate.d/gitea-ssh
+        mode: "0600"
+
+# vim: ft=yaml.ansible
