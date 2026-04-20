@@ -56,7 +56,6 @@
     - name: Import restarts
       ansible.builtin.import_tasks: restarts.yml
 
-- import_playbook: golink.yml      # noqa: name[play]
 - import_playbook: grafana.yml     # noqa: name[play]
 - import_playbook: miniflux.yml    # noqa: name[play]
 - import_playbook: gotosocial.yml  # noqa: name[play]
