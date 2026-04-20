@@ -35,9 +35,9 @@ identity_validation:
 session:
   secret: {{ authelia.session_secret }}
   cookies:
-    - domain: {{ domain }}
-      authelia_url: https://auth.{{ domain }}
-      # default_redirection_url: https://www.{{ domain }}
+    - domain: kejadlen.dev
+      authelia_url: https://auth.kejadlen.dev
+      # default_redirection_url: https://www.kejadlen.dev
     - domain: chislan.family
       authelia_url: https://auth.chislan.family
 
@@ -80,7 +80,7 @@ identity_providers:
         client_secret: $argon2id$v=19$m=65536,t=3,p=4$bMcI49gLNfk6ovxXbg9jFQ$qE/G5lDzkFebKopyGv1FOqkiA64HhRJ9kq+TJCR0HM0
         public: false
         redirect_uris:
-          - https://git.{{ domain }}/user/oauth2/authelia/callback
+          - https://git.kejadlen.dev/user/oauth2/authelia/callback
         scopes:
           - openid
           - email
