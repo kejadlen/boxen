@@ -1,7 +1,7 @@
 - name: Set up Dockhand
   hosts: lotus-land-story
   vars:
-    version: 1.0.22
+    version: 1.0.26
   vars_files:
     - vars.yml
   tasks:
