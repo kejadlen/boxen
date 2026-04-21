@@ -2,8 +2,6 @@
 
 - name: Set up GoToSocial
   hosts: lotus-land-story
-  vars_files:
-    - vars.yml
   vars:
     version: 0.21.2
   tasks:

@@ -2,8 +2,6 @@
   hosts: lotus-land-story
   vars:
     version: 0.25.0
-  vars_files:
-    - vars.yml
   tasks:
 
     - name: Create data directory for Homebox

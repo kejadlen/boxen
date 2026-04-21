@@ -1,13 +1,16 @@
 - name: Base setup for lotus-land-story
   hosts: lotus-land-story
-  vars_files:
-    - vars.yml
   tasks:
 
     - name: Always mount the lotus-land-story volume
       ansible.builtin.lineinfile:
         dest: /etc/fstab
-        line: "{{ linode_volume }} /mnt/lotus-land-story ext4 defaults,noatime,nofail 0 2"
+        line: >-
+          /dev/disk/by-id/scsi-0Linode_Volume_lotus-land-story
+          /mnt/lotus-land-story
+          ext4
+          defaults,noatime,nofail
+          0 2
         state: present
 
     - name: Set hostname
