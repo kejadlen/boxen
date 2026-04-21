@@ -4,7 +4,7 @@
   hosts: lotus-land-story
   vars:
     version: 1.25.5
-    anubis_version: v1.25.0
+    anubis_version: 1.25.0
   tasks:
 
     - name: Create git user
@@ -47,7 +47,7 @@
       tags: anubis
       community.docker.docker_container:
         name: anubis
-        image: ghcr.io/techarohq/anubis:{{ anubis_version }}
+        image: ghcr.io/techarohq/anubis:v{{ anubis_version }}
         restart: true
         env:
           COOKIE_DOMAIN: kejadlen.dev
@@ -109,5 +109,47 @@
   handlers:
     - name: Import restarts
       ansible.builtin.import_tasks: restarts.yml
+
+# The runner delegates job containers to the host docker daemon (via the
+# mounted socket) rather than a DinD sidecar. DinD gives each job its own
+# isolated daemon, so job containers land on dind's internal bridge and
+# can't resolve `gitea` on the lotus_land_story network — checkout fails.
+# Mounting the host socket plus `container.network` in config.yaml puts
+# job containers on lotus_land_story alongside gitea.
+- name: Set up Gitea Actions runner
+  hosts: lotus-land-story
+  tags: gitea-runner
+  vars:
+    runner_version: 0.4.1
+  tasks:
+
+    - name: Make /mnt/lotus-land-story/gitea-runner
+      ansible.builtin.file:
+        path: /mnt/lotus-land-story/gitea-runner
+        state: directory
+        mode: "0755"
+
+    - name: Write Gitea Actions runner config
+      ansible.builtin.copy:
+        dest: /mnt/lotus-land-story/gitea-runner/config.yaml
+        mode: "0644"
+        content: |
+          container:
+            network: lotus_land_story
+
+    - name: Run Gitea Actions runner
+      community.docker.docker_container:
+        name: gitea-runner
+        image: gitea/act_runner:{{ runner_version }}
+        env:
+          CONFIG_FILE: /data/config.yaml
+          GITEA_INSTANCE_URL: http://gitea:3000
+          GITEA_RUNNER_REGISTRATION_TOKEN: "{{ gitea.runner_registration_token }}"
+        volumes:
+          - /mnt/lotus-land-story/gitea-runner:/data
+          - /var/run/docker.sock:/var/run/docker.sock
+        restart_policy: unless-stopped
+        networks:
+          - name: lotus_land_story
 
 # vim: ft=yaml.ansible
