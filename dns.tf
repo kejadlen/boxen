@@ -35,6 +35,7 @@ resource "dnsimple_zone_record" "kejadlen_dev_subdomains" {
     git     = local.lotus_land_story.ip_address
     grafana = local.lotus_land_story.ip_address
     hey     = local.lotus_land_story.ip_address
+    quire   = local.lotus_land_story.ip_address
     monica  = local.ramble_hard.ip_address
     social  = local.ramble_hard.ip_address
   }

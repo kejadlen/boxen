@@ -84,6 +84,15 @@ https://metrics {
 
 ### Services
 
+quire {
+	tls internal
+	bind tailscale/quire
+	tailscale_auth
+	reverse_proxy quire:3000 {
+		header_up Remote-User {http.auth.user.tailscale_login}
+	}
+}
+
 irc {
 	tls internal
 	bind tailscale/irc
@@ -216,6 +225,10 @@ hey.kejadlen.dev
 	handle /metrics {
 		respond 404
 	}
+}
+
+quire.kejadlen.dev {
+	reverse_proxy quire-gitweb:8080
 }
 
 # vim: ts=4

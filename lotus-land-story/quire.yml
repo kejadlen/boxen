@@ -1,0 +1,100 @@
+# https://github.com/kejadlen/quire
+- name: Set up Quire
+  hosts: lotus-land-story
+  vars:
+    version: 20260427-068b215
+  tasks:
+
+    - name: Create quire user
+      ansible.builtin.user:
+        name: quire
+        create_home: true
+      register: quire_user
+
+    - name: Create quire data directory
+      ansible.builtin.file:
+        path: /mnt/lotus-land-story/quire
+        state: directory
+        mode: "0755"
+        owner: "{{ quire_user.name }}"
+
+    - name: Create quire secrets directory
+      ansible.builtin.file:
+        path: /mnt/lotus-land-story/quire/secrets
+        state: directory
+        mode: "0700"
+        owner: "{{ quire_user.name }}"
+
+    - name: Write github_token secret
+      ansible.builtin.copy:
+        content: "{{ quire.github_pat }}"
+        dest: /mnt/lotus-land-story/quire/secrets/github_token
+        mode: "0600"
+        owner: "{{ quire_user.name }}"
+      no_log: true
+
+    - name: Write quire config
+      ansible.builtin.copy:
+        content: |
+          {:github {:token {:file "/var/quire/secrets/github_token"}}
+           :sentry {:dsn "{{ quire.sentry_dsn }}"}}
+        dest: /mnt/lotus-land-story/quire/config.fnl
+        mode: "0644"
+        owner: "{{ quire_user.name }}"
+      no_log: true
+
+    - name: Add quire user to docker group
+      ansible.builtin.user:
+        name: quire
+        groups: docker
+        append: true
+
+    - name: Add SSH keys for quire user
+      ansible.posix.authorized_key:
+        user: quire
+        key: https://github.com/kejadlen.keys
+
+    - name: Configure sshd for quire
+      ansible.builtin.copy:
+        dest: /etc/ssh/sshd_config.d/quire.conf
+        content: |
+          Match User quire
+              AuthorizedKeysFile {{ quire_user.home }}/.ssh/authorized_keys
+              ForceCommand docker exec --interactive quire quire exec "$SSH_ORIGINAL_COMMAND"
+              AllowTcpForwarding no
+              AllowAgentForwarding no
+              X11Forwarding no
+              PermitTTY no
+        mode: "0644"
+      notify: Restart ssh
+
+    - name: Run Quire
+      community.docker.docker_container:
+        name: quire
+        image: ghcr.io/kejadlen/quire:{{ version }}
+        env: {}
+        volumes:
+          - /mnt/lotus-land-story/quire:/var/quire
+        networks:
+          - name: lotus_land_story
+        restart_policy: unless-stopped
+        state: started
+        user: "{{ quire_user.uid }}"
+
+    - name: Run quire-gitweb
+      community.docker.docker_container:
+        name: quire-gitweb
+        image: ghcr.io/kejadlen/quire-gitweb:latest
+        volumes:
+          - /mnt/lotus-land-story/quire/repos:/var/quire/repos:ro
+        networks:
+          - name: lotus_land_story
+        restart_policy: unless-stopped
+        state: started
+        user: "{{ quire_user.uid }}"
+
+  handlers:
+    - name: Import restarts
+      ansible.builtin.import_tasks: restarts.yml
+
+# vim: ft=yaml.ansible
