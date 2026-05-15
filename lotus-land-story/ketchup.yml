@@ -1,7 +1,7 @@
 - name: Set up Ketchup
   hosts: lotus-land-story
   vars:
-    version: 20260407-1b444d3
+    version: 20260503-d9104f5
   tasks:
 
     - name: Create data directory for Ketchup
