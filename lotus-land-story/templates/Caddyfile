@@ -170,6 +170,11 @@ birdnetpi.chislan.family
 	reverse_proxy hopeless-masquerade:80
 }
 
+files.chislan.family {
+	root /data/files
+	file_server
+}
+
 git.kejadlen.dev {
 	log
 
