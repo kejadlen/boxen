@@ -18,6 +18,7 @@ resource "dnsimple_zone_record" "chislan_family_subdomains" {
     auth      = { zone = dnsimple_zone.zones["chislan_family"], ip = local.lotus_land_story.ip_address }
     birdnetpi = { zone = dnsimple_zone.zones["chislan_family"], ip = local.lotus_land_story.ip_address }
     docs      = { zone = dnsimple_zone.zones["chislan_family"], ip = local.lotus_land_story.ip_address }
+    files     = { zone = dnsimple_zone.zones["chislan_family"], ip = local.lotus_land_story.ip_address }
   }
 
   zone_name = each.value.zone.name
