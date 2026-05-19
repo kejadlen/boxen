@@ -1,0 +1,20 @@
+[Unit]
+Description=VictoriaTraces container
+Requires=docker.service
+After=docker.service
+PartOf=docker.service
+
+[Service]
+Restart=always
+RestartSec=5s
+ExecStartPre=-/usr/bin/docker rm -f victoria-traces
+ExecStartPre=-/usr/bin/docker pull quay.io/victoriametrics/victoria-traces:v{{ version }}
+ExecStart=/usr/bin/docker run --rm --name victoria-traces \
+  --network lotus_land_story \
+  -v /mnt/lotus-land-story/victoria-traces:/data \
+  quay.io/victoriametrics/victoria-traces:v{{ version }} \
+  -storageDataPath=/data
+ExecStop=/usr/bin/docker stop victoria-traces
+
+[Install]
+WantedBy=multi-user.target

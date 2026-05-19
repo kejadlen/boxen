@@ -69,6 +69,12 @@ logs {
 	reverse_proxy victoria-logs:9428
 }
 
+traces {
+	tls internal
+	bind tailscale/traces
+	reverse_proxy victoria-traces:10428
+}
+
 # need scheme here since `metrics` is a directive
 https://metrics {
  	tls internal
