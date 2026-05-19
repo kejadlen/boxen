@@ -1,36 +1,39 @@
 - name: Set up Calibre-web
   hosts: lotus-land-story
+  vars:
+    version: 0.6.26-ls383
+    volumes:
+      /mnt/lotus-land-story/calibre-web/books: /books
+      /mnt/lotus-land-story/calibre-web/config: /config
   tasks:
 
     - name: Create directories for volume mounting
       ansible.builtin.file:
-        path: /mnt/lotus-land-story/calibre-web/{{ item }}
+        path: "{{ item }}"
         state: directory
         mode: "0755"
-      loop:
-        - books
-        - config
+      loop: "{{ volumes.keys() | list }}"
 
-    # https://github.com/linuxserver/docker-calibre-web#docker-compose-recommended-click-here-for-more-info
-    - name: Run Calibre-web
-      community.docker.docker_container:
+    # https://github.com/linuxserver/docker-calibre-web
+    - name: Install calibre-web systemd unit
+      ansible.builtin.template:
+        src: templates/systemd/calibre-web.service
+        dest: /etc/systemd/system/calibre-web.service
+        mode: "0644"
+      notify: Restart calibre-web
+
+    - name: Enable and start calibre-web
+      ansible.builtin.systemd_service:
         name: calibre-web
-        image: lscr.io/linuxserver/calibre-web:latest
-        restart: true
-        env:
-          PUID: "0"
-          PGID: "0"
-          TZ: Etc/UTC
-          DOCKER_MODS: linuxserver/mods:universal-calibre
-        volumes:
-          - /mnt/lotus-land-story/calibre-web/books:/books
-          - /mnt/lotus-land-story/calibre-web/config:/config
-        restart_policy: unless-stopped
-        networks:
-          - name: lotus_land_story
+        enabled: true
+        state: started
+        daemon_reload: true
 
   handlers:
-    - name: Import restarts
-      ansible.builtin.import_tasks: restarts.yml
+    - name: Restart calibre-web
+      ansible.builtin.systemd_service:
+        name: calibre-web
+        state: restarted
+        daemon_reload: true
 
 # vim: ft=yaml.ansible

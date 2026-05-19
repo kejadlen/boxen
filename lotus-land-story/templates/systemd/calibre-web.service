@@ -1,0 +1,23 @@
+[Unit]
+Description=Calibre-web container
+Requires=docker.service
+After=docker.service
+PartOf=docker.service
+
+[Service]
+Restart=always
+RestartSec=5s
+ExecStartPre=-/usr/bin/docker rm -f calibre-web
+ExecStartPre=-/usr/bin/docker pull lscr.io/linuxserver/calibre-web:{{ version }}
+ExecStart=/usr/bin/docker run --rm --name calibre-web \
+  --network lotus_land_story \
+  -e PUID=0 -e PGID=0 -e TZ=Etc/UTC \
+  -e DOCKER_MODS=linuxserver/mods:universal-calibre \
+{% for host_path, container_path in volumes.items() %}
+  -v {{ host_path }}:{{ container_path }} \
+{% endfor %}
+  lscr.io/linuxserver/calibre-web:{{ version }}
+ExecStop=/usr/bin/docker stop calibre-web
+
+[Install]
+WantedBy=multi-user.target
