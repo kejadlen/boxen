@@ -193,18 +193,19 @@ files.chislan.family {
 git.kejadlen.dev {
 	log
 
-	# rate_limit {
-	# 	zone rate_limit {
-	# 		match {
-	# 			# not tailscale
-	# 			not client_ip 100.64.0.0/10
-	# 		}
-	# 		key static
-	# 		events 50
-	# 		window 1m
-	# 		log_key
-	# 	}
-	# }
+	# Meta's web indexer hammers gitea's blame/diff endpoints hard enough
+	# to spike load; throttle it to one request per minute per source IP.
+	rate_limit {
+		zone meta_webindexer {
+			match {
+				header User-Agent meta-webindexer/*
+			}
+			key    {http.request.remote.host}
+			events 1
+			window 1m
+			log_key
+		}
+	}
 
 	# hacky way to reverse auth only from my laptop
 	@undefined-fantastic-object client_ip {{ undefined_fantastic_object_ip }}

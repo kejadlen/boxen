@@ -2,7 +2,8 @@
 - name: Set up Quire
   hosts: lotus-land-story
   vars:
-    version: 20260427-068b215
+    # TODO Pin the version once we're not in active development anymore
+    version: latest
   tasks:
 
     - name: Create quire user
@@ -25,19 +26,28 @@
         mode: "0700"
         owner: "{{ quire_user.name }}"
 
-    - name: Write github_token secret
+    - name: Write secrets
       ansible.builtin.copy:
-        content: "{{ quire.github_pat }}"
-        dest: /mnt/lotus-land-story/quire/secrets/github_token
+        content: "{{ item.content }}"
+        dest: "/mnt/lotus-land-story/quire/secrets/{{ item.name }}"
         mode: "0600"
         owner: "{{ quire_user.name }}"
+      loop:
+        - name: github_token
+          content: "{{ quire.github_pat }}"
+        - name: github_auth_header
+          content: "{{ quire.github_auth_header }}"
+      loop_control:
+        label: "{{ item.name }}"
       no_log: true
 
     - name: Write quire config
       ansible.builtin.copy:
         content: |
-          {:github {:token {:file "/var/quire/secrets/github_token"}}
-           :sentry {:dsn "{{ quire.sentry_dsn }}"}}
+          {:secrets {:github_token {:file "/var/quire/secrets/github_token"}
+                     :github_auth_header {:file "/var/quire/secrets/github_auth_header"}}
+           :sentry {:dsn "{{ quire.sentry_dsn }}"}
+           :ci {:transport :api}}
         dest: /mnt/lotus-land-story/quire/config.fnl
         mode: "0644"
         owner: "{{ quire_user.name }}"
@@ -48,6 +58,11 @@
         name: quire
         groups: docker
         append: true
+
+    - name: Look up docker group
+      ansible.builtin.getent:
+        database: group
+        key: docker
 
     - name: Add SSH keys for quire user
       ansible.posix.authorized_key:
@@ -71,15 +86,20 @@
     - name: Run Quire
       community.docker.docker_container:
         name: quire
-        image: ghcr.io/kejadlen/quire:{{ version }}
-        env: {}
+        image: ghcr.io/kejadlen/quire:{{ version }} 
+        pull: always
+        env:
+          QUIRE_LOG: INFO
         volumes:
           - /mnt/lotus-land-story/quire:/var/quire
+          - /var/run/docker.sock:/var/run/docker.sock
         networks:
           - name: lotus_land_story
         restart_policy: unless-stopped
         state: started
         user: "{{ quire_user.uid }}"
+        groups:
+          - "{{ ansible_facts.getent_group.docker[1] }}"
 
     - name: Run quire-gitweb
       community.docker.docker_container:
