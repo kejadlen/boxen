@@ -163,10 +163,16 @@ dockhand {
 	reverse_proxy dockhand:3000
 }
 
-home-assistant {
+home-assistant-509 {
 	tls internal
-	bind tailscale/home-assistant
-	reverse_proxy homeassistant:8123
+	bind tailscale/home-assistant-509
+	reverse_proxy homeassistant-509:8123
+}
+
+home-assistant-5119 {
+	tls internal
+	bind tailscale/home-assistant-5119
+	reverse_proxy homeassistant-5119:8123
 }
 
 pihole {
@@ -229,7 +235,7 @@ hey.kejadlen.dev
 }
 
 quire.kejadlen.dev {
-	reverse_proxy quire-gitweb:8080
+	reverse_proxy quire:3000
 }
 
 # vim: ts=4
