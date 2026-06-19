@@ -1,8 +1,8 @@
 - name: VictoriaMetrics
   hosts: lotus-land-story
   vars:
-    version: v1.145.0
-    cadvisor_version: 0.57.0
+    version: v1.146.0
+    cadvisor_version: 0.60.1
   tasks:
 
     - name: Make directories
