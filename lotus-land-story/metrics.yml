@@ -2,7 +2,7 @@
   hosts: lotus-land-story
   vars:
     version: v1.146.0
-    cadvisor_version: 0.60.1
+    cadvisor_version: 0.60.2
   tasks:
 
     - name: Make directories
