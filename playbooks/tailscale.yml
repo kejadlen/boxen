@@ -21,7 +21,9 @@
     # curl -fsSL https://pkgs.tailscale.com/stable/debian/bookworm.tailscale-keyring.list | sudo tee /etc/apt/sources.list.d/tailscale.list
     - name: Add Tailscale repository
       ansible.builtin.apt_repository:
-        repo: deb [signed-by=/usr/share/keyrings/tailscale-archive-keyring.gpg] https://pkgs.tailscale.com/stable/debian {{ ansible_facts["distribution_release"] }} main
+        repo: >-
+          deb [signed-by=/usr/share/keyrings/tailscale-archive-keyring.gpg]
+          https://pkgs.tailscale.com/stable/debian {{ ansible_facts["distribution_release"] }} main
         filename: tailscale
         state: present
 

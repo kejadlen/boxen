@@ -26,7 +26,9 @@
         dest: /etc/apt/keyrings/syncthing-archive-keyring.gpg
         mode: '0644'
 
-    # echo "deb [signed-by=/etc/apt/keyrings/syncthing-archive-keyring.gpg] https://apt.syncthing.net/ syncthing stable-v2" | sudo tee /etc/apt/sources.list.d/syncthing.list
+    # echo "deb [signed-by=/etc/apt/keyrings/syncthing-archive-keyring.gpg] \
+    #   https://apt.syncthing.net/ syncthing stable-v2" \
+    #   | sudo tee /etc/apt/sources.list.d/syncthing.list
     - name: Add Syncthing repository
       ansible.builtin.apt_repository:
         repo: deb [signed-by=/etc/apt/keyrings/syncthing-archive-keyring.gpg] https://apt.syncthing.net/ syncthing stable-v2
@@ -74,7 +76,7 @@
         value: "{{ item.value }}"
         attribute: "{{ item.attribute | default(omit) }}"
         backup: true
-      notify: restart syncthing
+      notify: Restart syncthing
       loop:
         - { key: "gui/address", value: "0.0.0.0:8384" }
         - { key: "gui/user", value: "{{ syncthing.user }}" }
@@ -84,7 +86,7 @@
         - { key: "defaults/folder/minDiskFree", attribute: "unit", value: "%" }
 
   handlers:
-    - name: restart syncthing
+    - name: Restart syncthing
       ansible.builtin.systemd:
         name: syncthing@syncthing.service
         state: restarted

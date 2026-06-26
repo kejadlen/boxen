@@ -4,7 +4,7 @@
   tasks:
 
     - name: Install basic packages
-      apt:
+      ansible.builtin.apt:
         pkg:
           - git
           - net-tools # ifconfig
@@ -15,16 +15,17 @@
         update_cache: true
 
     - name: Include /mnt in node-exporter
-      lineinfile:
+      ansible.builtin.lineinfile:
         path: /etc/default/prometheus-node-exporter
         regexp: '^ARGS='
         line: 'ARGS="--collector.filesystem.mount-points-exclude=^/(dev|proc|run|sys|media|var/lib/docker/.+|var/lib/containers/storage/.+)($|/)"'
-        create: yes
+        create: true
+        mode: '0644'
       notify: Restart node exporter
 
   handlers:
     - name: Restart node exporter
-      systemd:
+      ansible.builtin.systemd:
         name: prometheus-node-exporter
         state: restarted
 
@@ -35,7 +36,7 @@
   tasks:
 
     - name: Disable SSH password logins
-      lineinfile:
+      ansible.builtin.lineinfile:
         path: /etc/ssh/sshd_config
         regexp: '^(#\s*)?{{ item }} '
         line: "{{ item }} no"
@@ -46,7 +47,7 @@
       notify: Restart sshd
 
     - name: Allow sudo without password
-      lineinfile:
+      ansible.builtin.lineinfile:
         path: /etc/sudoers
         regexp: '^%sudo'
         line: '%sudo ALL=(ALL:ALL) NOPASSWD:ALL'
@@ -54,7 +55,7 @@
 
   handlers:
     - name: Restart sshd
-      systemd:
+      ansible.builtin.systemd:
         name: sshd
         state: restarted
 
