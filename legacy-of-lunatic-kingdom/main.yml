@@ -10,18 +10,37 @@
           - net-tools # ifconfig
           - neovim
           - prometheus-node-exporter
+          - prometheus-node-exporter-collectors # apt_info + reboot-required metrics
           - python3-lxml # ansible bcrypt
         state: present
         update_cache: true
 
-    - name: Include /mnt in node-exporter
+    - name: Configure node-exporter collectors
+      vars:
+        # The systemd + apt collectors expose unattended-upgrades health to the
+        # node-exporter target (last run, pending security updates, reboot
+        # needed). See playbooks/unattended-upgrades.yml.
+        node_exporter_args:
+          - --collector.textfile.directory=/var/lib/prometheus/node-exporter
+          - --collector.systemd
+          - --collector.systemd.unit-include=apt-daily.*\.(timer|service)
+          - >-
+            --collector.filesystem.mount-points-exclude=^/(dev|proc|run|sys|media|var/lib/docker/.+|var/lib/containers/storage/.+)($|/)
       ansible.builtin.lineinfile:
         path: /etc/default/prometheus-node-exporter
         regexp: '^ARGS='
-        line: 'ARGS="--collector.filesystem.mount-points-exclude=^/(dev|proc|run|sys|media|var/lib/docker/.+|var/lib/containers/storage/.+)($|/)"'
+        line: 'ARGS="{{ node_exporter_args | join(" ") }}"'
         create: true
         mode: '0644'
       notify: Restart node exporter
+
+    # Periodically regenerates apt.prom (pending upgrades, reboot-required) in
+    # the textfile directory above.
+    - name: Enable node-exporter apt collector
+      ansible.builtin.systemd:
+        name: prometheus-node-exporter-apt.timer
+        enabled: true
+        state: started
 
   handlers:
     - name: Restart node exporter
@@ -60,9 +79,10 @@
         state: restarted
 
 # TODO disallow network access from non-tailscale interfaces
-- import_playbook: ../playbooks/tailscale.yml # noqa: name[play]
-- import_playbook: ../playbooks/docker.yml    # noqa: name[play]
-- import_playbook: ../playbooks/syncthing.yml # noqa: name[play]
+- import_playbook: ../playbooks/tailscale.yml           # noqa: name[play]
+- import_playbook: ../playbooks/docker.yml              # noqa: name[play]
+- import_playbook: ../playbooks/syncthing.yml           # noqa: name[play]
+- import_playbook: ../playbooks/unattended-upgrades.yml # noqa: name[play]
 
 # TODO
 # - restic

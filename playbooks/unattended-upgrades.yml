@@ -1,0 +1,63 @@
+# https://wiki.debian.org/UnattendedUpgrades
+- name: Configure unattended upgrades
+  tags: unattended-upgrades
+  hosts: all
+  become: true
+  tasks:
+
+    - name: Assert distribution is Debian
+      ansible.builtin.assert:
+        that:
+          - ansible_facts["distribution"] == "Debian"
+        fail_msg: "This playbook only supports Debian distributions"
+
+    # sudo apt-get install unattended-upgrades
+    - name: Install unattended-upgrades
+      ansible.builtin.apt:
+        name: unattended-upgrades
+        state: present
+        update_cache: true
+
+    # Refresh package lists and pre-download upgrades daily (via apt-daily.timer)
+    # so the weekly apply below is fast. Origins stay at the package default
+    # (security only), the safe choice for an unattended box holding data on /mnt.
+    - name: Enable periodic unattended upgrades
+      ansible.builtin.copy:
+        content: |
+          APT::Periodic::Update-Package-Lists "1";
+          APT::Periodic::Download-Upgradeable-Packages "1";
+          APT::Periodic::Unattended-Upgrade "1";
+          APT::Periodic::AutocleanInterval "7";
+        dest: /etc/apt/apt.conf.d/20auto-upgrades
+        mode: "0644"
+
+    - name: Create apt-daily-upgrade.timer override directory
+      ansible.builtin.file:
+        path: /etc/systemd/system/apt-daily-upgrade.timer.d
+        state: directory
+        mode: "0755"
+
+    # Apply upgrades weekly instead of daily. The empty OnCalendar clears the
+    # packaged daily schedule before setting the weekly one (OnCalendar is
+    # additive otherwise). Persistent catches up a run missed while powered off.
+    - name: Apply unattended upgrades weekly
+      ansible.builtin.copy:
+        content: |
+          [Timer]
+          OnCalendar=
+          OnCalendar=Sun *-*-* 03:00
+          RandomizedDelaySec=30m
+          Persistent=true
+        dest: /etc/systemd/system/apt-daily-upgrade.timer.d/override.conf
+        mode: "0644"
+      notify: Reload apt-daily-upgrade timer
+
+  handlers:
+
+    - name: Reload apt-daily-upgrade timer
+      ansible.builtin.systemd:
+        name: apt-daily-upgrade.timer
+        state: restarted
+        daemon_reload: true
+
+# vim: ft=yaml.ansible
