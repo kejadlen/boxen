@@ -25,6 +25,20 @@
 	trusted_proxies {{ trusted_proxies }}
 }
 
+# Tailnet-bound sites: internal TLS, a dedicated tailscale node, and access
+# logging routed to the default logger (shipped to VictoriaLogs via Vector).
+# tsauth additionally gates on tailscale identity.
+(ts) {
+	tls internal
+	bind tailscale/{args[0]}
+	log
+}
+
+(tsauth) {
+	import ts {args[0]}
+	tailscale_auth
+}
+
 {% for domain in ("kejadlen.dev", "chislan.family") %}
 auth.{{ domain }} {
 	log
@@ -37,6 +51,7 @@ auth.{{ domain }} {
 
 http://setup {
 	bind tailscale/setup
+	log
 	file_server {
 		root /data/setup
 	}
@@ -45,15 +60,12 @@ http://setup {
 ### Monitoring
 
 cadvisor {
-	tls internal
-	bind tailscale/cadvisor
+	import ts cadvisor
 	reverse_proxy cadvisor:8080
 }
 
 grafana {
-	tls internal
-	bind tailscale/grafana
-	tailscale_auth
+	import tsauth grafana
 	reverse_proxy grafana:3000 {
 		header_up X-Webauth-User {http.auth.user.tailscale_user}
 	}
@@ -64,39 +76,32 @@ grafana {
 }
 
 logs {
-	tls internal
-	bind tailscale/logs
+	import ts logs
 	reverse_proxy victoria-logs:9428
 }
 
 traces {
-	tls internal
-	bind tailscale/traces
+	import ts traces
 	reverse_proxy victoria-traces:10428
 }
 
 # need scheme here since `metrics` is a directive
 https://metrics {
- 	tls internal
- 	bind tailscale/metrics
- 	reverse_proxy victoria-metrics:8428
+	import ts metrics
+	reverse_proxy victoria-metrics:8428
 }
 
 ### Services
 
 quire {
-	tls internal
-	bind tailscale/quire
-	tailscale_auth
+	import tsauth quire
 	reverse_proxy quire:3000 {
 		header_up Remote-User {http.auth.user.tailscale_login}
 	}
 }
 
 irc {
-	tls internal
-	bind tailscale/irc
-	tailscale_auth
+	import tsauth irc
 
 	file_server
 	root * /data/gamja/dist
@@ -105,18 +110,14 @@ irc {
 }
 
 rss {
-	tls internal
-	bind tailscale/rss
-	tailscale_auth
+	import tsauth rss
 	reverse_proxy miniflux:8080 {
 		header_up Remote-User {http.auth.user.tailscale_login}
 	}
 }
 
 ketchup {
-	tls internal
-	bind tailscale/ketchup
-	tailscale_auth
+	import tsauth ketchup
 	reverse_proxy ketchup:9292 {
 		header_up Tailscale-User-Login {http.auth.user.tailscale_login}
 		header_up Tailscale-User-Name {http.auth.user.tailscale_user}
@@ -126,18 +127,14 @@ ketchup {
 ### Family
 
 books {
-	tls internal
-	bind tailscale/books
-	tailscale_auth
+	import tsauth books
 	reverse_proxy calibre-web:8083 {
 		header_up Remote-User {http.auth.user.tailscale_user}
 	}
 }
 
 docs {
-	tls internal
-	bind tailscale/docs
-	tailscale_auth
+	import tsauth docs
 	reverse_proxy paperless-ngx:8000 {
 		header_up Remote-User {http.auth.user.tailscale_user}
 	}
@@ -149,35 +146,29 @@ docs {
 }
 
 homebox {
-	tls internal
-	bind tailscale/homebox
+	import ts homebox
 	reverse_proxy homebox:7745
 }
 
 ### Internal
 
 dockhand {
-	tls internal
-	bind tailscale/dockhand
-	tailscale_auth
+	import tsauth dockhand
 	reverse_proxy dockhand:3000
 }
 
 home-assistant-509 {
-	tls internal
-	bind tailscale/home-assistant-509
+	import ts home-assistant-509
 	reverse_proxy homeassistant-509:8123
 }
 
 home-assistant-5119 {
-	tls internal
-	bind tailscale/home-assistant-5119
+	import ts home-assistant-5119
 	reverse_proxy homeassistant-5119:8123
 }
 
 pihole {
-	tls internal
-	bind tailscale/pihole
+	import ts pihole
 	
 	redir / /admin/
 	reverse_proxy mountain-of-faith:80
