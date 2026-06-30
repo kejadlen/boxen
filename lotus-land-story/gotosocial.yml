@@ -3,7 +3,7 @@
 - name: Set up GoToSocial
   hosts: lotus-land-story
   vars:
-    version: 0.21.2
+    version: 0.22.0
   tasks:
 
     - name: Create working directory
