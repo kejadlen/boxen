@@ -43,7 +43,7 @@
 - name: Run Miniflux
   hosts: lotus-land-story
   vars:
-    version: 2.3.0
+    version: 2.3.2
   tasks:
 
     - name: Get docker network
