@@ -81,7 +81,8 @@
           GTS_OIDC_CLIENT_SECRET: "{{ gotosocial.oidc_client_secret }}"
           GTS_OIDC_ADMIN_GROUPS: admin
           GTS_METRICS_ENABLED: "true"
-          # GTS_ADVANCED_RATE_LIMIT_REQUESTS: "0"
+          # Tailscale's default CGNAT range, exempted from rate limiting.
+          GTS_ADVANCED_RATE_LIMIT_EXCEPTIONS: "100.64.0.0/10"
           GTS_STATUSES_CLEANUP_REMOTE_OLDER_THAN: 1 year
           OTEL_METRICS_PRODUCERS: prometheus
           OTEL_METRICS_EXPORTER: prometheus
