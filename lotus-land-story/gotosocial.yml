@@ -3,7 +3,7 @@
 - name: Set up GoToSocial
   hosts: lotus-land-story
   vars:
-    version: 0.22.0
+    version: 0.22.1
   tasks:
 
     - name: Create working directory
@@ -38,14 +38,6 @@
               community.docker.docker_container:
                 name: gotosocial
                 state: stopped
-            # TODO swap to `sqlite3 .backup` — a plain copy can miss writes
-            # still in the -wal sidecar that a clean shutdown hasn't checkpointed.
-            - name: Backup db
-              ansible.builtin.copy:
-                src: /mnt/lotus-land-story/gotosocial/data/sqlite.db
-                dest: /mnt/lotus-land-story/gotosocial/sqlite.db.bak
-                mode: "0400"
-                remote_src: true
             - name: Install sqlite3
               ansible.builtin.apt:
                 pkg:
@@ -55,6 +47,18 @@
               ansible.builtin.command:
                 cmd: sqlite3 /mnt/lotus-land-story/gotosocial/data/sqlite.db 'VACUUM;'
               changed_when: true
+            # `.backup` goes through SQLite instead of copying the file, so it
+            # picks up writes still sitting in the -wal sidecar.
+            - name: Backup db
+              ansible.builtin.command:
+                cmd: >
+                  sqlite3 /mnt/lotus-land-story/gotosocial/data/sqlite.db
+                  '.backup /mnt/lotus-land-story/gotosocial/sqlite.db.bak'
+              changed_when: true
+            - name: Restrict backup permissions
+              ansible.builtin.file:
+                path: /mnt/lotus-land-story/gotosocial/sqlite.db.bak
+                mode: "0400"
 
     - name: Get docker network for trusted proxies
       community.docker.docker_network:
