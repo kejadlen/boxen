@@ -43,9 +43,11 @@
                 pkg:
                   - sqlite3
                 state: present
-            - name: Vacuum db
+            - name: Vacuum and analyze db
               ansible.builtin.command:
-                cmd: sqlite3 /mnt/lotus-land-story/gotosocial/data/sqlite.db 'VACUUM;'
+                cmd: >
+                  sqlite3 /mnt/lotus-land-story/gotosocial/data/sqlite.db
+                  'VACUUM; ANALYZE;'
               changed_when: true
             # `.backup` goes through SQLite instead of copying the file, so it
             # picks up writes still sitting in the -wal sidecar.
