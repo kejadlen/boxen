@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "grafana": {
+      "command": "op",
+      "args": ["run", "--no-masking", "--", "bin/mcp-grafana"],
+      "env": {
+        "GRAFANA_URL": "https://grafana",
+        "GRAFANA_SERVICE_ACCOUNT_TOKEN": "op://Private/mcp-grafana/credential"
+      }
+    }
+  }
+}

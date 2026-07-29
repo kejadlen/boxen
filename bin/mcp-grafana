@@ -1,0 +1,25 @@
+#!/usr/bin/env dotslash
+
+{
+  "name": "mcp-grafana",
+  "platforms": {
+    "macos-aarch64": {
+      "size": 14541379,
+      "hash": "blake3",
+      "digest": "72e3575874af6b86004e1a4f0d4105be1f2f69adcb773c4f2dcb5fdf5a12dddb",
+      "format": "tar.gz",
+      "path": "mcp-grafana",
+      "providers": [
+        {
+          "url": "https://github.com/grafana/mcp-grafana/releases/download/v0.17.0/mcp-grafana_Darwin_arm64.tar.gz"
+        },
+        {
+          "type": "github-release",
+          "repo": "https://github.com/grafana/mcp-grafana",
+          "tag": "v0.17.0",
+          "name": "mcp-grafana_Darwin_arm64.tar.gz"
+        }
+      ]
+    }
+  }
+}
