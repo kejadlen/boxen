@@ -119,6 +119,14 @@ resource "dnsimple_zone_record" "low_quality_transcripts" {
   type      = "CNAME"
 }
 
+resource "dnsimple_zone_record" "domus" {
+  zone_name = dnsimple_zone.zones["kejadlen_dev"].name
+  name      = "domus"
+  value     = "mx.sendgrid.net"
+  type      = "MX"
+  priority  = 10
+}
+
 resource "dnsimple_zone_record" "issues_cooking_github" {
   for_each = {
     a_0    = { type = "A", value = "185.199.108.153" }
