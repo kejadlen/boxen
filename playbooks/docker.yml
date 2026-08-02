@@ -13,6 +13,7 @@
           - ca-certificates
           - curl
           - gnupg # for the signing keys
+          - python3-debian # for ansible.builtin.deb822_repository
         state: present
         update_cache: true
 
@@ -30,14 +31,25 @@
       register: dpkg_arch
       changed_when: false
 
+    # Left behind by ansible.builtin.apt_repository; apt reads both formats, so
+    # leaving it would configure the repository twice.
+    - name: Remove one-line Docker repository
+      ansible.builtin.file:
+        path: /etc/apt/sources.list.d/download_docker_com_linux_debian.list
+        state: absent
+
     # echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] \
     #   https://download.docker.com/linux/debian $(. /etc/os-release && echo "$VERSION_CODENAME") stable" \
     #   | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
     - name: Add Docker repository
-      ansible.builtin.apt_repository:
-        repo: >-
-          deb [arch={{ dpkg_arch.stdout }} signed-by=/etc/apt/keyrings/docker.asc]
-          https://download.docker.com/linux/debian {{ ansible_facts["distribution_release"] }} stable
+      ansible.builtin.deb822_repository:
+        name: docker
+        types: deb
+        uris: https://download.docker.com/linux/debian
+        suites: '{{ ansible_facts["distribution_release"] }}'
+        components: stable
+        architectures: "{{ dpkg_arch.stdout }}"
+        signed_by: /etc/apt/keyrings/docker.asc
         state: present
 
     # sudo apt-get update

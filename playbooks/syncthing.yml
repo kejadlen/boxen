@@ -12,6 +12,13 @@
           - ansible_facts["distribution"] == "Debian"
         fail_msg: "This playbook only supports Debian distributions"
 
+    # ansible.builtin.deb822_repository needs python-debian on the target.
+    - name: Install required packages
+      ansible.builtin.apt:
+        name: python3-debian
+        state: present
+        update_cache: true
+
     # sudo mkdir -p /etc/apt/keyrings
     - name: Create APT keyrings directory
       ansible.builtin.file:
@@ -26,12 +33,24 @@
         dest: /etc/apt/keyrings/syncthing-archive-keyring.gpg
         mode: '0644'
 
+    # Left behind by ansible.builtin.apt_repository; apt reads both formats, so
+    # leaving it would configure the repository twice.
+    - name: Remove one-line Syncthing repository
+      ansible.builtin.file:
+        path: /etc/apt/sources.list.d/apt_syncthing_net.list
+        state: absent
+
     # echo "deb [signed-by=/etc/apt/keyrings/syncthing-archive-keyring.gpg] \
     #   https://apt.syncthing.net/ syncthing stable-v2" \
     #   | sudo tee /etc/apt/sources.list.d/syncthing.list
     - name: Add Syncthing repository
-      ansible.builtin.apt_repository:
-        repo: deb [signed-by=/etc/apt/keyrings/syncthing-archive-keyring.gpg] https://apt.syncthing.net/ syncthing stable-v2
+      ansible.builtin.deb822_repository:
+        name: syncthing
+        types: deb
+        uris: https://apt.syncthing.net/
+        suites: syncthing
+        components: stable-v2
+        signed_by: /etc/apt/keyrings/syncthing-archive-keyring.gpg
         state: present
 
     # sudo apt-get update

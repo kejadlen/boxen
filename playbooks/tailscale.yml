@@ -11,6 +11,13 @@
           - ansible_facts["distribution"] == "Debian"
         fail_msg: "This playbook only supports Debian distributions"
 
+    # ansible.builtin.deb822_repository needs python-debian on the target.
+    - name: Install required packages
+      ansible.builtin.apt:
+        name: python3-debian
+        state: present
+        update_cache: true
+
     # curl -fsSL https://pkgs.tailscale.com/stable/debian/bookworm.noarmor.gpg | sudo tee /usr/share/keyrings/tailscale-archive-keyring.gpg >/dev/null
     - name: Download Tailscale package signing key
       ansible.builtin.get_url:
@@ -18,13 +25,22 @@
         dest: /usr/share/keyrings/tailscale-archive-keyring.gpg
         mode: "0644"
 
+    # Left behind by ansible.builtin.apt_repository; apt reads both formats, so
+    # leaving it would configure the repository twice.
+    - name: Remove one-line Tailscale repository
+      ansible.builtin.file:
+        path: /etc/apt/sources.list.d/tailscale.list
+        state: absent
+
     # curl -fsSL https://pkgs.tailscale.com/stable/debian/bookworm.tailscale-keyring.list | sudo tee /etc/apt/sources.list.d/tailscale.list
     - name: Add Tailscale repository
-      ansible.builtin.apt_repository:
-        repo: >-
-          deb [signed-by=/usr/share/keyrings/tailscale-archive-keyring.gpg]
-          https://pkgs.tailscale.com/stable/debian {{ ansible_facts["distribution_release"] }} main
-        filename: tailscale
+      ansible.builtin.deb822_repository:
+        name: tailscale
+        types: deb
+        uris: https://pkgs.tailscale.com/stable/debian
+        suites: '{{ ansible_facts["distribution_release"] }}'
+        components: main
+        signed_by: /usr/share/keyrings/tailscale-archive-keyring.gpg
         state: present
 
     # sudo apt-get update
