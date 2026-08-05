@@ -4,7 +4,7 @@
   hosts: lotus-land-story
   vars:
     version: 1.26.2
-    anubis_version: 1.25.0
+    anubis_version: 1.26.2
   tasks:
 
     - name: Create git user
