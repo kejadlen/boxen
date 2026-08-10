@@ -432,6 +432,60 @@ cmd_configure_firewall() {
     log "Firewall configured"
 }
 
+# Keep exit-node return traffic inside the tunnel despite mwan3.
+#
+# GL.iNet firmware runs mwan3 for WAN failover, and mwan3 installs an `ip rule`
+# at priority 1001 that sends everything arriving on the WAN to route table 1.
+# Table 1 carries a default route but no tailnet routes, so replies headed back
+# to an exit-node peer leave via the upstream router instead of tailscale0.
+# Only forwarded traffic breaks - packets addressed to the Mango itself match
+# the local table at priority 0 and never reach rule 1001, which is why the box
+# looks perfectly healthy while the exit node does not work at all.
+#
+# The aggregate goes in the MAIN table, not table 1. mwan3's mwan3rtmon daemon
+# continuously mirrors main into each interface table and deletes anything main
+# does not have, so a route written straight to table 1 is reaped on the next
+# sync; one written to main is copied down within seconds and stays. Table 52
+# holds a per-peer /32 rather than an aggregate, so there is no single
+# tailscale-managed route to mirror instead.
+#
+# This does not disturb the guard at rules 5210-5250, which keeps tailscaled's
+# own encrypted packets out of the tunnel: those are addressed to peers' public
+# endpoints and never into 100.64.0.0/10.
+#
+# Do NOT try to remove mwan3 instead. `/etc/init.d/mwan3 disable` does not hold
+# because /etc/hotplug.d/iface/15-mwan3 restarts it on the WAN's DHCP ifup, and
+# stopping it live has wedged this box. See 2026-08-07-exit-node-return-path.md.
+cmd_configure_routing() {
+    log "Installing tailnet route hotplug script"
+
+    # Keyed on the tailscale interface because the route needs tailscale0 to
+    # exist, and tailscaled starts last at START=99. INTERFACE is the UCI
+    # section name, not the device name.
+    cat > /etc/hotplug.d/iface/30-tailnet-route <<'EOF'
+#!/bin/sh
+# See cmd_configure_routing in mango-tailscale-setup.sh for why this route
+# belongs in the main table rather than mwan3's table 1.
+[ "$INTERFACE" = "tailscale" ] || exit 0
+
+case "$ACTION" in
+    ifup)   ip route replace 100.64.0.0/10 dev tailscale0 ;;
+    ifdown) ip route del 100.64.0.0/10 dev tailscale0 2>/dev/null ;;
+esac
+EOF
+    chmod +x /etc/hotplug.d/iface/30-tailnet-route
+
+    # Apply now if the interface is already up; otherwise the hotplug script
+    # picks it up on the next ifup. Note that `ifup tailscale` is NOT a way to
+    # force that - netifd no-ops it when the interface is already up.
+    if [ -d /sys/class/net/tailscale0 ]; then
+        ip route replace 100.64.0.0/10 dev tailscale0
+        log "Tailnet route added to main table"
+    else
+        log "tailscale0 not up yet; route will be added on next ifup"
+    fi
+}
+
 # Install a procd init script for tailscaled.
 #
 # procd is OpenWrt's service supervisor, the equivalent of systemd or runit
@@ -574,15 +628,18 @@ cmd_up() {
 # already preserved automatically; what we add here is the extra stuff that
 # lives outside /etc/config:
 #
-# - /etc/init.d/tailscale          : custom procd script
-# - /etc/modules.d/30-tun          : auto-load tun module on boot
-# - /etc/dropbear/authorized_keys  : SSH public keys (NOT in /etc/config)
+# - /etc/init.d/tailscale               : custom procd script
+# - /etc/modules.d/30-tun               : auto-load tun module on boot
+# - /etc/dropbear/authorized_keys       : SSH public keys (NOT in /etc/config)
+# - /etc/hotplug.d/iface/30-tailnet-route : tailnet route past mwan3's rule 1001
 #
 # Note that /mnt/sda1/* is on USB and unaffected by sysupgrade entirely.
 cmd_persist_upgrade_config() {
     log "Adding paths to /etc/sysupgrade.conf"
     [ -f /etc/sysupgrade.conf ] || touch /etc/sysupgrade.conf
-    for path in /etc/init.d/tailscale /etc/modules.d/30-tun /etc/dropbear/authorized_keys; do
+    for path in /etc/init.d/tailscale /etc/modules.d/30-tun \
+                /etc/dropbear/authorized_keys \
+                /etc/hotplug.d/iface/30-tailnet-route; do
         if grep -qxF "$path" /etc/sysupgrade.conf; then
             log "  $path (already present)"
         else
@@ -624,6 +681,16 @@ cmd_status() {
     echo
     echo "=== Firewall (tailscale zone & forwarding) ==="
     uci show firewall 2>/dev/null | grep -E "tailscale" || echo "(no tailscale zone configured)"
+    echo
+    echo "=== Exit node return path ==="
+    if ip route show table main 2>/dev/null | grep -q '^100\.64\.0\.0/10'; then
+        echo "tailnet route in main: present"
+    else
+        echo "tailnet route in main: MISSING (run 'configure-routing')"
+    fi
+    # Should resolve to tailscale0. Anything via the WAN gateway means mwan3's
+    # rule 1001 is still winning and the exit node will not work.
+    ip route get 100.100.100.100 from 8.8.8.8 iif eth0.2 2>/dev/null | head -1
 }
 
 # Pull the current stable Tailscale and restart the service.
@@ -650,6 +717,8 @@ cmd_all() {
     cmd_install_tailscale
     cmd_configure_firewall
     cmd_install_init
+    # After install_init, so tailscaled has created tailscale0 to route to.
+    cmd_configure_routing
     cmd_configure_ssh "--ssh-key=$SSH_PUBKEY"
     cmd_persist_upgrade_config
 
@@ -677,6 +746,7 @@ Stages (each idempotent, can be re-run):
   install-tailscale          Download current stable mipsle Tailscale
   configure-firewall         Tailscale UCI iface + zone + forward to wan
   install-init               /etc/init.d/tailscale, enable, start
+  configure-routing          Tailnet route in main table, past mwan3 rule 1001
   configure-ssh              --ssh-key='ssh-ed25519 AAAA... user'
                           OR --ssh-key-file=/path/to/key.pub
   disable-password-ssh       Lock dropbear to key auth (do AFTER testing keys)
@@ -717,6 +787,7 @@ case "$cmd" in
     install-tailscale)      cmd_install_tailscale ;;
     configure-firewall)     cmd_configure_firewall ;;
     install-init)           cmd_install_init ;;
+    configure-routing)      cmd_configure_routing ;;
     configure-ssh)          cmd_configure_ssh "$@" ;;
     disable-password-ssh)   cmd_disable_password_ssh ;;
     up)                     cmd_up ;;
