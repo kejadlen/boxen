@@ -22,10 +22,17 @@
 #
 # ---- Operating mode --------------------------------------------------------
 #
-# Assumes the Mango is configured as a wifi REPEATER against a home wifi
-# network. The upstream interface is `wwan`, which GL.iNet firmware places
-# in the `wan` firewall zone alongside the physical WAN port. The exit node
-# routes remote tailnet peers' internet traffic through the home connection.
+# Works with either upstream: the physical WAN port (`eth0.2`) or a wifi
+# repeater link (`wwan`). GL.iNet firmware places both in the `wan` firewall
+# zone, so the zone and forwarding rules below are the same either way. The
+# exit node routes remote tailnet peers' internet traffic out whichever one
+# is live.
+#
+# double-dealing-character as deployed runs on the WIRED port: network.wan is
+# eth0.2 on DHCP, and mwan3 reports wan online with wwan offline. Worth knowing
+# before debugging, because the mwan3 return-path bug documented in
+# 2026-08-07-exit-node-return-path.md is expressed as a rule on `iif eth0.2`;
+# on a repeater-mode box the equivalent rule names `wwan` instead.
 #
 # Expected throughput: ~5-10 Mbps. Two compounding effects: the Mango has
 # no AES offload on a single ~580 MHz MIPS core [7], and double-NAT (Mango
@@ -571,9 +578,10 @@ cmd_configure_ssh() {
     fi
     chmod 600 /etc/dropbear/authorized_keys
 
-    log "Test SSH from a tailnet peer BEFORE disabling password auth:"
-    log "    ssh root@$TS_HOSTNAME"
-    log "When that works, run: $0 disable-password-ssh"
+    log "Test SSH from a tailnet peer BEFORE disabling password auth. Force"
+    log "key auth, or you will not notice a silent fallback to password:"
+    log "    ssh -o PasswordAuthentication=no root@$TS_HOSTNAME true"
+    log "When that succeeds, run: $0 disable-password-ssh"
 }
 
 # Lock dropbear down to public-key auth only.
@@ -581,9 +589,23 @@ cmd_configure_ssh() {
 # Refuses to run if authorized_keys is empty - this would otherwise be a
 # foot-cannon: disable passwords with no keys installed and you cannot SSH
 # in by any means.
+#
+# That check is necessary but NOT sufficient, and the gap has bitten this box:
+# a stale or mismatched key leaves the file non-empty while key auth fails and
+# every session quietly falls back to the password. Disabling passwords then
+# locks you out of a box whose only other door is its own LAN. A plain
+# `ssh root@host` does not distinguish the two cases - it succeeds either way -
+# so verify with PasswordAuthentication=no first. Check which method actually
+# won with `logread | grep dropbear`; it logs "Password auth succeeded" or
+# "Public key auth succeeded" per connection.
 cmd_disable_password_ssh() {
     [ -s /etc/dropbear/authorized_keys ] || \
         die "No authorized_keys present - refusing to lock you out"
+
+    warn "authorized_keys is non-empty, but that does not prove key auth works."
+    warn "If you have not confirmed it, interrupt now and run this from a peer:"
+    warn "    ssh -o PasswordAuthentication=no root@$TS_HOSTNAME true"
+    sleep 5
 
     log "Disabling password auth on dropbear"
     uci set dropbear.@dropbear[0].PasswordAuth='off'

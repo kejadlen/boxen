@@ -22,8 +22,19 @@ export SSH_PUBKEY="ssh-ed25519 AAAA... me@laptop"
 - Approve as an exit node and disable key expiry in the [Tailscale console](https://login.tailscale.com/admin/machines)
 - Test SSH from a tailnet peer, then `/tmp/mango-tailscale-setup.sh disable-password-ssh`
 
-`mango-tailscale-setup.sh status` prints install, mount, service, and tailnet
-state in one go.
+Test that step with `ssh -o PasswordAuthentication=no root@double-dealing-character
+true`, not a plain `ssh`. A plain `ssh` succeeds on either method, so a stale key
+plus a silent fallback to password auth looks identical to working key auth. The
+`disable-password-ssh` guard only checks that `authorized_keys` is non-empty,
+which a stale key satisfies, and disabling passwords in that state locks you out
+of a box whose only other door is its own LAN at 192.168.8.1.
+
+`all` runs `configure-routing` as one of its stages, which is what keeps
+exit-node replies inside the tunnel rather than sending them back out the WAN.
+Run it on its own if the exit node stops working after a firmware upgrade.
+
+`mango-tailscale-setup.sh status` prints install, mount, service, tailnet, and
+exit-node return path state in one go.
 
 ## Notes
 
