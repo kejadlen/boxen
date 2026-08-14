@@ -77,12 +77,13 @@
   become: true
   tasks:
 
-    # Use `lsblk -f` to find the device
-    - name: Mount /dev/sda to /mnt/mountain-of-faith
+    # Use `lsblk -f` to find the UUID
+    - name: Mount the USB drive to /mnt/mountain-of-faith
       ansible.posix.mount:
         path: /mnt/mountain-of-faith
-        src: /dev/sda
+        src: UUID=337a82a2-0046-4cbf-93f3-8fc978c3e944
         fstype: ext4
+        opts: defaults,nofail
         state: mounted
 
 - name: Set up Restic
