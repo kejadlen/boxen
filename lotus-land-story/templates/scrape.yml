@@ -144,6 +144,22 @@ scrape_configs:
     static_configs:
       - targets: ['homeassistant:8123']
 
+  - job_name: linode
+    linode_sd_configs:
+      - authorization:
+          credentials: {{ linode.api_token }}
+        port: 9100
+    relabel_configs:
+      - source_labels: [__meta_linode_status]
+        regex: running
+        action: keep
+      - source_labels: [__meta_linode_instance_label]
+        target_label: __address__
+        replacement: $1:9100
+      # Existing dashboards match on the node-exporter job.
+      - target_label: job
+        replacement: node-exporter
+
   - job_name: miniflux
     static_configs:
       - targets: ['miniflux:8080']
@@ -165,15 +181,8 @@ scrape_configs:
   - job_name: node-exporter
     static_configs:
       - targets:
-          - host.docker.internal:9100
           - legacy-of-lunatic-kingdom:9100
           - mountain-of-faith:9100
-          - ramble-hard:9100
-    relabel_configs:
-      - source_labels: [__address__]
-        regex: 'host\.docker\.internal:9100'
-        target_label: instance
-        replacement: 'lotus-land-story:9100'
 
   - job_name: paperless
     metrics_path: /flower/metrics
