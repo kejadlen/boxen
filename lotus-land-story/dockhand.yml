@@ -1,7 +1,7 @@
 - name: Set up Dockhand
   hosts: lotus-land-story
   vars:
-    version: 1.0.41
+    version: 1.0.42
   tasks:
 
     - name: Create data directory for Dockhand
