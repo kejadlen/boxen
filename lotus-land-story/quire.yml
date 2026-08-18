@@ -46,12 +46,11 @@
     - name: Write quire config
       ansible.builtin.copy:
         content: |
-          {:secrets {:github_auth_header {:file "/var/quire/secrets/github_auth_header"}
+          {:host "quire.kejadlen.dev"
+           :secrets {:github_auth_header {:file "/var/quire/secrets/github_auth_header"}
                      :gitea-mirror {:file "/var/quire/secrets/gitea_mirror"}
                      :github-mirror {:file "/var/quire/secrets/github_mirror"}}
-           :sentry {:dsn "{{ quire.sentry_dsn }}"}
-           :ci {:transport :api}
-           :github {:mirror-token {:file "/var/quire/secrets/github_mirror"}}}
+           :sentry {:dsn "{{ quire.sentry_dsn }}"}}
         dest: /mnt/lotus-land-story/quire/config.fnl
         mode: "0644"
         owner: "{{ quire_user.name }}"
