@@ -1,7 +1,7 @@
 - name: Set up Authelia
   hosts: lotus-land-story
   vars:
-    version: 4.39.20
+    version: 4.39.22
   tasks:
 
     - name: Create directories for volume mounting
