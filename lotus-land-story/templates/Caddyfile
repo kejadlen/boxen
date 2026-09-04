@@ -176,6 +176,27 @@ pihole {
 
 ### External
 
+# synced from quire/gists
+gists.kejadlen.dev {
+	log
+
+	root * /data/gists
+	encode zstd gzip
+
+	# raw markdown, like GitHub's raw view
+	@raw path *.md
+	handle @raw {
+		file_server
+	}
+
+	# rendered views; templates stays scoped here so raw .md is never evaluated
+	handle {
+		rewrite * /_render.html
+		templates
+		file_server
+	}
+}
+
 birdnetpi.chislan.family
 	log
 

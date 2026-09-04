@@ -32,6 +32,7 @@ resource "dnsimple_zone_record" "chislan_family_subdomains" {
 resource "dnsimple_zone_record" "kejadlen_dev_subdomains" {
   for_each = {
     auth    = local.lotus_land_story.ip_address
+    gists   = local.lotus_land_story.ip_address
     git     = local.lotus_land_story.ip_address
     grafana = local.lotus_land_story.ip_address
     hey     = local.lotus_land_story.ip_address

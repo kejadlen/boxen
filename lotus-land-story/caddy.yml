@@ -13,6 +13,7 @@
       loop:
         - caddy
         - caddy/data
+        - caddy/data/gists
 
     - name: Get docker network for trusted proxies
       community.docker.docker_network:
