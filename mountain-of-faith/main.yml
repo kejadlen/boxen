@@ -294,4 +294,6 @@
         state: started
         restart: true
 
+- import_playbook: ups.yml
+
 # vim: ft=yaml.ansible

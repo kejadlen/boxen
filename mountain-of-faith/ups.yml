@@ -1,0 +1,76 @@
+- name: Run upsd
+  tags: ups
+  hosts: mountain-of-faith
+  become: true
+  tasks:
+
+    - name: Install NUT
+      ansible.builtin.apt:
+        name: nut-server
+        state: present
+
+    - name: Configure the UPS
+      ansible.builtin.copy:
+        dest: /etc/nut/ups.conf
+        content: |
+          [cyberpower]
+              driver = usbhid-ups
+              port = auto
+              vendorid = 0764
+              productid = 0601
+              desc = "CyberPower PR1500LCDRT2U"
+        owner: root
+        group: nut
+        mode: "0640"
+      notify: restart nut-driver-enumerator
+
+    - name: Configure upsd
+      ansible.builtin.copy:
+        dest: /etc/nut/upsd.conf
+        content: |
+          LISTEN 0.0.0.0 3493
+        owner: root
+        group: nut
+        mode: "0640"
+      notify: restart nut-server
+
+    # No upsmon yet, so nothing needs to log in - upsc reads variables
+    # anonymously.
+    - name: Configure upsd users
+      ansible.builtin.copy:
+        dest: /etc/nut/upsd.users
+        content: ""
+        owner: root
+        group: nut
+        mode: "0640"
+      notify: restart nut-server
+
+    - name: Run NUT in standalone mode
+      ansible.builtin.copy:
+        dest: /etc/nut/nut.conf
+        content: |
+          MODE=standalone
+        owner: root
+        group: nut
+        mode: "0640"
+      notify: restart nut-server
+
+    - name: Enable and start upsd
+      ansible.builtin.systemd:
+        name: nut-server
+        enabled: true
+        state: started
+
+  handlers:
+    # Picks up ups.conf changes by (re)generating the nut-driver@ units.
+    - name: restart nut-driver-enumerator
+      ansible.builtin.systemd:
+        name: nut-driver-enumerator
+        state: restarted
+
+    - name: restart nut-server
+      ansible.builtin.systemd:
+        name: nut-server
+        state: restarted
+
+# vim: ft=yaml.ansible
