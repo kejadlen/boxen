@@ -169,7 +169,7 @@ home-assistant-5119 {
 
 pihole {
 	import ts pihole
-	
+
 	redir / /admin/
 	reverse_proxy mountain-of-faith:80
 }
@@ -197,7 +197,7 @@ gists.kejadlen.dev {
 	}
 }
 
-birdnetpi.chislan.family
+birdnetpi.chislan.family {
 	log
 
 	reverse_proxy hopeless-masquerade:80
@@ -218,7 +218,7 @@ git.kejadlen.dev {
 			match {
 				header User-Agent meta-webindexer/*
 			}
-			key    {http.request.remote.host}
+			key {http.request.remote.host}
 			events 1
 			window 1m
 			log_key
@@ -236,7 +236,7 @@ git.kejadlen.dev {
 	}
 }
 
-hey.kejadlen.dev
+hey.kejadlen.dev {
 	log
 
 	reverse_proxy gotosocial:8080
