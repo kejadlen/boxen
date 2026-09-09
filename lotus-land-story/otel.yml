@@ -2,7 +2,7 @@
   tags: victoria-traces
   hosts: lotus-land-story
   vars:
-    version: 0.9.0
+    version: "{{ versions.victoria_traces }}"
   tasks:
 
     - name: Make directories

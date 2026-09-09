@@ -3,8 +3,8 @@
 - name: Set up Gitea
   hosts: lotus-land-story
   vars:
-    version: 1.26.2
-    anubis_version: 1.26.2
+    version: "{{ versions.gitea }}"
+    anubis_version: "{{ versions.anubis }}"
   tasks:
 
     - name: Create git user
@@ -47,7 +47,7 @@
       tags: anubis
       community.docker.docker_container:
         name: anubis
-        image: ghcr.io/techarohq/anubis:v{{ anubis_version }}
+        image: ghcr.io/techarohq/anubis:{{ anubis_version }}
         restart: true
         env:
           COOKIE_DOMAIN: kejadlen.dev
@@ -120,7 +120,7 @@
   hosts: lotus-land-story
   tags: gitea-runner
   vars:
-    runner_version: 0.4.1
+    runner_version: "{{ versions.gitea_runner }}"
   tasks:
 
     - name: Make /mnt/lotus-land-story/gitea-runner

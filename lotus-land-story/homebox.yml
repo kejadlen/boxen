@@ -1,7 +1,7 @@
 - name: Set up Homebox
   hosts: lotus-land-story
   vars:
-    version: 0.25.0
+    version: "{{ versions.homebox }}"
   tasks:
 
     - name: Create data directory for Homebox

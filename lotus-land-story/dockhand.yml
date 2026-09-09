@@ -1,7 +1,7 @@
 - name: Set up Dockhand
   hosts: lotus-land-story
   vars:
-    version: 1.0.46
+    version: "{{ versions.dockhand }}"
   tasks:
 
     - name: Create data directory for Dockhand
@@ -13,7 +13,7 @@
     - name: Run Dockhand
       community.docker.docker_container:
         name: dockhand
-        image: fnsys/dockhand:v{{ version }}
+        image: fnsys/dockhand:{{ version }}
         restart: true
         volumes:
           - /var/run/docker.sock:/var/run/docker.sock

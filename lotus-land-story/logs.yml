@@ -2,7 +2,7 @@
   tags: victoria-logs
   hosts: lotus-land-story
   vars:
-    version: 1.44.0
+    version: "{{ versions.victoria_logs }}"
   tasks:
 
     - name: Make directories
@@ -22,7 +22,7 @@
       community.docker.docker_container:
         restart: true
         name: victoria-logs
-        image: docker.io/victoriametrics/victoria-logs:v{{ version }}
+        image: docker.io/victoriametrics/victoria-logs:{{ version }}
         command: -storageDataPath=/data -syslog.listenAddr.tcp=:514
         restart_policy: unless-stopped
         ports:

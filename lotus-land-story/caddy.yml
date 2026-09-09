@@ -1,8 +1,7 @@
 - name: Set up Caddy
   hosts: lotus-land-story
   vars:
-    # don't forget to update docker-caddy-tailscale first!
-    version: 2.11.4
+    version: "{{ versions.caddy }}"
   tasks:
 
     - name: Make /mnt/lotus-land-story/caddy

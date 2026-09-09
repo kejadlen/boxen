@@ -1,3 +1,4 @@
 *
 !.gitignore
 !*.sops.yml
+!lotus-land-story.yml

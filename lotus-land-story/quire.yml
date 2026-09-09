@@ -2,8 +2,7 @@
 - name: Set up Quire
   hosts: lotus-land-story
   vars:
-    # TODO Pin the version once we're not in active development anymore
-    version: latest
+    version: "{{ versions.quire }}"
   tasks:
 
     - name: Create quire user

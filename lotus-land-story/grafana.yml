@@ -1,7 +1,7 @@
 - name: Set up Grafana
   hosts: lotus-land-story
   vars:
-    version: 12.4.3
+    version: "{{ versions.grafana }}"
   tasks:
 
     - name: Grafana user

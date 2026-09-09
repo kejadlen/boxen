@@ -1,0 +1,22 @@
+versions:
+  anubis:           v1.26.2
+  authelia:         4.39.22
+  cadvisor:         0.60.5
+  caddy:            2.11.4 # don't forget to update docker-caddy-tailscale first!
+  calibre_web:      0.6.26-ls383
+  dockhand:         v1.0.46
+  gamja:            caf6e99
+  gitea:            1.26.2
+  gitea_runner:     0.4.1
+  gotosocial:       0.22.1
+  grafana:          12.4.3
+  homebox:          0.25.0
+  ketchup:          20260525-e75f249
+  miniflux:         2.3.3
+  paperless_ngx:    3.1.2
+  quire:            latest # TODO Pin the version once we're not in active development anymore
+  soju:             0.10.1 # remember to update the docker-soju image to bump this
+  vector:           0.58.0
+  victoria_logs:    v1.44.0
+  victoria_metrics: v1.151.0
+  victoria_traces:  v0.9.0

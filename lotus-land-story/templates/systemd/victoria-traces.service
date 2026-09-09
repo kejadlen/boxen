@@ -8,11 +8,11 @@ PartOf=docker.service
 Restart=always
 RestartSec=5s
 ExecStartPre=-/usr/bin/docker rm -f victoria-traces
-ExecStartPre=-/usr/bin/docker pull quay.io/victoriametrics/victoria-traces:v{{ version }}
+ExecStartPre=-/usr/bin/docker pull quay.io/victoriametrics/victoria-traces:{{ version }}
 ExecStart=/usr/bin/docker run --rm --name victoria-traces \
   --network lotus_land_story \
   -v /mnt/lotus-land-story/victoria-traces:/data \
-  quay.io/victoriametrics/victoria-traces:v{{ version }} \
+  quay.io/victoriametrics/victoria-traces:{{ version }} \
   -storageDataPath=/data
 ExecStop=/usr/bin/docker stop victoria-traces
 

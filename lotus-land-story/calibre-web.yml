@@ -1,7 +1,7 @@
 - name: Set up Calibre-web
   hosts: lotus-land-story
   vars:
-    version: 0.6.26-ls383
+    version: "{{ versions.calibre_web }}"
     volumes:
       /mnt/lotus-land-story/calibre-web/books: /books
       /mnt/lotus-land-story/calibre-web/config: /config
