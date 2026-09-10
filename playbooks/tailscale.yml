@@ -26,11 +26,23 @@
         mode: "0644"
 
     # Left behind by ansible.builtin.apt_repository; apt reads both formats, so
-    # leaving it would configure the repository twice.
-    - name: Remove one-line Tailscale repository
+    # leaving them would configure the repository twice. Older runs didn't set
+    # a filename, so match on the URI rather than tailscale.list.
+    - name: Find one-line Tailscale repositories
+      ansible.builtin.find:
+        paths: /etc/apt/sources.list.d
+        patterns: "*.list"
+        contains: pkgs\.tailscale\.com
+        read_whole_file: true
+      register: tailscale_list_sources
+
+    - name: Remove one-line Tailscale repositories
       ansible.builtin.file:
-        path: /etc/apt/sources.list.d/tailscale.list
+        path: "{{ item.path }}"
         state: absent
+      loop: "{{ tailscale_list_sources.files }}"
+      loop_control:
+        label: "{{ item.path }}"
 
     # curl -fsSL https://pkgs.tailscale.com/stable/debian/bookworm.tailscale-keyring.list | sudo tee /etc/apt/sources.list.d/tailscale.list
     - name: Add Tailscale repository
