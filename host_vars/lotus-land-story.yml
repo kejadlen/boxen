@@ -1,6 +1,6 @@
 versions:
   anubis:           v1.26.2
-  authelia:         4.39.22
+  authelia:         4.39.23
   cadvisor:         0.60.5
   caddy:            2.11.4 # don't forget to update docker-caddy-tailscale first!
   calibre_web:      0.6.26-ls383
