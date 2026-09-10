@@ -38,4 +38,4 @@ exit-node return path state in one go.
 
 ## Notes
 
-- [2026-08-07: exit node return path hijacked by mwan3](2026-08-07-exit-node-return-path.md)
+- [2026-08-07: exit node return path hijacked by mwan3](../docs/double-dealing-character/2026-08-07-exit-node-return-path.md)

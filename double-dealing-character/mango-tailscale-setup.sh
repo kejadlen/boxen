@@ -31,8 +31,9 @@
 # double-dealing-character as deployed runs on the WIRED port: network.wan is
 # eth0.2 on DHCP, and mwan3 reports wan online with wwan offline. Worth knowing
 # before debugging, because the mwan3 return-path bug documented in
-# 2026-08-07-exit-node-return-path.md is expressed as a rule on `iif eth0.2`;
-# on a repeater-mode box the equivalent rule names `wwan` instead.
+# docs/double-dealing-character/2026-08-07-exit-node-return-path.md is
+# expressed as a rule on `iif eth0.2`; on a repeater-mode box the equivalent
+# rule names `wwan` instead.
 #
 # Expected throughput: ~5-10 Mbps. Two compounding effects: the Mango has
 # no AES offload on a single ~580 MHz MIPS core [7], and double-NAT (Mango
@@ -462,7 +463,8 @@ cmd_configure_firewall() {
 #
 # Do NOT try to remove mwan3 instead. `/etc/init.d/mwan3 disable` does not hold
 # because /etc/hotplug.d/iface/15-mwan3 restarts it on the WAN's DHCP ifup, and
-# stopping it live has wedged this box. See 2026-08-07-exit-node-return-path.md.
+# stopping it live has wedged this box. See
+# docs/double-dealing-character/2026-08-07-exit-node-return-path.md.
 cmd_configure_routing() {
     log "Installing tailnet route hotplug script"
 
