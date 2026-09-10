@@ -1,0 +1,40 @@
+# https://podman.io/docs/installation#debian
+- name: Install Podman
+  tags: podman
+  hosts: all
+  become: true
+  tasks:
+
+    - name: Assert distribution is Debian
+      ansible.builtin.assert:
+        that:
+          - ansible_facts["distribution"] == "Debian"
+        fail_msg: "This playbook only supports Debian distributions"
+
+    # Quadlet arrived in podman 4.4 and bookworm ships 4.3, so there is no
+    # supported path to unit-generated containers before trixie.
+    - name: Assert Podman is new enough for Quadlet
+      ansible.builtin.assert:
+        that:
+          - ansible_facts["distribution_major_version"] | int >= 13
+        fail_msg: >-
+          Quadlet needs podman >= 4.4, which Debian first ships in trixie;
+          this host is on {{ ansible_facts["distribution_release"] }}.
+
+    # podman-docker is deliberately absent: it aliases docker(1) to podman,
+    # which makes the two runtimes indistinguishable on hosts running both.
+    - name: Install Podman
+      ansible.builtin.apt:
+        name: podman
+        state: present
+        update_cache: true
+
+    # Quadlet reads unit files from here and generates systemd services at
+    # daemon-reload. Rootful only; rootless units live under ~/.config.
+    - name: Create Quadlet unit directory
+      ansible.builtin.file:
+        path: /etc/containers/systemd
+        state: directory
+        mode: "0755"
+
+# vim: ft=yaml.ansible

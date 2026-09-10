@@ -1,0 +1,55 @@
+# Removes Docker from a host that has finished moving to podman. The reverse of
+# playbooks/docker.yml.
+- name: Purge Docker
+  tags: docker-purge
+  hosts: legacy-of-lunatic-kingdom
+  become: true
+  tasks:
+
+    # Both formats have been used here over time, so match on the URI rather
+    # than a filename. read_whole_file switches contains from re.match to
+    # re.search; without it the pattern would have to match from column zero.
+    - name: Find Docker apt sources
+      ansible.builtin.find:
+        paths: /etc/apt/sources.list.d
+        contains: download\.docker\.com
+        read_whole_file: true
+      register: docker_sources
+
+    - name: Remove Docker apt sources
+      ansible.builtin.file:
+        path: "{{ item.path }}"
+        state: absent
+      loop: "{{ docker_sources.files }}"
+      loop_control:
+        label: "{{ item.path }}"
+
+    # Every apt run fails while a source references a keyring that is gone, so
+    # this only happens once the sources above are removed.
+    - name: Remove Docker signing key
+      ansible.builtin.file:
+        path: /etc/apt/keyrings/docker.asc
+        state: absent
+
+    - name: Purge Docker packages
+      ansible.builtin.apt:
+        name:
+          - containerd.io
+          - docker-buildx-plugin
+          - docker-ce
+          - docker-ce-cli
+          - docker-compose-plugin
+        state: absent
+        purge: true
+        autoremove: true
+
+    # apt purge leaves image and container storage behind.
+    - name: Remove Docker state
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: absent
+      loop:
+        - /var/lib/containerd
+        - /var/lib/docker
+
+# vim: ft=yaml.ansible

@@ -1,3 +1,7 @@
+# Imported first because a leftover Docker source breaks every apt task that
+# follows it. Drop this once it has run against the host.
+- import_playbook: ../playbooks/docker-purge.yml         # noqa: name[play]
+
 - name: Basic requirements
   hosts: legacy-of-lunatic-kingdom
   become: true
@@ -25,7 +29,7 @@
           - --collector.systemd
           - --collector.systemd.unit-include=apt-daily.*\.(timer|service)
           - >-
-            --collector.filesystem.mount-points-exclude=^/(dev|proc|run|sys|media|var/lib/docker/.+|var/lib/containers/storage/.+)($|/)
+            --collector.filesystem.mount-points-exclude=^/(dev|proc|run|sys|media|var/lib/containers/storage/.+)($|/)
       ansible.builtin.lineinfile:
         path: /etc/default/prometheus-node-exporter
         regexp: '^ARGS='
@@ -80,7 +84,7 @@
 
 # TODO disallow network access from non-tailscale interfaces
 - import_playbook: ../playbooks/tailscale.yml           # noqa: name[play]
-- import_playbook: ../playbooks/docker.yml              # noqa: name[play]
+- import_playbook: ../playbooks/podman.yml              # noqa: name[play]
 - import_playbook: ../playbooks/syncthing.yml           # noqa: name[play]
 - import_playbook: ../playbooks/unattended-upgrades.yml # noqa: name[play]
 
