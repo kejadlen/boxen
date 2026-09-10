@@ -1,7 +1,7 @@
 # https://docs.docker.com/engine/install/debian/
 - name: Install Docker
   tags: docker
-  hosts: all
+  hosts: "{{ ansible_limit | default([]) }}"
   become: true
   tasks:
 

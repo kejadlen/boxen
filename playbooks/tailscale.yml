@@ -1,7 +1,7 @@
 # https://tailscale.com/download/linux/debian-bookworm
 - name: Install Tailscale
   tags: tailscale
-  hosts: all
+  hosts: "{{ ansible_limit | default([]) }}"
   become: true
   tasks:
 
@@ -64,7 +64,7 @@
         update_cache: true
 
 # - name: Restrict tailscaled logging
-#   hosts: all
+#   hosts: "{{ ansible_limit | default([]) }}"
 #   become: true
 #   tasks:
 #

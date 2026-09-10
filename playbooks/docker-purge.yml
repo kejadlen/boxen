@@ -2,7 +2,7 @@
 # playbooks/docker.yml.
 - name: Purge Docker
   tags: docker-purge
-  hosts: legacy-of-lunatic-kingdom
+  hosts: "{{ ansible_limit | default([]) }}"
   become: true
   tasks:
 

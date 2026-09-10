@@ -31,7 +31,7 @@ desc ""
 task :ansible, %i[ playbook ] => "vars.yml" do |_, args|
   playbook = args.fetch(:playbook, "main")
 
-  sh "ansible-playbook #{playbook}.yml"
+  sh "ansible-playbook --limit=lotus-land-story #{playbook}.yml"
 end
 
 task "terraform.tfvars" do |t|

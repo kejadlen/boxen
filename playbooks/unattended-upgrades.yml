@@ -1,7 +1,7 @@
 # https://wiki.debian.org/UnattendedUpgrades
 - name: Configure unattended upgrades
   tags: unattended-upgrades
-  hosts: all
+  hosts: "{{ ansible_limit | default([]) }}"
   become: true
   tasks:
 

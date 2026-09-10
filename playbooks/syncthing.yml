@@ -2,7 +2,7 @@
 
 - name: Install Syncthing
   tags: syncthing
-  hosts: all
+  hosts: "{{ ansible_limit | default([]) }}"
   become: true
   tasks:
 
