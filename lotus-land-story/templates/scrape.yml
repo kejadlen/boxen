@@ -140,9 +140,11 @@ scrape_configs:
     authorization:
       credentials: {{ home_assistant.access_token }}
 
-    scheme: http
+    scheme: https
+    tls_config:
+      ca_file: /caddy-root.crt
     static_configs:
-      - targets: ['homeassistant:8123']
+      - targets: ['home-assistant-5119']
 
   - job_name: linode
     linode_sd_configs:

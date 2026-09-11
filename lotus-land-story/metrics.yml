@@ -35,6 +35,7 @@
         volumes:
           - /mnt/lotus-land-story/victoria-metrics/data:/victoria-metrics-data
           - /mnt/lotus-land-story/victoria-metrics/scrape.yml:/scrape.yml
+          - /mnt/lotus-land-story/caddy/data/caddy/pki/authorities/local/root.crt:/caddy-root.crt
         networks:
           - name: lotus_land_story
         etc_hosts:
