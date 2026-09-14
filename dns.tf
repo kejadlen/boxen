@@ -174,6 +174,20 @@ resource "dnsimple_zone_record" "issues_cooking_google" {
   type      = "TXT"
 }
 
+resource "dnsimple_zone_record" "sps_menus" {
+  zone_name = dnsimple_zone.zones["chislan_family"].name
+  name      = "sps-menus"
+  value     = "kejadlen.github.io"
+  type      = "CNAME"
+}
+
+resource "dnsimple_zone_record" "chislan_family_goatcounter" {
+  zone_name = dnsimple_zone.zones["chislan_family"].name
+  name      = "stats"
+  value     = "chislan-family.goatcounter.com"
+  type      = "CNAME"
+}
+
 module "fastmail" {
   for_each = {
     alphachen_dev         = dnsimple_zone.zones["alphachen_dev"]
