@@ -246,6 +246,12 @@ hey.kejadlen.dev {
 	}
 }
 
+monica.kejadlen.dev {
+	log
+
+	reverse_proxy monica:80
+}
+
 quire.kejadlen.dev {
 	reverse_proxy quire:3000
 }

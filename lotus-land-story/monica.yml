@@ -1,0 +1,158 @@
+# Carried over unchanged from ramble-hard's docker-compose setup: the stock
+# apache image with supervisord added so apache, cron, and the queue share one
+# container.
+
+- name: Set up Monica
+  hosts: lotus-land-story
+  tasks:
+
+    - name: Check for the copied Monica datadir
+      ansible.builtin.stat:
+        path: /mnt/lotus-land-story/monica/db/mysql
+      register: monica_datadir
+
+    # Otherwise MySQL initializes an empty datadir the data copy then lands on.
+    - name: Warn that Monica is skipped until its data is copied
+      ansible.builtin.debug:
+        msg: >-
+          Skipping Monica: copy ramble-hard's /usr/share/monica/{app,db} first;
+          see docs/lotus-land-story/2026-09-14-monica-migration.md.
+      when: not monica_datadir.stat.exists
+
+    - name: Skip Monica until its data is copied
+      ansible.builtin.meta: end_host
+      when: not monica_datadir.stat.exists
+
+    # app/ and db/ are left to the data copy, which preserves the ownership
+    # mysql and www-data expect.
+    - name: Create Monica directories
+      ansible.builtin.file:
+        path: /mnt/lotus-land-story/monica/{{ item }}
+        state: directory
+        mode: "0755"
+      loop:
+        - build
+        - php
+
+    - name: Write Monica Dockerfile
+      ansible.builtin.copy:
+        dest: /mnt/lotus-land-story/monica/build/Dockerfile
+        mode: "0644"
+        content: |
+          FROM docker.io/library/monica:{{ versions.monica }}-apache
+
+          # Use the default production configuration
+          RUN mv "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini"
+
+          # supervisord dependencies
+          RUN set -ex; \
+              \
+              apt-get update; \
+              apt-get install -y --no-install-recommends \
+                  supervisor \
+              ; \
+              rm -rf /var/lib/apt/lists/*
+
+          COPY supervisord.conf /etc/supervisord.conf
+
+          CMD ["supervisord", "-c", "/etc/supervisord.conf"]
+      register: monica_dockerfile
+
+    - name: Write Monica supervisord config
+      ansible.builtin.copy:
+        dest: /mnt/lotus-land-story/monica/build/supervisord.conf
+        mode: "0644"
+        content: |
+          [supervisord]
+          nodaemon=true
+          user=root
+
+          [program:cron]
+          command=cron.sh
+          autostart=true
+          autorestart=true
+
+          [program:queue]
+          process_name=%(program_name)s_%(process_num)02d
+          command=queue.sh
+          numprocs=1
+          stdout_logfile=/proc/1/fd/1
+          stdout_logfile_maxbytes=0
+          stderr_logfile=/proc/1/fd/2
+          stderr_logfile_maxbytes=0
+          autostart=true
+          autorestart=true
+          startretries=0
+
+          [program:httpd]
+          process_name=%(program_name)s_%(process_num)02d
+          command=entrypoint.sh apache2-foreground
+          stdout_logfile=/proc/1/fd/1
+          stdout_logfile_maxbytes=0
+          stderr_logfile=/proc/1/fd/2
+          stderr_logfile_maxbytes=0
+          autostart=true
+          autorestart=true
+      register: monica_supervisord
+
+    - name: Write Monica PHP upload limit
+      ansible.builtin.copy:
+        dest: /mnt/lotus-land-story/monica/php/uploads.ini
+        mode: "0644"
+        content: |
+          [www]
+          upload_max_filesize = 10M
+
+    - name: Build Monica
+      community.docker.docker_image:
+        name: monica-supervisord
+        tag: "{{ versions.monica }}"
+        source: build
+        build:
+          path: /mnt/lotus-land-story/monica/build
+          pull: true
+        force_source: "{{ monica_dockerfile is changed or monica_supervisord is changed }}"
+
+    # The MYSQL_* env only seeds an empty datadir; the copied one ignores it.
+    - name: Run Monica db
+      community.docker.docker_container:
+        name: monica-db
+        image: docker.io/library/mysql:{{ versions.monica_mysql }}
+        restart_policy: unless-stopped
+        env:
+          MYSQL_RANDOM_ROOT_PASSWORD: "true"
+          MYSQL_DATABASE: monica
+          MYSQL_USER: monica
+          MYSQL_PASSWORD: "{{ monica.db_password }}"
+        volumes:
+          - /mnt/lotus-land-story/monica/db:/var/lib/mysql
+        networks:
+          - name: lotus_land_story
+
+    - name: Run Monica
+      community.docker.docker_container:
+        name: monica
+        image: monica-supervisord:{{ versions.monica }}
+        restart_policy: unless-stopped
+        env:
+          APP_ENV: production
+          APP_KEY: "{{ monica.app_key }}"
+          DB_HOST: monica-db
+          DB_USERNAME: monica
+          DB_PASSWORD: "{{ monica.db_password }}"
+          MAIL_MAILER: smtp
+          MAIL_HOST: smtp.sendgrid.net
+          MAIL_PORT: "25"
+          MAIL_USERNAME: apikey
+          MAIL_PASSWORD: "{{ monica.mail_password }}"
+          MAIL_ENCRYPTION: tls
+          MAIL_FROM_ADDRESS: admin@kejadlen.dev
+          MAIL_FROM_NAME: Monica
+          APP_EMAIL_NEW_USERS_NOTIFICATION: alpha+monica@kejadlen.dev
+        volumes:
+          - /mnt/lotus-land-story/monica/app:/var/www/html/storage
+          - /mnt/lotus-land-story/monica/php/uploads.ini:/usr/local/etc/php/conf.d/uploads.ini
+        networks:
+          - name: lotus_land_story
+
+# vim: ft=yaml.ansible
