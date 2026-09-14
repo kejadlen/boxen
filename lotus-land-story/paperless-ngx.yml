@@ -38,6 +38,8 @@
           PAPERLESS_TASK_WORKERS: "1"
           PAPERLESS_THREADS_PER_WORKER: "1"
           PAPERLESS_TIME_ZONE: America/Los_Angeles
+          # Training exhausts the host's memory, so keep it overnight.
+          PAPERLESS_TRAIN_TASK_CRON: "5 0 * * *"
           PAPERLESS_URL: https://docs
           PAPERLESS_WEBSERVER_WORKERS: "1"
         volumes:
