@@ -234,13 +234,16 @@ git.kejadlen.dev {
 	}
 
 	# hacky way to reverse auth only from my laptop
-	@undefined-fantastic-object client_ip {{ undefined_fantastic_object_ip }}
+	# remote_ip, not client_ip: any container can forge X-Forwarded-For.
+	@undefined-fantastic-object remote_ip {{ undefined_fantastic_object_ip }}
 	reverse_proxy @undefined-fantastic-object gitea:3000 {
 		header_up X-Webauth-User alpha
 	}
 
+	# Gitea trusts X-Webauth-User from caddy, so never pass a client's through.
 	reverse_proxy anubis:8923 {
 		header_up X-Real-Ip {remote_host}
+		header_up -X-Webauth-User
 	}
 }
 
