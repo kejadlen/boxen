@@ -37,7 +37,7 @@
     - name: Run Caddy
       community.docker.docker_container:
         name: caddy
-        image: ghcr.io/kejadlen/caddy-tailscale:{{ version }}
+        image: ghcr.io/kejadlen/caddy-kejadlen:{{ version }}
         restart: true
         env:
           TS_AUTHKEY: "{{ tailscale.auth_key }}"
