@@ -1,0 +1,32 @@
+# https://quire.kejadlen.dev/pro-tacts
+- name: Set up pro-tacts
+  hosts: lotus-land-story
+  vars:
+    version: "{{ versions.pro_tacts }}"
+  tasks:
+
+    - name: Create pro-tacts data directory
+      ansible.builtin.file:
+        path: /mnt/lotus-land-story/pro-tacts
+        state: directory
+        mode: "0755"
+
+    - name: Run pro-tacts
+      community.docker.docker_container:
+        name: pro-tacts
+        image: ghcr.io/kejadlen/pro-tacts:{{ version }} 
+        pull: always
+        # env:
+        #   PRO_TACTS_DATA_DIR: /data
+        volumes:
+          - /mnt/lotus-land-story/pro-tacts:/data
+        networks:
+          - name: lotus_land_story
+        restart_policy: unless-stopped
+        state: started
+
+  handlers:
+    - name: Import restarts
+      ansible.builtin.import_tasks: restarts.yml
+
+# vim: ft=yaml.ansible

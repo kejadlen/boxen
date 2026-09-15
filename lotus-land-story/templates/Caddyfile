@@ -133,6 +133,14 @@ books {
 	}
 }
 
+contacts {
+	import tsauth contacts
+	reverse_proxy pro-tacts:9292 {
+		header_up Tailscale-User-Login {http.auth.user.tailscale_login}
+		header_up Tailscale-User-Name {http.auth.user.tailscale_user}
+	}
+}
+
 docs {
 	import tsauth docs
 	reverse_proxy paperless-ngx:8000 {
