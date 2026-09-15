@@ -1,5 +1,9 @@
 # legacy-of-lunatic-kingdom
 
+My NAS, running on a Beelink ME mini.
+
+As of 2025Q4, it's running 3 2TB NVMe drives in a RAID5 configuration.
+
 ## bootstrapping
 
 - Assumes the base OS has been installed and the system is accessible via SSH.
@@ -53,3 +57,9 @@ Disable key expiry in Tailscale.
 
 And now the IP override can be removed since we should get DNS resolution
 through Tailscale.
+
+## TODO
+
+- jellyfin
+- immich
+- restic
