@@ -57,7 +57,7 @@ syncthing:
     legacy_of_lunatic_kingdom:
         api_key: ENC[AES256_GCM,data:70DdxJdigios6LPzfdUhqW3C4W35vwM85JBJ3ZqWh7s=,iv:36pjNotAzri2n2CA4cU6n5DAY70w4N5CMfourMGuelY=,tag:Yu6F+vT912YEQKZBYN7w0w==,type:str]
 tailscale:
-    auth_key: ENC[AES256_GCM,data:M6dNUFvyETkhTflX+tYIR7M9j/JEiUU58PiYs51tz6fCxma6OiA1LrVKVyerTbqdf6YWX5B7p0p3lElYZw==,iv:5EXrr26nm8axDRwmkncrKrB3nAabUgwIqFoXGDrvYTI=,tag:uTxQ8v6nDySqCgI4XuPp0w==,type:str]
+    auth_key: ENC[AES256_GCM,data:HUS+H6xiHVuV82meD/Rw3jZ/Kgq9UcJqDuNdZMwkd8uj1p5XQY3sZVl4g8aOl1j7he2F+IIlOBz37yiHjw==,iv:8TuNG1e4n66fU1Nwmm8Ifg0O1u1xL/xalnsrpZLx8sQ=,tag:j0NTGGHlpGoLfvzq50RU5A==,type:str]
 sops:
     age:
         - enc: |
@@ -69,7 +69,7 @@ sops:
             LEedZQPpxvyODlXv/10aLZhO2DZBOtjw9W2ctfg9WoyX7OxZvdbFnA==
             -----END AGE ENCRYPTED FILE-----
           recipient: age15ars55ulrp9hz6r0utvluayrglt40wv0t997njez0y9l3e43cersn6kgh7
-    lastmodified: "2026-09-15T02:50:40Z"
-    mac: ENC[AES256_GCM,data:0NYFZqexlz6MELdolQNyPKlPHhhWchsmR1ytpSzbAM2SWINHOtu1wi0V1qj5gWeWJk8vC2Tyg57M+KXR2m4zxOD+OYGDEscasbHcuG8reemHhmicVjF6Z19qIGgeHaAXdhaUBcq3hOr+GVPywVPm/z4m31VSgEScvFDxfRtgS8I=,iv:JWuhs5qko4lrlsxFareYy0EpOr8RJtDiLNmvdQTP6jc=,tag:Pzv+ICJ9KwSqWBSlOp02Mg==,type:str]
+    lastmodified: "2026-09-15T03:48:47Z"
+    mac: ENC[AES256_GCM,data:jzfUBJmeNEjueDgaJ0ykpPDq7QB+JmgiN0flF3Tzy/Va6qdnLVHtIguTjRFlw3tM/FMkZ4/vLC5sjS1MYnzbctRmD+HFUS0bN2ah1xlEZApLk0KnibaUizTDd/mxG6zgHCY8QRNb5B8DweWUwEBem5kM/BiUpwnqmYia0IZEOCc=,iv:gLvMCh2IYhSimLegLFbDVTXoOzUiSbLwg8UmA4/Lfuw=,tag:s9I1NcQEYSOrMwLZ8HbT8A==,type:str]
     unencrypted_suffix: _unencrypted
     version: 3.13.3
