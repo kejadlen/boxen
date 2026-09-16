@@ -2,7 +2,7 @@
 	log default {
 		output stdout
 		format json
-		include http.log.access
+		include http.log.access tls
 	}
 
 	metrics
