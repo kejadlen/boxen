@@ -16,8 +16,9 @@
         name: pro-tacts
         image: ghcr.io/kejadlen/pro-tacts:{{ version }} 
         pull: always
-        # env:
-        #   PRO_TACTS_DATA_DIR: /data
+        env:
+          PRO_TACTS_DATA_DIR: /data
+          PRO_TACTS_DEBUG: "true"
         volumes:
           - /mnt/lotus-land-story/pro-tacts:/data
         networks:
