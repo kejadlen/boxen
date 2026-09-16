@@ -58,6 +58,7 @@
           - name: lotus_land_story
         etc_hosts:
           host.docker.internal: host-gateway
+      no_log: true
 
   handlers:
     - name: Import restarts

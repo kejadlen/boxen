@@ -55,6 +55,7 @@
           host.docker.internal: host-gateway
       # paperless images are huge, so clean them up after we update the container
       notify: Prune unused Docker images
+      no_log: true
 
   handlers:
     - name: Prune unused Docker images

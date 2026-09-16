@@ -103,6 +103,7 @@
         - { key: "options/minHomeDiskFree", value: "0" }
         - { key: "defaults/folder/minDiskFree", value: "75" }
         - { key: "defaults/folder/minDiskFree", attribute: "unit", value: "%" }
+      no_log: true
 
   handlers:
     - name: Restart syncthing

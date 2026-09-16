@@ -98,6 +98,7 @@
           - /mnt/lotus-land-story/gotosocial/data:/gotosocial/storage
         networks:
           - name: lotus_land_story
+      no_log: true
 
   handlers:
     - name: Import restarts

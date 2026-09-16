@@ -158,6 +158,7 @@
           - SYS_NICE
         restart_policy: unless-stopped
         state: started
+      no_log: true
 
 # TODO Remove Minio
 - import_playbook: minio.yml

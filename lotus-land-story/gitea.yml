@@ -105,6 +105,7 @@
         restart_policy: unless-stopped
         networks:
           - name: lotus_land_story
+      no_log: true
 
   handlers:
     - name: Import restarts
@@ -151,5 +152,6 @@
         restart_policy: unless-stopped
         networks:
           - name: lotus_land_story
+      no_log: true
 
 # vim: ft=yaml.ansible
