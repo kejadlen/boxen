@@ -97,6 +97,11 @@ data "tailscale_device" "mountain_of_faith" {
   hostname = "mountain-of-faith"
 }
 
+# Caddy's tsnet node for pro-tacts.
+data "tailscale_device" "contacts" {
+  hostname = "contacts"
+}
+
 locals {
   ramble_hard      = data.linode_instances.ramble_hard.instances.0
   lotus_land_story = data.linode_instances.lotus_land_story.instances.0
