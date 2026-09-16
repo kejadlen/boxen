@@ -41,6 +41,7 @@
         restart: true
         env:
           TS_AUTHKEY: "{{ tailscale.auth_key }}"
+          DNSIMPLE_API_ACCESS_TOKEN: "{{ dnsimple.caddy_token }}"
         ports:
           - "80:80"
           - "443:443"

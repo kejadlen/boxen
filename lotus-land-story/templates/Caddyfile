@@ -133,11 +133,16 @@ books {
 	}
 }
 
-contacts {
-	import tsauth contacts
+contacts.chislan.family {
+	bind tailscale/contacts
+	log
+	tls {
+		dns dnsimple {env.DNSIMPLE_API_ACCESS_TOKEN}
+	}
+	tailscale_auth
+
 	reverse_proxy pro-tacts:9292 {
-		header_up Tailscale-User-Login {http.auth.user.tailscale_login}
-		header_up Tailscale-User-Name {http.auth.user.tailscale_user}
+		header_up Remote-User {http.auth.user.tailscale_user}
 	}
 }
 
