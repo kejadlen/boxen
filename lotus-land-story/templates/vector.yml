@@ -24,9 +24,13 @@ transforms:
           ._msg = del(.msg)
         }
       } else if .container_name == "caddy" {
-        . = merge!(., parse_json!(.message))
-        ._time = del(.ts)
-        ._msg = del(.msg)
+        # Startup errors and panics go to stderr as plain text.
+        parsed, err = parse_json(.message)
+        if err == null && is_object(parsed) {
+          . = merge!(., parsed)
+          ._time = del(.ts)
+          ._msg = del(.msg)
+        }
       } else if .container_name == "gitea" {
         # TODO handle router logs: https://github.com/go-gitea/gitea/pull/33814
         # gitea's common log doesn't match the vector common log because of the referer and user agent
