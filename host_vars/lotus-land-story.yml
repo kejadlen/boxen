@@ -1,6 +1,6 @@
 versions:
   anubis:           v1.26.2
-  authelia:         4.39.27
+  authelia:         4.39.28
   cadvisor:         0.60.6
   caddy:            2.11.4-2026.09.16 # don't forget to update caddy-kejadlen first!
   calibre_web:      0.6.26-ls383
