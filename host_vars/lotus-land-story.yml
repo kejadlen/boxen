@@ -15,7 +15,7 @@ versions:
   miniflux:         2.3.3
   monica:           4.1.2
   monica_mysql:     "5.7"
-  paperless_ngx:    3.1.2
+  paperless_ngx:    3.2.1
   pro_tacts:        latest # TODO Pin the version once we're not in active development anymore
   quire:            latest # TODO Pin the version once we're not in active development anymore
   soju:             0.10.1 # remember to update the docker-soju image to bump this
