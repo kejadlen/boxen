@@ -4,7 +4,7 @@ versions:
   cadvisor:         0.60.6
   caddy:            2.11.4-2026.09.16 # don't forget to update caddy-kejadlen first!
   calibre_web:      0.6.26-ls383
-  dockhand:         v1.0.46
+  dockhand:         v1.0.48
   gamja:            caf6e99
   gitea:            1.26.2
   gitea_runner:     0.4.1
