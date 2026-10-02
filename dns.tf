@@ -121,6 +121,13 @@ resource "dnsimple_zone_record" "low_quality_transcripts" {
   type      = "CNAME"
 }
 
+resource "dnsimple_zone_record" "docket_demo" {
+  zone_name = dnsimple_zone.zones["kejadlen_dev"].name
+  name      = "docket.demo"
+  value     = "docket-kejadlen.fly.dev"
+  type      = "CNAME"
+}
+
 resource "dnsimple_zone_record" "domus" {
   zone_name = dnsimple_zone.zones["kejadlen_dev"].name
   name      = "domus"
