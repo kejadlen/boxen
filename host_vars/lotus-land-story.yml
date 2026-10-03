@@ -2,7 +2,7 @@ versions:
   anubis:           v1.26.2
   authelia:         4.39.28
   cadvisor:         0.60.6
-  caddy:            2.11.4-2026.09.16 # don't forget to update caddy-kejadlen first!
+  caddy:            2.11.6-2026.10.03 # don't forget to update caddy-kejadlen first!
   calibre_web:      0.6.26-ls383
   dockhand:         v1.0.49
   gamja:            caf6e99
