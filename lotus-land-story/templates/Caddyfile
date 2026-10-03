@@ -34,9 +34,21 @@
 	log
 }
 
+# Gates on tailscale identity; X-User-Slug overwrites any client-sent value.
+(tsident) {
+	tailscale_auth
+	map {http.auth.user.tailscale_user} {ts_slug} {
+{% for login, slug in (tailscale.slugs | from_yaml).items() %}
+		{{ login }} {{ slug }}
+{% endfor %}
+		default {http.auth.user.tailscale_login}
+	}
+	request_header X-User-Slug {ts_slug}
+}
+
 (tsauth) {
 	import ts {args[0]}
-	tailscale_auth
+	import tsident
 }
 
 {% for domain in ("kejadlen.dev", "chislan.family") %}
@@ -139,7 +151,7 @@ contacts.chislan.family {
 	tls {
 		dns dnsimple {env.DNSIMPLE_API_ACCESS_TOKEN}
 	}
-	tailscale_auth
+	import tsident
 
 	reverse_proxy pro-tacts:9292 {
 		header_up Remote-User {http.auth.user.tailscale_user}

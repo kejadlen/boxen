@@ -60,6 +60,7 @@ syncthing:
         api_key: ENC[AES256_GCM,data:70DdxJdigios6LPzfdUhqW3C4W35vwM85JBJ3ZqWh7s=,iv:36pjNotAzri2n2CA4cU6n5DAY70w4N5CMfourMGuelY=,tag:Yu6F+vT912YEQKZBYN7w0w==,type:str]
 tailscale:
     auth_key: ENC[AES256_GCM,data:HUS+H6xiHVuV82meD/Rw3jZ/Kgq9UcJqDuNdZMwkd8uj1p5XQY3sZVl4g8aOl1j7he2F+IIlOBz37yiHjw==,iv:8TuNG1e4n66fU1Nwmm8Ifg0O1u1xL/xalnsrpZLx8sQ=,tag:j0NTGGHlpGoLfvzq50RU5A==,type:str]
+    slugs: ENC[AES256_GCM,data:kz4UL86eiPr3FtA05yPR0khq7whToShBF7WyfTEOnt59FbqpFD5m0NCo7jtGuTUS+l2vdy/W2A==,iv:FgN4fgatHm09g26ZPE3bXwO46avDv7l49hJaLfSCPbo=,tag:Be+OLPnrRI+8NIvaMKgLIw==,type:str]
 sops:
     age:
         - enc: |
@@ -71,7 +72,7 @@ sops:
             LEedZQPpxvyODlXv/10aLZhO2DZBOtjw9W2ctfg9WoyX7OxZvdbFnA==
             -----END AGE ENCRYPTED FILE-----
           recipient: age15ars55ulrp9hz6r0utvluayrglt40wv0t997njez0y9l3e43cersn6kgh7
-    lastmodified: "2026-09-16T15:59:34Z"
-    mac: ENC[AES256_GCM,data:PV6WcqzlIOcLTQdeAyLWO8WJrz5or85CN1jHxJxM1IAyXYDpa6vZSNSckHJAS5dVsLRC7ntCK4CDpDHJS0927a5Z8CQILw39g8rD6Hz3VTTcRcz21nC2s1NBR+TyP/QVRWbM10d/+htKPp8tmYIVkH0zSceN5uoRKyYj6DjXYkQ=,iv:SK+Nz5pP+O45oH+Q1WwMr2CphF05RUSaN5JJaRm3660=,tag:5CbwYPeQtSs5X8IaDXuADw==,type:str]
+    lastmodified: "2026-10-03T03:20:10Z"
+    mac: ENC[AES256_GCM,data:npr+3zTKvZ7R7Dm7gQ7t6N9VHGp+Uph1SyxmPMNNzAqjhddq6FSH+Bj/pLiKtse26/sCzFjQxBe+oqY5FIz/I4lotNzHpK+ReBmCUZLBlqCJ//rbY4yF6GeWxgWI+ciGvukUqZOQsaUOnaE8zw8f7DG5zZ8G2GR6at6jegNNZx8=,iv:hcg+N6UXRo/mSTvfMwXWA016jz3a4bzG+ErYt2q5Pno=,tag:7eYR6xWeDZdQXKX0xj8lgg==,type:str]
     unencrypted_suffix: _unencrypted
     version: 3.13.3
