@@ -20,7 +20,7 @@ versions:
   pro_tacts:        latest # TODO Pin the version once we're not in active development anymore
   quire:            latest # TODO Pin the version once we're not in active development anymore
   soju:             0.11.1 # remember to update the docker-soju image to bump this
-  vector:           0.58.0
+  vector:           0.59.0
   victoria_logs:    v1.44.0
   victoria_metrics: v1.153.0
   victoria_traces:  v0.9.0
