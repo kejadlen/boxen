@@ -1,0 +1,62 @@
+# https://github.com/kejadlen/docket
+- name: Set up docket
+  hosts: lotus-land-story
+  vars:
+    version: "{{ versions.docket }}"
+  tasks:
+
+    - name: Create docket data directory
+      ansible.builtin.file:
+        path: /mnt/lotus-land-story/docket
+        state: directory
+        mode: "0755"
+
+    - name: Create docket secrets directory
+      ansible.builtin.file:
+        path: /mnt/lotus-land-story/docket/secrets
+        state: directory
+        mode: "0700"
+
+    # Docket reads tokens by token-file, never inline in the config.
+    - name: Write Fastmail tokens
+      ansible.builtin.copy:
+        content: "{{ item.value }}"
+        dest: "/mnt/lotus-land-story/docket/secrets/{{ item.key }}"
+        mode: "0600"
+      loop: "{{ docket.fastmail_tokens | dict2items }}"
+      loop_control:
+        label: "{{ item.key }}"
+      no_log: true
+
+    - name: Write docket config
+      ansible.builtin.copy:
+        # Binds wide because Caddy reaches it over the docker network.
+        content: |
+          bind "0.0.0.0:3000"
+          database "/data/docket.db"
+          {% for name in docket.fastmail_tokens | sort %}
+          credential "{{ name }}" token-file="/run/credentials/docket/{{ name }}"
+          {% endfor %}
+        dest: /mnt/lotus-land-story/docket/docket.kdl
+        mode: "0644"
+
+    - name: Run docket
+      community.docker.docker_container:
+        name: docket
+        image: ghcr.io/kejadlen/docket:{{ version }}
+        pull: always
+        env:
+          DOCKET_CONFIG: /data/docket.kdl
+        volumes:
+          - /mnt/lotus-land-story/docket:/data
+          - /mnt/lotus-land-story/docket/secrets:/run/credentials/docket:ro
+        networks:
+          - name: lotus_land_story
+        restart_policy: unless-stopped
+        state: started
+
+  handlers:
+    - name: Import restarts
+      ansible.builtin.import_tasks: restarts.yml
+
+# vim: ft=yaml.ansible

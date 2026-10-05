@@ -138,6 +138,11 @@ ketchup {
 	}
 }
 
+docket {
+	import tsauth docket
+	reverse_proxy docket:3000
+}
+
 ### Family
 
 books {

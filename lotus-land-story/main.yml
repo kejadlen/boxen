@@ -73,5 +73,6 @@
 - import_playbook: otel.yml        # noqa: name[play]
 - import_playbook: quire.yml       # noqa: name[play]
 - import_playbook: pro-tacts.yml   # noqa: name[play]
+- import_playbook: docket.yml      # noqa: name[play]
 
 # vim: ft=yaml.ansible
