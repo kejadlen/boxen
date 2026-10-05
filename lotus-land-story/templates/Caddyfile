@@ -34,7 +34,8 @@
 	log
 }
 
-# Gates on tailscale identity; X-User-Slug overwrites any client-sent value.
+# Gates on tailscale identity; headers overwrite client-sent values. Apps
+# can override Remote-User with header_up where they match another value.
 (tsident) {
 	tailscale_auth
 	map {http.auth.user.tailscale_user} {ts_slug} {
@@ -43,6 +44,7 @@
 {% endfor %}
 		default {http.auth.user.tailscale_login}
 	}
+	request_header Remote-User {http.auth.user.tailscale_user}
 	request_header X-User-Slug {ts_slug}
 }
 
