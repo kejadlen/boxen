@@ -1,34 +1,15 @@
 sources:
   journald:
     type: journald
+    # The console sink logs to journald, which would loop back in here.
+    exclude_units:
+      - vector.service
   bird_db_txt:
     type: file
     include:
       - "/home/alpha/BirdNET-Pi/BirdDB.txt"
 
 transforms:
-  birdnet:
-    type: remap
-    inputs:
-      - journald
-    source: |
-      if ._SYSTEMD_UNIT != "birdnet_analysis.service" {
-        abort
-      }
-
-      parsed, err = parse_regex(.message, r'.+\((\'|")(?P<species_latin>.+?)_(?P<species>.+?)(\'|"), (?P<confidence>.+?)\)')
-      if err != null {
-        abort
-      }
-
-      . |= parsed
-
-      if includes(["Engine", "Human"], .species) {
-        abort
-      }
-
-      # actually probably unnecessary?
-      .confidence_interval = round(to_float!(.confidence), precision: 1)
   bird_db:
     type: remap
     inputs:
@@ -68,9 +49,9 @@ sinks:
       codec: json
   vlogs:
     inputs:
-      - birdnet
+      - journald
     type: http
-    uri: http://lotus-land-story:9428/insert/jsonline?_stream_fields=host&_msg_field=message&_time_field=timestamp
+    uri: http://lotus-land-story:9428/insert/jsonline?_stream_fields=host,_SYSTEMD_UNIT&_msg_field=message&_time_field=timestamp
     compression: gzip
     encoding:
       codec: json
