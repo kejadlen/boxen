@@ -4,6 +4,37 @@
   become: true
   tasks:
 
+    # The BirdNET-Pi installer adds this repository.
+    - name: Caddy repository
+      tags: always
+      vars:
+        # TODO Flip once Caddy's Cloudsmith quota is restored; its 402s fail
+        # every apt cache update. https://github.com/caddyserver/dist/issues/142
+        cloudsmith_available: false
+      block:
+
+        - name: Remove Caddy repository
+          when: not cloudsmith_available
+          ansible.builtin.file:
+            path: /etc/apt/sources.list.d/caddy-stable.list
+            state: absent
+
+        - name: Restore Caddy repository
+          when: cloudsmith_available
+          ansible.builtin.copy:
+            content: |
+              # Source: Caddy
+              # Site: https://github.com/caddyserver/caddy
+              # Repository: Caddy / stable
+              # Description: Fast, multi-platform web server with automatic HTTPS
+
+
+              deb [signed-by=/usr/share/keyrings/caddy-stable-archive-keyring.gpg] https://dl.cloudsmith.io/public/caddy/stable/deb/debian any-version main
+
+              deb-src [signed-by=/usr/share/keyrings/caddy-stable-archive-keyring.gpg] https://dl.cloudsmith.io/public/caddy/stable/deb/debian any-version main
+            dest: /etc/apt/sources.list.d/caddy-stable.list
+            mode: '0644'
+
     - name: Install basic packages
       ansible.builtin.apt:
         pkg:
