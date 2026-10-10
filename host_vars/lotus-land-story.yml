@@ -5,7 +5,7 @@ versions:
   caddy:            2.11.7-2026.10.07 # don't forget to update caddy-kejadlen first!
   calibre_web:      0.6.26-ls383
   docket:           latest # TODO Pin the version once we're not in active development anymore
-  dockhand:         v1.0.50
+  dockhand:         v1.0.53
   gamja:            caf6e99
   gitea:            1.26.2
   gitea_runner:     0.4.1
