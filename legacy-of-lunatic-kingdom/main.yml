@@ -1,7 +1,3 @@
-# Imported first because a leftover Docker source breaks every apt task that
-# follows it. Drop this once it has run against the host.
-- import_playbook: ../playbooks/docker-purge.yml         # noqa: name[play]
-
 - name: Basic requirements
   hosts: legacy-of-lunatic-kingdom
   become: true
