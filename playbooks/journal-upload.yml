@@ -1,0 +1,43 @@
+# https://docs.victoriametrics.com/victorialogs/data-ingestion/journald/
+- name: Ship journald to VictoriaLogs
+  tags: journal-upload
+  hosts: "{{ ansible_limit | default([]) }}"
+  become: true
+  vars:
+    # lotus-land-story uploads to itself over localhost instead.
+    journal_upload_url: http://lotus-land-story:9428/insert/journald
+  tasks:
+
+    - name: Assert distribution is Debian
+      ansible.builtin.assert:
+        that:
+          - ansible_facts["distribution"] == "Debian"
+        fail_msg: "This playbook only supports Debian distributions"
+
+    - name: Install systemd-journal-remote
+      ansible.builtin.apt:
+        name: systemd-journal-remote
+        state: present
+        update_cache: true
+
+    - name: Set remote URL for uploading
+      ansible.builtin.lineinfile:
+        path: /etc/systemd/journal-upload.conf
+        regexp: '^URL='
+        insertafter: '^# URL='
+        line: URL={{ journal_upload_url }}
+      notify: Restart journal-upload
+
+    - name: Enable and start journal-upload
+      ansible.builtin.systemd:
+        name: systemd-journal-upload
+        enabled: true
+        state: started
+
+  handlers:
+    - name: Restart journal-upload
+      ansible.builtin.systemd:
+        name: systemd-journal-upload
+        state: restarted
+
+# vim: ft=yaml.ansible

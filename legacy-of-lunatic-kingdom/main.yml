@@ -83,6 +83,7 @@
 - import_playbook: ../playbooks/podman.yml              # noqa: name[play]
 - import_playbook: ../playbooks/syncthing.yml           # noqa: name[play]
 - import_playbook: ../playbooks/unattended-upgrades.yml # noqa: name[play]
+- import_playbook: ../playbooks/journal-upload.yml      # noqa: name[play]
 
 # TODO
 # - restic
