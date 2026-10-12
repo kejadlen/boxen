@@ -95,6 +95,10 @@
       ansible.builtin.user:
         name: restic
         system: true
+        # sshd's account check under UsePAM no refuses locked ('!') users,
+        # which is how Debian creates system users. '*' is not locked but
+        # can never match a password.
+        password: "*"
         state: present
 
     - name: Add SSH key for restic user

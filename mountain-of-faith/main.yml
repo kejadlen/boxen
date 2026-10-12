@@ -96,6 +96,9 @@
       ansible.builtin.user:
         name: restic
         system: true
+        # '*' rather than Debian's default locked '!': sshd under UsePAM no
+        # refuses locked users, and this play should match lolk's.
+        password: "*"
         state: present
 
     - name: Add SSH key for restic user
