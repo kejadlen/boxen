@@ -85,7 +85,52 @@
 - import_playbook: ../playbooks/unattended-upgrades.yml # noqa: name[play]
 - import_playbook: ../playbooks/journal-upload.yml      # noqa: name[play]
 
+- name: Host a Restic repository
+  tags: restic
+  hosts: legacy-of-lunatic-kingdom
+  become: true
+  tasks:
+
+    - name: Create Restic user
+      ansible.builtin.user:
+        name: restic
+        system: true
+        state: present
+
+    - name: Add SSH key for restic user
+      ansible.posix.authorized_key:
+        user: restic
+        key: "{{ item }}"
+      loop:
+        - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILrlVay1GlpCuhYSUup/K/gRYmltycViPBAdZ8t9OKtu # lotus-land-story
+        - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPgX0tA28NO3djYaV++JxggR0t47xou+R0HQVwVjzj8s # 1password
+
+    - name: Create Restic directory
+      ansible.builtin.file:
+        path: "{{ (data_dir, 'restic') | path_join }}"
+        state: directory
+        owner: restic
+        group: restic
+        mode: "0755"
+
+- name: Keep dhcpcd out of resolv.conf
+  # Trixie's ifupdown uses dhcpcd for the dhcp method, and it rewrites
+  # /etc/resolv.conf on every lease event, stomping the file tailscaled owns
+  # until its next check restores MagicDNS. Takes effect at the next dhcpcd
+  # start, i.e. a reboot or a restart of the networking service.
+  tags: dns
+  hosts: legacy-of-lunatic-kingdom
+  become: true
+  tasks:
+
+    - name: Disable dhcpcd resolv.conf hook
+      ansible.builtin.lineinfile:
+        path: /etc/dhcpcd.conf
+        line: nohook resolv.conf
+        state: present
+
 # TODO
-# - restic
+# - jellyfin
+# - immich
 
 # vim: ft=yaml.ansible

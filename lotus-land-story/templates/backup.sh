@@ -2,7 +2,10 @@
 
 set -euo pipefail
 
-export RESTIC_REPOSITORY=sftp:restic@mountain-of-faith:/mnt/mountain-of-faith/restic
+readonly PRIMARY_REPOSITORY={{ primary_repository }}
+readonly SECONDARY_REPOSITORY={{ secondary_repository }}
+
+export RESTIC_REPOSITORY=${PRIMARY_REPOSITORY}
 export RESTIC_PASSWORD={{ restic.password }}
 
 readonly HEALTHCHECK=https://hc-ping.com/{{ healthchecks_io.backup_sh }}
@@ -78,3 +81,13 @@ restic --verbose forget \
   --keep-within-weekly 1y \
   --keep-within-monthly 100y \
   --prune
+
+# Mirror onto the NAS repo while both are dual-write targets. Restic resolves
+# the source repository's password separately from RESTIC_PASSWORD, so pass
+# it explicitly; the repos share one.
+export RESTIC_REPOSITORY=${SECONDARY_REPOSITORY}
+export RESTIC_FROM_PASSWORD=${RESTIC_PASSWORD}
+restic --verbose copy --from-repo "${PRIMARY_REPOSITORY}"
+
+# Snapshots forgotten above are never removed from the secondary; a one-time
+# forget --prune against it happens at the cutover.

@@ -7,6 +7,7 @@
   Prepare the change, then hand it off.
 - Don't run ad-hoc commands against hosts. Ask for the fact instead.
 - Keep evergreen documentation, meaning how things work now, in `docs/`.
-  Update it in the same change that makes it stale. Dated write-ups go in
-  `docs/<host>/YYYY-MM-DD-slug.md`.
+  Update it in the same change that makes it stale. Prefer living documents
+  over dated write-ups; `docs/<host>/YYYY-MM-DD-slug.md` is for when the
+  history itself matters, like a one-time migration record.
 - Commit scope is the directory the change lives in (`lotus-land-story:`).

@@ -62,4 +62,3 @@ through Tailscale.
 
 - jellyfin
 - immich
-- restic
