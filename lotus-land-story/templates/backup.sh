@@ -66,6 +66,10 @@ trap report EXIT
 # call is distinguishable from one that never fired at all.
 ping_healthcheck /start
 
+# A run killed mid-flight (e.g., by the OOM killer) leaves its lock behind,
+# which blocks every later prune. unlock only removes stale locks.
+restic unlock
+
 restic --verbose backup \
   /mnt/lotus-land-story/ \
   --exclude=/mnt/lotus-land-story/docker
@@ -87,6 +91,7 @@ restic --verbose forget \
 # it explicitly; the repos share one.
 export RESTIC_REPOSITORY=${SECONDARY_REPOSITORY}
 export RESTIC_FROM_PASSWORD=${RESTIC_PASSWORD}
+restic unlock
 restic --verbose copy --from-repo "${PRIMARY_REPOSITORY}"
 
 # Snapshots forgotten above are never removed from the secondary; a one-time

@@ -14,11 +14,15 @@ sends its own output to the journal with the `backup` tag. Each run:
 
 1. Pings healthchecks.io `/start`, distinguishing a run that died early from
    one that never fired.
-2. Backs up `/mnt/lotus-land-story/`, excluding `docker/`.
-3. Backs up `pg_dumpall` output via stdin as `lotus-land-story.sql`.
-4. Runs `forget --prune` against the primary with retention of daily for one
+2. Removes stale locks from the primary, so a run killed mid-flight (for
+   example, by the OOM killer) doesn't block every later prune. The
+   secondary gets the same treatment just before the copy, so a down lolk
+   can't stop the primary backup.
+3. Backs up `/mnt/lotus-land-story/`, excluding `docker/`.
+4. Backs up `pg_dumpall` output via stdin as `lotus-land-story.sql`.
+5. Runs `forget --prune` against the primary with retention of daily for one
    month, weekly for one year, monthly forever.
-5. Mirrors every snapshot onto the secondary with
+6. Mirrors every snapshot onto the secondary with
    `restic copy --from-repo <primary>`.
 
 An exit trap pings healthchecks.io with success or failure and pushes
