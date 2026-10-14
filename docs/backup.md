@@ -10,7 +10,9 @@ one day of backups.
 `/etc/cron.daily/backup` on lotus-land-story (templated from
 `lotus-land-story/templates/backup.sh`, owned by the play in
 `lotus-land-story/backup.yml`) runs as root. cron has no MTA, so the script
-sends its own output to the journal with the `backup` tag. Each run:
+sends its own output to the journal with the `backup` tag. It sets
+`GOGC=20` so restic trades CPU for memory, since lotus-land-story has little
+headroom and the OOM killer has taken restic mid-backup. Each run:
 
 1. Pings healthchecks.io `/start`, distinguishing a run that died early from
    one that never fired.
@@ -27,7 +29,7 @@ sends its own output to the journal with the `backup` tag. Each run:
 
 An exit trap pings healthchecks.io with success or failure and pushes
 `backup_*` metrics to VictoriaMetrics. Telemetry failures never change the
-script's own exit status, but the copy in step 5 does count toward it: a
+script's own exit status, but the copy in step 6 does count toward it: a
 broken mirror fails the run.
 
 ## Repositories

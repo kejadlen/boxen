@@ -8,6 +8,9 @@ readonly SECONDARY_REPOSITORY={{ secondary_repository }}
 export RESTIC_REPOSITORY=${PRIMARY_REPOSITORY}
 export RESTIC_PASSWORD={{ restic.password }}
 
+# Trades CPU for memory; the host's headroom is thin enough to OOM restic.
+export GOGC=20
+
 readonly HEALTHCHECK=https://hc-ping.com/{{ healthchecks_io.backup_sh }}
 readonly METRICS=https://metrics/api/v1/import/prometheus
 
