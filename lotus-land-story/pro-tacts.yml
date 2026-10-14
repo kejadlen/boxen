@@ -19,6 +19,9 @@
         env:
           PRO_TACTS_DATA_DIR: /data
           PRO_TACTS_DEBUG: "true"
+          # Full URL — pro-tacts' Tracing.configure passes it straight to the
+          # OTLP exporter; unset, spans reach Sentry alone
+          OTEL_EXPORTER_OTLP_TRACES_ENDPOINT: http://victoria-traces:10428/insert/opentelemetry/v1/traces
         volumes:
           - /mnt/lotus-land-story/pro-tacts:/data
         networks:
