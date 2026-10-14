@@ -184,6 +184,62 @@ Applies broadly:
   and its size caps into journald, and `metrics-addr` into the exporter swap in
   wave 5.
 
+### Secrets
+
+Secrets reach containers as podman secrets mounted as files rather than
+environment variables, wherever the app can read one. sops stays the source of truth: each service's play
+pushes the decrypted host var into podman's store, and the unit mounts it:
+
+```yaml
+- name: Store ketchup session secret
+  containers.podman.podman_secret:
+    name: ketchup-session-secret
+    data: "{{ ketchup.session_secret }}"
+  no_log: true
+  notify: Restart ketchup
+```
+
+```ini
+[Container]
+Secret=ketchup-session-secret,type=mount,target=session_secret,uid=1000,mode=0400
+```
+
+The app reads `/run/secrets/session_secret`. `uid`, `gid`, and `mode` (default
+0444) apply to the mounted file, so containers that drop root can still read
+it.
+
+`podman_secret` compares the stored value against `data` via `podman secret
+inspect --showsecret` and reports `changed` only on a real rotation, so the
+restart handler fires only then. A restart is enough because podman copies
+the secret into the container at creation, and Quadlet creates a fresh
+container on every start.
+
+Rules:
+
+- Set `no_log: true` and never `debug: true`. Debug prints a diff of the old
+  and new values.
+- Put the secret task before the unit template. A missing secret stops the
+  container from being created, so a `--tags` run that skips the secret
+  fails closed.
+- Add `containers.podman` to `requirements.yml`.
+
+At rest, the default `file` driver keeps every secret in plaintext (base64
+inside JSON) in one root-only (0600) `secretsdata.json` under the graphroot.
+Each running container also holds a plaintext copy in its userdata directory.
+Neither is under `/mnt/lotus-land-story`, so restic doesn't back them up,
+unlike the secrets files quire, authelia, and docket write there today.
+
+Two alternatives keep less plaintext on disk, and neither is worth it yet:
+
+- The `shell` driver can back podman's store with `systemd-creds`, encrypting
+  the store. Podman still writes the decrypted per-container copy, and without
+  a TPM the key sits on the same disk. Switching later changes only the
+  driver, not the units or tasks.
+- `LoadCredentialEncrypted=` plus `Volume=%d/<name>:/run/secrets/<name>:ro`
+  keeps plaintext in ramfs only. It's unverified that `%d` survives Quadlet,
+  and the credential is root-only with no `uid`/`mode` knobs, which breaks
+  containers that drop root.
+
 ## Waves
 
 **Wave 1 — the two that are already systemd.** `victoria-traces` and
@@ -273,3 +329,7 @@ actually is on the first wave-3 service rather than predicting it.
 - Does caddy-tailscale get TUN under rootful podman without extra capability
   work?
 - Which Grafana panels read cadvisor series?
+- Which apps can read secrets from a file? Authelia can. Ketchup's
+  `SESSION_SECRET`, paperless's `PAPERLESS_SECRET_KEY`, and gotosocial's
+  `GTS_OIDC_CLIENT_SECRET` are environment variables today; any app without a
+  file option keeps its variable.
