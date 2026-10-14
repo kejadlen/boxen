@@ -95,6 +95,20 @@
               isDefault: true
         mode: "0644"
 
+    # Jaeger rather than Tempo: VictoriaTraces' Tempo API needs v0.9.4+.
+    - name: Provision VictoriaTraces
+      ansible.builtin.copy:
+        dest: /mnt/lotus-land-story/grafana/provisioning/datasources/victoria-traces.yml
+        content: |
+          apiVersion: 1
+
+          datasources:
+            - name: VictoriaTraces
+              type: jaeger
+              access: proxy
+              url: http://victoria-traces:10428/select/jaeger
+        mode: "0644"
+
     - name: Create Grafana data dir
       ansible.builtin.file:
         path: /mnt/lotus-land-story/grafana/data
