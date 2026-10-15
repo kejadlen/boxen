@@ -2,7 +2,7 @@
   hosts: lotus-land-story
   vars:
     primary_repository: sftp:restic@mountain-of-faith:/mnt/mountain-of-faith/restic
-    secondary_repository: sftp:restic@legacy-of-lunatic-kingdom:/mnt/legacy-of-lunatic-kingdom/restic
+    secondary_repository: sftp:restic@legacy-of-lunatic-kingdom:/mnt/data/restic
   tasks:
 
     - name: Install Restic
