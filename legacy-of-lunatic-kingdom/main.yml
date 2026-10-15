@@ -1,3 +1,19 @@
+# The imported shared plays target {{ ansible_limit }} and match nothing
+# without it, so a bare run would apply this host's plays and skip theirs.
+- name: Require --limit
+  hosts: legacy-of-lunatic-kingdom
+  gather_facts: false
+  tags: always
+  tasks:
+
+    - name: Fail without --limit
+      ansible.builtin.assert:
+        that: ansible_limit is defined
+        fail_msg: >-
+          Run with --limit legacy-of-lunatic-kingdom; without it the imported
+          shared plays match nothing and this playbook half-applies.
+        quiet: true
+
 - name: Basic requirements
   hosts: legacy-of-lunatic-kingdom
   become: true
