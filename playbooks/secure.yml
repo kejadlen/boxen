@@ -1,0 +1,30 @@
+- name: Secure the system
+  hosts: "{{ ansible_limit | default([]) }}"
+  become: true
+  tasks:
+
+    - name: Disable SSH password logins
+      ansible.builtin.lineinfile:
+        path: /etc/ssh/sshd_config
+        regexp: '^(#\s*)?{{ item }} '
+        line: "{{ item }} no"
+      loop:
+        - KbdInteractiveAuthentication
+        - PasswordAuthentication
+        - UsePAM
+      notify: Restart sshd
+
+    - name: Allow sudo without password
+      ansible.builtin.lineinfile:
+        path: /etc/sudoers
+        regexp: '^%sudo'
+        line: '%sudo ALL=(ALL:ALL) NOPASSWD:ALL'
+        validate: 'visudo -cf %s'
+
+  handlers:
+    - name: Restart sshd
+      ansible.builtin.systemd:
+        name: sshd
+        state: restarted
+
+# vim: ft=yaml.ansible

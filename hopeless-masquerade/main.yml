@@ -51,37 +51,8 @@
         name: en_US.UTF-8
         state: present
 
-# TODO Standardize these into a shared playbook
-- name: Secure the system
-  hosts: hopeless-masquerade
-  become: true
-  tasks:
-
-    - name: Disable SSH password logins
-      ansible.builtin.lineinfile:
-        path: /etc/ssh/sshd_config
-        regexp: '^(#\s*)?{{ item }} '
-        line: "{{ item }} no"
-      with_items:
-        - ChallengeResponseAuthentication
-        - PasswordAuthentication
-        - UsePAM
-      notify: Restart sshd
-
-    - name: Allow sudo without password
-      ansible.builtin.lineinfile:
-        path: /etc/sudoers
-        regexp: '^%sudo'
-        line: '%sudo ALL=(ALL:ALL) NOPASSWD:ALL'
-        validate: 'visudo -cf %s'
-
-  handlers:
-    - name: Restart sshd
-      ansible.builtin.systemd:
-        name: sshd
-        state: restarted
-
 # TODO disallow network access from non-tailscale interfaces
+- import_playbook: ../playbooks/secure.yml # noqa: name[play]
 - import_playbook: ../playbooks/tailscale.yml # noqa: name[play]
 
 # https://setup.vector.dev
