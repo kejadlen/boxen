@@ -1,5 +1,1 @@
 .terraform
-terraform.tfstate*
-terraform.tfvars
-
-domain_records.tf
