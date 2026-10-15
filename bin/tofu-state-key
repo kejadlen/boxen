@@ -1,0 +1,27 @@
+#!/usr/bin/env bash
+
+# OpenTofu external key provider that serves the base64 AES-256 state key from
+# 1Password. Protocol: https://opentofu.org/docs/language/state/encryption/
+
+set -euo pipefail
+if [[ "${TRACE-0}" == "1" ]]; then
+    set -o xtrace
+fi
+
+main() {
+    local key
+    key=$(op read --no-newline 'op://Private/2oylajxj2xmsj6ijn7ccvxd5zi/password')
+    if [[ $(printf '%s' "$key" | base64 --decode | wc -c) -ne 32 ]]; then
+        echo "tofu-state-key: 1Password item must hold 32 base64-encoded bytes; generate one with 'openssl rand -base64 32'" >&2
+        exit 1
+    fi
+
+    echo '{"magic":"OpenTofu-External-Key-Provider","version":1}'
+
+    # Always send the decryption key: without stored metadata, OpenTofu sends
+    # null on decrypt too, so the input can't tell the two cases apart.
+    cat >/dev/null
+    printf '{"keys":{"encryption_key":"%s","decryption_key":"%s"}}\n' "$key" "$key"
+}
+
+main "$@"

@@ -62,6 +62,16 @@ sops host_vars/lotus-land-story.sops.yml
 The same command creates a new `host_vars/<host>.sops.yml`, encrypted
 through the creation rule.
 
+## OpenTofu state
+
+OpenTofu keeps state in the gitignored `terraform.tfstate` and encrypts it
+with AES-GCM. The key is 32 random bytes, base64-encoded, in the
+`tofu-state-key` item in the Private vault. `bin/tofu-state-key` is an
+[external key provider][external] that reads it with `op read`, so each
+`tofu` command that touches state asks 1Password for it.
+
+[external]: https://opentofu.org/docs/language/state/encryption/
+
 ## Losing the key
 
 `.sops.yaml` lists one recipient. If the 1Password item is lost, every

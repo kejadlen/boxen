@@ -1,4 +1,24 @@
 terraform {
+  encryption {
+    key_provider "external" "op" {
+      command = ["./bin/tofu-state-key"]
+    }
+
+    method "aes_gcm" "op" {
+      keys = key_provider.external.op
+    }
+
+    state {
+      method   = method.aes_gcm.op
+      enforced = true
+    }
+
+    plan {
+      method   = method.aes_gcm.op
+      enforced = true
+    }
+  }
+
   required_providers {
     dnsimple = {
       source  = "dnsimple/dnsimple"
