@@ -30,6 +30,11 @@
       ansible.builtin.apt:
         pkg:
           - prometheus-node-exporter
+          # For debugging sustained network traffic.
+          - iftop     # live per-connection bandwidth
+          - nethogs   # live per-process bandwidth
+          - tcpdump   # packet capture
+          - vnstat    # persistent traffic accounting by interface
         state: present
 
 - import_playbook: ../playbooks/tailscale.yml # noqa: name[play]
