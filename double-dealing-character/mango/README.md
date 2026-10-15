@@ -12,7 +12,7 @@ run it there; see the comments at the top of the script for background and
 references, and `mango-tailscale-setup.sh help` for the subcommands.
 
 ```sh
-scp double-dealing-character/mango-tailscale-setup.sh root@192.168.8.1:/tmp/
+scp double-dealing-character/mango/mango-tailscale-setup.sh root@192.168.8.1:/tmp/
 
 export SSH_PUBKEY="ssh-ed25519 AAAA... me@laptop"
 /tmp/mango-tailscale-setup.sh all --yes-wipe
@@ -38,4 +38,4 @@ exit-node return path state in one go.
 
 ## Notes
 
-- [2026-08-07: exit node return path hijacked by mwan3](../docs/double-dealing-character/2026-08-07-exit-node-return-path.md)
+- [2026-08-07: exit node return path hijacked by mwan3](../../docs/double-dealing-character/mango/2026-08-07-exit-node-return-path.md)
