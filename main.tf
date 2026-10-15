@@ -1,15 +1,4 @@
-# TODO
-# - [ ] migrate backend from cloud to local
-# - [ ] migrate to opentofu
-
 terraform {
-  cloud {
-    organization = "kejadlen"
-    workspaces {
-      name = "boxen"
-    }
-  }
-
   required_providers {
     dnsimple = {
       source  = "dnsimple/dnsimple"
