@@ -42,13 +42,22 @@ plaintext `host_vars` files stop loading.
 ## What's in git
 
 `host_vars/.gitignore` ignores everything except the `.sops.yml` files and
-`lotus-land-story.yml`. Today the tracked files are the following:
+the whitelisted plaintext files. Today the tracked files are the following:
 
+- `legacy-of-lunatic-kingdom.sops.yml`
+- `legacy-of-lunatic-kingdom.yml`
 - `lotus-land-story.sops.yml`
 - `lotus-land-story.yml`
 - `mountain-of-faith.sops.yml`
 
-`legacy-of-lunatic-kingdom.yml` is untracked and hasn't moved to sops.
+## What loads which file
+
+`host_vars/<host>.sops.yml` is only read by the sops plugin and
+`host_vars/<host>.yml` only by `host_group_vars`, which matches exact
+`<host>.yml`/`.yaml`/`.json` names and never parses a `.sops.yml` as
+plaintext. If the same key appears in both files, the plugins' results
+deep-merge with the sops values winning — that's plugin load order, not
+documented precedence, so keep each key in exactly one file.
 
 ## Edit a secret
 
