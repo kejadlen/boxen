@@ -12,6 +12,7 @@
           - prometheus-node-exporter
           - prometheus-node-exporter-collectors # apt_info + reboot-required metrics
           - python3-lxml # ansible bcrypt
+          - rsync
         state: present
         update_cache: true
 
