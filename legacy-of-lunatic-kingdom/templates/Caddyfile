@@ -1,0 +1,28 @@
+{
+	log default {
+		output stdout
+		format json
+		include http.log.access tls
+	}
+
+	metrics
+
+	tailscale {
+		auth_key {env.TS_AUTHKEY}
+		state_dir /data/tailscale
+	}
+}
+
+# Tailnet-bound sites: internal TLS, a dedicated tailscale node, and access
+# logging routed to the default logger (shipped to VictoriaLogs via journald).
+(ts) {
+	tls internal
+	bind tailscale/{args[0]}
+	log
+}
+
+:2019 {
+	metrics /metrics
+}
+
+# vim: ts=4

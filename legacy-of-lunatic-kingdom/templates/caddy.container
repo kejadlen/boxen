@@ -1,0 +1,18 @@
+[Unit]
+Description=Caddy
+
+[Container]
+ContainerName=caddy
+Image=ghcr.io/kejadlen/caddy-kejadlen:{{ version }}
+Secret=caddy_tsauthkey,type=env,target=TS_AUTHKEY
+PublishPort=2019:2019
+Volume={{ data_dir }}/caddy/Caddyfile:/etc/caddy/Caddyfile:ro
+Volume={{ data_dir }}/caddy/data:/data
+Network=legacy_of_lunatic_kingdom.network
+
+[Service]
+TimeoutStartSec=900
+MemoryMax=1G
+
+[Install]
+WantedBy=multi-user.target
