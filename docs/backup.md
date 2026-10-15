@@ -35,7 +35,7 @@ broken mirror fails the run.
 ## Repositories
 
 - Primary: `sftp:restic@mountain-of-faith:/mnt/mountain-of-faith/restic`
-- Secondary: `sftp:restic@legacy-of-lunatic-kingdom:/mnt/legacy-of-lunatic-kingdom/restic`
+- Secondary: `sftp:restic@legacy-of-lunatic-kingdom:/mnt/data/restic`
 
 Both live under a `restic` system user on the host, reachable by SSH keys for
 lotus-land-story (the backup) and 1password (manual restores). The
