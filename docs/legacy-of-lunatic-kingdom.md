@@ -71,10 +71,9 @@ can scrape caddy's metrics endpoint.
 ## Observability
 
 VictoriaMetrics on lotus-land-story scrapes lolk over the tailnet:
-node-exporter on `:9100` and syncthing on `:8384` (see
+node-exporter on `:9100`, syncthing on `:8384`, and caddy on `:2019` (see
 [scrape.yml][scrape]). journald ships to VictoriaLogs through
-journal-upload, which carries caddy's JSON access logs. Caddy's `:2019`
-endpoint is published for the same treatment once it joins a scrape job.
+journal-upload, which carries caddy's JSON access logs.
 
 [scrape]: ../lotus-land-story/templates/scrape.yml
 
