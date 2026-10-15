@@ -27,7 +27,7 @@
           - neovim
           - prometheus-node-exporter
           - prometheus-node-exporter-collectors # apt_info + reboot-required metrics
-          - python3-lxml # ansible bcrypt
+          - python3-lxml # syncthing config (community.general.xml)
           - rsync
         state: present
         update_cache: true
