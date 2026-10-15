@@ -55,7 +55,7 @@ can scrape caddy's metrics endpoint.
 |---|---|---|
 | caddy | Quadlet container | [caddy.yml][caddy] |
 | syncthing | Debian package, `syncthing@syncthing.service` | [syncthing.yml][syncthing] |
-| restic repository | sftp directory under the `restic` user | [main.yml][main] |
+| restic repository | sftp-only `restic` user | [main.yml][main] |
 | node-exporter | Debian package, with apt and systemd collectors | [main.yml][main] |
 | journal-upload | ships journald to VictoriaLogs on lotus-land-story | [journal-upload.yml][journal] |
 | unattended-upgrades | Debian package, weekly apply with security-only origins | [unattended-upgrades.yml][upgrades] |

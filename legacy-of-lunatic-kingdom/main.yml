@@ -109,6 +109,21 @@
   become: true
   tasks:
 
+    # Applied before the account changes below so sftp never briefly depends
+    # on the user's shell; internal-sftp serves absolute paths, so the
+    # repository URL stays as it is.
+    - name: Restrict the restic user to sftp
+      ansible.builtin.blockinfile:
+        path: /etc/ssh/sshd_config
+        block: |
+          Match User restic
+              ForceCommand internal-sftp
+              AllowTcpForwarding no
+              X11Forwarding no
+        validate: /usr/sbin/sshd -t -f %s
+        mode: "0644"
+      notify: Restart sshd
+
     - name: Create Restic user
       ansible.builtin.user:
         name: restic
@@ -117,12 +132,17 @@
         # which is how Debian creates system users. '*' is not locked but
         # can never match a password.
         password: "*"
+        # internal-sftp needs no shell.
+        shell: /usr/sbin/nologin
         state: present
 
     - name: Add SSH key for restic user
       ansible.posix.authorized_key:
         user: restic
         key: "{{ item }}"
+        # ForceCommand confines; restrict also kills forwarding and pty at
+        # the auth layer.
+        key_options: restrict
       loop:
         - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILrlVay1GlpCuhYSUup/K/gRYmltycViPBAdZ8t9OKtu # lotus-land-story
         - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPgX0tA28NO3djYaV++JxggR0t47xou+R0HQVwVjzj8s # 1password
@@ -134,6 +154,12 @@
         owner: restic
         group: restic
         mode: "0755"
+
+  handlers:
+    - name: Restart sshd
+      ansible.builtin.systemd:
+        name: sshd
+        state: restarted
 
 - name: Keep dhcpcd out of resolv.conf
   # Trixie's ifupdown uses dhcpcd for the dhcp method, and it rewrites
