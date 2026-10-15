@@ -30,6 +30,11 @@ terraform {
       version = "~> 2.18"
     }
 
+    onepassword = {
+      source  = "1Password/onepassword"
+      version = "~> 3.3"
+    }
+
     pihole = {
       source = "ryanwholey/pihole"
 
@@ -44,39 +49,57 @@ terraform {
   }
 }
 
+provider "onepassword" {
+  account = "alydipha.1password.com"
+}
+
+# Items are looked up by UUID: lookups by title fail with SDK return code -4.
+locals {
+  op_private_vault = "7escx6csroqkgfrmkpdubfrqoa"
+}
+
+# boxen-dnsimple
+ephemeral "onepassword_item" "dnsimple" {
+  vault = local.op_private_vault
+  uuid  = "urxqkxvbav5m2trwhzgwkg43pu"
+}
+
+# boxen-linode
+ephemeral "onepassword_item" "linode" {
+  vault = local.op_private_vault
+  uuid  = "wgyjufgbnzfv6h6jvqy7g632ma"
+}
+
+# boxen-pihole
+ephemeral "onepassword_item" "pihole" {
+  vault = local.op_private_vault
+  uuid  = "xpf55644ii3azfcl74tywiagb4"
+}
+
+# boxen-tailscale
+ephemeral "onepassword_item" "tailscale" {
+  vault = local.op_private_vault
+  uuid  = "zoaigxq4d3kg3heqgobxlg4hdu"
+}
+
 provider "dnsimple" {
-  token   = var.dnsimple.token
-  account = var.dnsimple.account
+  token   = ephemeral.onepassword_item.dnsimple.credential
+  account = ephemeral.onepassword_item.dnsimple.username
 }
 
 provider "linode" {
-  # token = LINODE_TOKEN
+  token = ephemeral.onepassword_item.linode.credential
 }
 
 provider "pihole" {
   url      = "http://mountain-of-faith:80"
-  password = var.pihole.password
+  password = ephemeral.onepassword_item.pihole.credential
 }
 
 provider "tailscale" {
-  tailnet = "-"
-  # oauth_client_id = TAILSCALE_OAUTH_CLIENT_ID
-  # oauth_client_secret = TAILSCALE_OAUTH_CLIENT_SECRET
-}
-
-variable "dnsimple" {
-  type = object({
-    token   = string
-    account = string
-  })
-  nullable = false
-}
-
-variable "pihole" {
-  type = object({
-    password = string
-  })
-  nullable = false
+  tailnet             = "-"
+  oauth_client_id     = ephemeral.onepassword_item.tailscale.username
+  oauth_client_secret = ephemeral.onepassword_item.tailscale.credential
 }
 
 data "linode_instances" "ramble_hard" {
