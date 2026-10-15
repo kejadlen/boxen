@@ -22,12 +22,12 @@ terraform {
   required_providers {
     dnsimple = {
       source  = "dnsimple/dnsimple"
-      version = "~> 1.10"
+      version = "~> 2.2"
     }
 
     linode = {
       source  = "linode/linode"
-      version = "~> 2.18"
+      version = "~> 4.7"
     }
 
     onepassword = {
@@ -44,7 +44,7 @@ terraform {
 
     tailscale = {
       source  = "tailscale/tailscale"
-      version = "~> 0.17.2"
+      version = "~> 0.29.2"
     }
   }
 }
