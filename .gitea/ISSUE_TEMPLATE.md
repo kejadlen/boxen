@@ -34,12 +34,6 @@ in place.
   git clone --recursive https://git.kejadlen.dev/alpha/boxen.git ~/src/boxen
   ```
 
-- [ ] Run Ansible
-
-  ```sh
-  ansible-playbook local/main.yml
-  ```
-
 - [ ] Install Neovim
 
   ```sh
