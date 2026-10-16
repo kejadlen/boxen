@@ -31,12 +31,15 @@
       register: dpkg_arch
       changed_when: false
 
-    # Left behind by ansible.builtin.apt_repository; apt reads both formats, so
-    # leaving it would configure the repository twice.
-    - name: Remove one-line Docker repository
+    # Left behind by earlier runs: apt reads both formats, and a one-liner
+    # with a different signed-by for the same repository breaks apt outright.
+    - name: Remove one-line Docker repositories
       ansible.builtin.file:
-        path: /etc/apt/sources.list.d/download_docker_com_linux_debian.list
+        path: /etc/apt/sources.list.d/{{ item }}
         state: absent
+      loop:
+        - download_docker_com_linux_debian.list
+        - docker.list
 
     # echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] \
     #   https://download.docker.com/linux/debian $(. /etc/os-release && echo "$VERSION_CODENAME") stable" \
