@@ -17,6 +17,7 @@
         owner: "{{ grafana_user.name }}"
       loop:
         - datasources
+        - dashboards
 
     - name: Configure Grafana
       ansible.builtin.copy:
@@ -108,6 +109,29 @@
               access: proxy
               url: http://victoria-traces:10428/select/jaeger
         mode: "0644"
+
+    # allowUiUpdates is false so the repository stays the source of truth.
+    - name: Provision dashboard provider
+      ansible.builtin.copy:
+        dest: /mnt/lotus-land-story/grafana/provisioning/dashboards/provider.yml
+        content: |
+          apiVersion: 1
+
+          providers:
+            - name: default
+              type: file
+              allowUiUpdates: false
+              updateIntervalSeconds: 30
+              options:
+                path: /etc/grafana/provisioning/dashboards
+        mode: "0644"
+
+    - name: Provision dashboards
+      ansible.builtin.copy:
+        src: "{{ item }}"
+        dest: /mnt/lotus-land-story/grafana/provisioning/dashboards/
+        mode: "0644"
+      loop: "{{ query('ansible.builtin.fileglob', playbook_dir ~ '/templates/dashboards/*.json', wantlist=true) }}"
 
     - name: Create Grafana data dir
       ansible.builtin.file:

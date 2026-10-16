@@ -1,0 +1,138 @@
+{
+  "result": {
+    "id": 1,
+    "orgId": 1,
+    "folderId": 0,
+    "folderUid": "general",
+    "uid": "fexkjwb19jrpce",
+    "name": "Uptime",
+    "kind": 1,
+    "type": "state-timeline",
+    "description": "",
+    "model": {
+      "datasource": {
+        "type": "victoriametrics-metrics-datasource",
+        "uid": "P4169E866C3094E38"
+      },
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {
+            "axisPlacement": "auto",
+            "fillOpacity": 80,
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "vis": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineWidth": 1,
+            "spanNulls": false
+          },
+          "links": [
+            {
+              "oneClick": false,
+              "title": "Select instance",
+              "url": "https://grafana/d/blackbox-uptime/blackbox-exporter-uptime?var-instance=${__field.labels.instance}"
+            }
+          ],
+          "mappings": [
+            {
+              "options": {
+                "0": {
+                  "color": "red",
+                  "index": 0,
+                  "text": "DOWN"
+                },
+                "1": {
+                  "color": "green",
+                  "index": 1,
+                  "text": "UP"
+                }
+              },
+              "type": "value"
+            }
+          ],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": null
+              },
+              {
+                "color": "green",
+                "value": 1
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 13,
+        "w": 6,
+        "x": 0,
+        "y": 0
+      },
+      "id": 1,
+      "libraryPanel": {
+        "name": "Uptime",
+        "uid": "fexkjwb19jrpce"
+      },
+      "options": {
+        "alignValue": "left",
+        "colWidth": 0.9,
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": false
+        },
+        "mergeValues": false,
+        "rowHeight": 0.9,
+        "showValue": "never",
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "12.1.1",
+      "targets": [
+        {
+          "datasource": {
+            "type": "victoriametrics-datasource",
+            "uid": "victoriametrics"
+          },
+          "expr": "probe_success{job=~\"blackbox-exporter-http.*\"}",
+          "interval": "",
+          "legendFormat": "{{target}}",
+          "refId": "A"
+        }
+      ],
+      "type": "state-timeline"
+    },
+    "version": 1,
+    "meta": {
+      "folderName": "General",
+      "folderUid": "general",
+      "connectedDashboards": 2,
+      "created": "2025-09-09T15:57:19Z",
+      "updated": "2025-09-09T15:57:19Z",
+      "createdBy": {
+        "id": 2,
+        "name": "alpha@kejadlen.dev",
+        "avatarUrl": "/avatar/2d10d39af31cc200ed23d6e7b6ac1b0b"
+      },
+      "updatedBy": {
+        "id": 2,
+        "name": "alpha@kejadlen.dev",
+        "avatarUrl": "/avatar/2d10d39af31cc200ed23d6e7b6ac1b0b"
+      }
+    }
+  }
+}
