@@ -10,16 +10,35 @@
       args:
         creates: /usr/share/keyrings/redis-archive-keyring.gpg
 
-    - name: Add apt repo
-      ansible.builtin.apt_repository:
-        repo: "deb [signed-by=/usr/share/keyrings/redis-archive-keyring.gpg] https://packages.redis.io/deb {{ ansible_facts.distribution_release }} main"
+    # ansible.builtin.deb822_repository needs python-debian on the target.
+    - name: Install required packages
+      ansible.builtin.apt:
+        name: python3-debian
         state: present
-        filename: redis
+        update_cache: true
+
+    # Left behind by ansible.builtin.apt_repository; apt reads both formats, so
+    # leaving it would configure the repository twice.
+    - name: Remove one-line Redis repository
+      ansible.builtin.file:
+        path: /etc/apt/sources.list.d/redis.list
+        state: absent
+
+    - name: Add apt repo
+      ansible.builtin.deb822_repository:
+        name: redis
+        types: deb
+        uris: https://packages.redis.io/deb
+        suites: "{{ ansible_facts.distribution_release }}"
+        components: main
+        signed_by: /usr/share/keyrings/redis-archive-keyring.gpg
+        state: present
 
     - name: Install Redis
       ansible.builtin.apt:
         pkg: redis
         state: present
+        update_cache: true
 
     # TODO Figure out how to de-duplicate this
     - name: Save docker_ip
