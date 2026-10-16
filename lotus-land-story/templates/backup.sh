@@ -95,6 +95,10 @@ ping_healthcheck /start
 # which blocks every later prune. unlock only removes stale locks.
 phase unlock restic unlock
 
+# Runs before the files phase so the dump it writes under /data is included
+# in the file backup.
+phase pro-tacts docker exec pro-tacts rake db:dump
+
 # A file-level copy of the running cluster isn't restorable; the postgres
 # phase's pg_dumpall is. The glob also covers the postgresql-15 path the
 # bookworm upgrade moves to.
