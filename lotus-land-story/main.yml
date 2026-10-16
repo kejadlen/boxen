@@ -17,6 +17,24 @@
       ansible.builtin.hostname:
         name: lotus-land-story
 
+    # Temporary until the bookworm upgrade: bullseye is EOL and the expired
+    # mirror breaks every apt refresh. Remove both tasks after the upgrade.
+    # docs/lotus-land-story/2026-10-16-bullseye-to-bookworm.md
+    - name: Point apt at the Debian archive
+      ansible.builtin.copy:
+        dest: /etc/apt/sources.list
+        content: |
+          deb http://archive.debian.org/debian bullseye main
+          deb http://archive.debian.org/debian-security bullseye-security main
+        mode: "0644"
+
+    - name: Allow expired Release files
+      ansible.builtin.copy:
+        dest: /etc/apt/apt.conf.d/99archive-check-valid-until
+        content: |
+          Acquire::Check-Valid-Until "false";
+        mode: "0644"
+
     - name: Install ansible requirements
       ansible.builtin.apt:
         pkg:
