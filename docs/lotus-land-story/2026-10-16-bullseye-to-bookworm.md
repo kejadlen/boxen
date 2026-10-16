@@ -13,7 +13,8 @@ at 15, which only exists after the upgrade. Commit before, deploy after.
 
 What rides along without changes: Grafana, VictoriaMetrics, Caddy,
 Authelia, and the rest run as containers, and Vector runs as a
-`timberio/vector:*-debian` image. After the upgrade, `rake ansible`
+`timberio/vector:*-debian` image. After the upgrade, the main playbook
+(`ansible-playbook -l lotus-land-story lotus-land-story/main.yml`)
 re-targets the facts-based deb822 repositories (docker, tailscale, redis)
 to bookworm on its own.
 
@@ -49,7 +50,7 @@ to bookworm on its own.
    bookworm-security main` — bookworm dropped the `/updates` suffix.
 2. Re-target the third-party one-line repositories the same way, `sed -i
    s/bullseye/bookworm/ /etc/apt/sources.list.d/*.list`, so bullseye
-   builds don't constrain the dependency solve. `rake ansible` later
+   builds don't constrain the dependency solve. The main playbook later
    replaces these files with deb822 sources.
 3. `apt update && apt upgrade` (minimal first, no new packages), then
    `apt full-upgrade`. Postgres stays at 13: the installed binaries
@@ -73,7 +74,7 @@ it to the volume.
    volume: `sudo pg_createcluster 15 main -d
    /mnt/lotus-land-story/postgresql-15 --start`.
 3. Restore: `sudo -u postgres psql -f /tmp/all.sql postgres`.
-4. Run `rake ansible`. The repository changes apply: 15 paths,
+4. Run the main playbook. The repository changes apply: 15 paths,
    `data_directory` pointing at `postgresql-15`, the tuning values
    (already computed for 15 — see the pgtune comment in `postgres.yml`),
    `listen.conf`, and the `pg_hba.conf` rules.
@@ -92,13 +93,7 @@ it to the volume.
   the Grafana network panels render cadvisor data.
 - `backup.sh` succeeds against the 15 cluster.
 
-## Cleanup and rollback
-
-After the first full `rake ansible`, delete the sed-edited `docker.list`
-from `/etc/apt/sources.list.d/`: `playbooks/docker.yml` writes the deb822 `docker.sources`
-and only removes the other historical filename, so the sed-edited
-one-liner would configure Docker twice. (The deeper fix is the existing
-"consolidate this into the other playbook" TODO in `main.yml`.)
+## Rollback
 
 To roll back, restore the Linode snapshot and redeploy the pre-upgrade
 commit. In place, starting the 13 cluster again reverses the database

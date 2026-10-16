@@ -2,10 +2,10 @@
 
 ```
 # setup
-export LOTUS_LAND_STORY_DOMAIN=...
+echo 'domain = "kejadlen.dev"' > terraform.tfvars
 
 # terraform
-rake terraform
+terraform apply
 
 # add the IP to ~/.ssh/config
 
@@ -13,10 +13,10 @@ rake terraform
 ansible all -m ping
 
 # ansible
-rake ansible
+ansible-playbook -l lotus-land-story lotus-land-story/main.yml
 
 # manually connect to tailscale
 
 # specific playbooks
-rake ansible[playbook]
+ansible-playbook -l lotus-land-story lotus-land-story/<playbook>.yml
 ```
