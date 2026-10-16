@@ -45,6 +45,24 @@ push_metrics() {
 start_time=$(date +%s)
 hostname=$(hostname)
 
+# Breadcrumbs for the journal: "> name" when a phase starts, "< name: Ns"
+# when it finishes, so the last line shows where a slow or dead run sits.
+# Durations ship as metrics from report().
+phase_durations=""
+phase() {
+  local name=$1
+  shift
+
+  local start end
+  start=$(date +%s)
+  echo "> ${name}"
+  "$@"
+  end=$(date +%s)
+  echo "< ${name}: $((end - start))s (total $((end - start_time))s)"
+  phase_durations+="backup_phase_duration_seconds{job=\"backup\",host=\"${hostname}\",phase=\"${name}\"} $((end - start))
+"
+}
+
 report() {
   status=$?
 
@@ -55,12 +73,16 @@ report() {
 
   if [[ ${status} -eq 0 ]]; then
     ping_healthcheck
+    echo "backup finished: $((end_time - start_time))s"
     push_metrics "backup_success${labels} 1 ${timestamp}
 backup_duration_seconds${labels} $((end_time - start_time)) ${timestamp}
-backup_completed_timestamp${labels} ${end_time} ${timestamp}"
+backup_completed_timestamp${labels} ${end_time} ${timestamp}
+${phase_durations}"
   else
     ping_healthcheck /fail
-    push_metrics "backup_success${labels} 0 ${timestamp}"
+    echo "backup failed: status=${status}"
+    push_metrics "backup_success${labels} 0 ${timestamp}
+${phase_durations}"
   fi
 }
 trap report EXIT
@@ -71,19 +93,19 @@ ping_healthcheck /start
 
 # A run killed mid-flight (e.g., by the OOM killer) leaves its lock behind,
 # which blocks every later prune. unlock only removes stale locks.
-restic unlock
+phase unlock restic unlock
 
-restic --verbose backup \
+phase files restic --verbose backup \
   /mnt/lotus-land-story/ \
   --exclude=/mnt/lotus-land-story/docker
 
-restic --verbose backup \
+phase postgres restic --verbose backup \
   --stdin-filename lotus-land-story.sql \
   --stdin-from-command \
   -- \
   sudo -iu postgres pg_dumpall
 
-restic --verbose forget \
+phase forget restic --verbose forget \
   --keep-within-daily 1m \
   --keep-within-weekly 1y \
   --keep-within-monthly 100y \
@@ -94,8 +116,8 @@ restic --verbose forget \
 # it explicitly; the repos share one.
 export RESTIC_REPOSITORY=${SECONDARY_REPOSITORY}
 export RESTIC_FROM_PASSWORD=${RESTIC_PASSWORD}
-restic unlock
-restic --verbose copy --from-repo "${PRIMARY_REPOSITORY}"
+phase unlock-secondary restic unlock
+phase mirror restic --verbose copy --from-repo "${PRIMARY_REPOSITORY}"
 
 # Snapshots forgotten above are never removed from the secondary; a one-time
 # forget --prune against it happens at the cutover.
