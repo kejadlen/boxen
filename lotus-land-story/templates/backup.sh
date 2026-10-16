@@ -3,7 +3,6 @@
 set -euo pipefail
 
 readonly PRIMARY_REPOSITORY={{ primary_repository }}
-readonly SECONDARY_REPOSITORY={{ secondary_repository }}
 
 export RESTIC_REPOSITORY=${PRIMARY_REPOSITORY}
 export RESTIC_PASSWORD={{ restic.password }}
@@ -118,11 +117,3 @@ phase forget restic --verbose forget \
   --keep-within-weekly 1y \
   --keep-within-monthly 100y \
   --prune
-
-# Mirror onto mountain-of-faith while both are dual-write targets. Restic
-# resolves the source repository's password separately from RESTIC_PASSWORD, so
-# pass it explicitly; the repos share one.
-export RESTIC_REPOSITORY=${SECONDARY_REPOSITORY}
-export RESTIC_FROM_PASSWORD=${RESTIC_PASSWORD}
-phase unlock-secondary restic unlock
-phase mirror restic --verbose copy --from-repo "${PRIMARY_REPOSITORY}"

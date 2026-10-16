@@ -2,7 +2,6 @@
   hosts: lotus-land-story
   vars:
     primary_repository: sftp:restic@legacy-of-lunatic-kingdom:/mnt/data/restic
-    secondary_repository: sftp:restic@mountain-of-faith:/mnt/mountain-of-faith/restic
   tasks:
 
     - name: Install Restic
@@ -30,26 +29,6 @@
       ansible.builtin.known_hosts:
         name: legacy-of-lunatic-kingdom
         key: "legacy-of-lunatic-kingdom {{ lolk_host_key.content | b64decode }}"
-
-    # restic copy fails on a missing destination, and --copy-chunker-params
-    # keeps dedup working across the two repositories.
-    - name: Check for secondary Restic repository
-      ansible.builtin.command:
-        cmd: restic --repo {{ secondary_repository }} cat config
-      environment:
-        RESTIC_PASSWORD: "{{ restic.password }}"
-      register: secondary_repo
-      changed_when: false
-      failed_when: false
-
-    - name: Initialize secondary Restic repository
-      ansible.builtin.command: >-
-        restic --repo {{ secondary_repository }}
-        init --from-repo {{ primary_repository }} --copy-chunker-params
-      environment:
-        RESTIC_PASSWORD: "{{ restic.password }}"
-        RESTIC_FROM_PASSWORD: "{{ restic.password }}"
-      when: secondary_repo.rc != 0
 
     - name: Set up daily backup
       ansible.builtin.template:
