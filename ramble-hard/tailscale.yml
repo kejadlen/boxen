@@ -1,30 +1,64 @@
-# https://tailscale.com/download/linux/debian-bullseye
+# https://tailscale.com/download/linux/debian
 
 - name: Install Tailscale
   hosts: ramble-hard
   become: true
   tasks:
 
-    # curl -fsSL https://pkgs.tailscale.com/stable/debian/bullseye.noarmor.gpg | sudo tee /usr/share/keyrings/tailscale-archive-keyring.gpg >/dev/null
+    - name: Assert distribution is Debian
+      ansible.builtin.assert:
+        that:
+          - ansible_facts["distribution"] == "Debian"
+        fail_msg: "This playbook only supports Debian distributions"
+
+    # ansible.builtin.deb822_repository needs python-debian on the target.
+    - name: Install required packages
+      ansible.builtin.apt:
+        name: python3-debian
+        state: present
+        update_cache: true
+
+    # curl -fsSL https://pkgs.tailscale.com/stable/debian/$(. /etc/os-release && echo "$VERSION_CODENAME").noarmor.gpg | sudo tee /usr/share/keyrings/tailscale-archive-keyring.gpg >/dev/null
     - name: Download Tailscale package signing key
       ansible.builtin.get_url:
-        url: https://pkgs.tailscale.com/stable/debian/bullseye.noarmor.gpg
+        url: https://pkgs.tailscale.com/stable/debian/{{ ansible_facts["distribution_release"] }}.noarmor.gpg
         dest: /usr/share/keyrings/tailscale-archive-keyring.gpg
+        mode: "0644"
 
-    # curl -fsSL https://pkgs.tailscale.com/stable/debian/bullseye.tailscale-keyring.list | sudo tee /etc/apt/sources.list.d/tailscale.list
+    # Left behind by ansible.builtin.apt_repository; apt reads both formats, so
+    # leaving them would configure the repository twice. Older runs didn't set
+    # a filename, so match on the URI rather than tailscale.list.
+    - name: Find one-line Tailscale repositories
+      ansible.builtin.find:
+        paths: /etc/apt/sources.list.d
+        patterns: "*.list"
+        contains: pkgs\.tailscale\.com
+        read_whole_file: true
+      register: tailscale_list_sources
+
+    - name: Remove one-line Tailscale repositories
+      ansible.builtin.file:
+        path: "{{ item.path }}"
+        state: absent
+      loop: "{{ tailscale_list_sources.files }}"
+      loop_control:
+        label: "{{ item.path }}"
+
+    # curl -fsSL https://pkgs.tailscale.com/stable/debian/$(. /etc/os-release && echo "$VERSION_CODENAME").tailscale-keyring.list | sudo tee /etc/apt/sources.list.d/tailscale.list
     - name: Add Tailscale repository
-      ansible.builtin.apt_repository:
-        repo: deb [signed-by=/usr/share/keyrings/tailscale-archive-keyring.gpg] https://pkgs.tailscale.com/stable/debian bullseye main
-        filename: tailscale
+      ansible.builtin.deb822_repository:
+        name: tailscale
+        types: deb
+        uris: https://pkgs.tailscale.com/stable/debian
+        suites: '{{ ansible_facts["distribution_release"] }}'
+        components: main
+        signed_by: /usr/share/keyrings/tailscale-archive-keyring.gpg
         state: present
 
     # sudo apt-get update
-    - name: Update apt-get
-      ansible.builtin.apt:
-        update_cache: true
-
     # sudo apt-get install tailscale
     - name: Install Tailscale
-      ansible.builtin.package:
+      ansible.builtin.apt:
         name: tailscale
         state: present
+        update_cache: true
