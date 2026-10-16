@@ -119,13 +119,10 @@ phase forget restic --verbose forget \
   --keep-within-monthly 100y \
   --prune
 
-# Mirror onto the NAS repo while both are dual-write targets. Restic resolves
-# the source repository's password separately from RESTIC_PASSWORD, so pass
-# it explicitly; the repos share one.
+# Mirror onto mountain-of-faith while both are dual-write targets. Restic
+# resolves the source repository's password separately from RESTIC_PASSWORD, so
+# pass it explicitly; the repos share one.
 export RESTIC_REPOSITORY=${SECONDARY_REPOSITORY}
 export RESTIC_FROM_PASSWORD=${RESTIC_PASSWORD}
 phase unlock-secondary restic unlock
 phase mirror restic --verbose copy --from-repo "${PRIMARY_REPOSITORY}"
-
-# Snapshots forgotten above are never removed from the secondary; a one-time
-# forget --prune against it happens at the cutover.
