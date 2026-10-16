@@ -95,9 +95,13 @@ ping_healthcheck /start
 # which blocks every later prune. unlock only removes stale locks.
 phase unlock restic unlock
 
+# A file-level copy of the running cluster isn't restorable; the postgres
+# phase's pg_dumpall is. The glob also covers the postgresql-15 path the
+# bookworm upgrade moves to.
 phase files restic --verbose backup \
   /mnt/lotus-land-story/ \
-  --exclude=/mnt/lotus-land-story/docker
+  --exclude=/mnt/lotus-land-story/docker \
+  --exclude='/mnt/lotus-land-story/postgresql*'
 
 phase postgres restic --verbose backup \
   --stdin-filename lotus-land-story.sql \
