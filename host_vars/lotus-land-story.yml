@@ -13,7 +13,7 @@ versions:
   grafana:          12.4.3
   homebox:          0.25.0
   ketchup:          20260525-e75f249
-  miniflux:         2.3.3
+  miniflux:         2.3.4
   monica:           4.1.2
   monica_mysql:     "5.7"
   paperless_ngx:    3.2.1
