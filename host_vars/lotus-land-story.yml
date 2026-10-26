@@ -1,5 +1,5 @@
 versions:
-  anubis:           v1.26.2
+  anubis:           v1.28.2
   authelia:         4.39.28
   cadvisor:         0.60.6
   caddy:            2.11.7-2026.10.07 # don't forget to update caddy-kejadlen first!
