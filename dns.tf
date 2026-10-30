@@ -38,7 +38,6 @@ resource "dnsimple_zone_record" "kejadlen_dev_subdomains" {
     grafana = local.lotus_land_story.ip_address
     hey     = local.lotus_land_story.ip_address
     quire   = local.lotus_land_story.ip_address
-    monica  = "100.119.129.66" # ramble-hard's tailnet IP; its OS hostname is localhost, so tailscale_device can't find it.
   }
 
   zone_name = dnsimple_zone.zones["kejadlen_dev"].name

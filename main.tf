@@ -102,13 +102,6 @@ provider "tailscale" {
   oauth_client_secret = ephemeral.onepassword_item.tailscale.credential
 }
 
-data "linode_instances" "ramble_hard" {
-  filter {
-    name   = "label"
-    values = ["ramble-hard"]
-  }
-}
-
 data "linode_instances" "lotus_land_story" {
   filter {
     name   = "label"
@@ -130,7 +123,6 @@ data "tailscale_device" "contacts" {
 }
 
 locals {
-  ramble_hard      = data.linode_instances.ramble_hard.instances.0
   lotus_land_story = data.linode_instances.lotus_land_story.instances.0
 }
 
