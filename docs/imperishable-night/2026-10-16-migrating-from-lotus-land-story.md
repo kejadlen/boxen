@@ -45,21 +45,12 @@ host needs. Those secrets are the same ones Ansible reads from
 
 The Nix tooling runs on the workstation, which has Nix installed, though
 not NixOS. The [deploy tooling](2026-10-20-deploy-tooling.md) comparison
-covers why NixOS. nixos-anywhere replaces Debian over SSH. Pass a
-pre-generated SSH host key with `--extra-files` so the age key exists
-before first boot.
+covers why NixOS. nixos-anywhere replaces Debian over SSH. Derive the
+age key from the host key that NixOS generates on first boot, with
+`ssh-keyscan` piped into `ssh-to-age`.
 
-To deploy, run the following from the repository root:
-
-```sh
-nix run nixpkgs#nixos-rebuild -- switch \
-  --flake ./imperishable-night#imperishable-night \
-  --target-host imperishable-night --build-host imperishable-night
-```
-
-The workstation evaluates the configuration and the host builds it, so
-macOS needs no Linux builder. nixos-rebuild on macOS may also need
-`--fast` or `--no-reexec`, which is unverified.
+[imperishable-night](../imperishable-night.md) covers the boot setup,
+install, and deploys.
 
 ### Base configuration
 
