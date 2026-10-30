@@ -2,7 +2,11 @@
 
 The [migration plan](2026-10-16-migrating-from-lotus-land-story.md)
 assumes NixOS manages imperishable-night. This document compares NixOS
-with the alternatives worth considering. No choice is final yet.
+with the alternatives worth considering.
+
+On 2026-10-30, the choice landed on NixOS, deployed from the
+workstation. Installing Nix on the Mac drops the constraint below that
+it has no Nix.
 
 ## Constraints
 
@@ -48,9 +52,8 @@ cover each one.
 
 ### NixOS
 
-The migration plan covers how NixOS would work, including two ways to
-deploy without Nix on the workstation. NixOS has the most complete
-answer here: whole-system rollback, sops-nix for secrets, and
+The migration plan covers how NixOS would work. NixOS has the most
+complete answer here: whole-system rollback, sops-nix for secrets, and
 `virtualisation.oci-containers` for podman containers.
 
 The cost is learning Nix, plus a configuration language unlike anything

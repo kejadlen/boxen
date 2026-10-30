@@ -43,32 +43,11 @@ the host's SSH key. Add that age key as a recipient on the secrets the
 host needs. Those secrets are the same ones Ansible reads from
 `host_vars/lotus-land-story.sops.yml` today.
 
-Where the Nix tooling runs is undecided. The two options differ in
-whether the workstation needs Nix installed.
-
-### Option A: Nix only on the host
-
-The workstation needs no Nix. A tofu `remote-exec` provisioner runs
-nixos-infect on the Debian instance, which converts it to NixOS in place.
-nixos-infect is a community script and less maintained than
-nixos-anywhere. Read the host's SSH key after the conversion to derive
-its age key.
-
-To deploy, push the repository, SSH in, and run the following on the
-host:
-
-```sh
-nixos-rebuild switch --flake <repository>#imperishable-night
-```
-
-Evaluation and builds both happen on the host, so a mistake in the
-configuration surfaces there instead of on the workstation.
-
-### Option B: Nix on the workstation
-
-The workstation has Nix installed, though not NixOS. nixos-anywhere
-replaces Debian over SSH. Pass a pre-generated SSH host key with
-`--extra-files` so the age key exists before first boot.
+The Nix tooling runs on the workstation, which has Nix installed, though
+not NixOS. The [deploy tooling](2026-10-20-deploy-tooling.md) comparison
+covers why NixOS. nixos-anywhere replaces Debian over SSH. Pass a
+pre-generated SSH host key with `--extra-files` so the age key exists
+before first boot.
 
 To deploy, run the following from the repository root:
 
