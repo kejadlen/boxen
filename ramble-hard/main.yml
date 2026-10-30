@@ -1,5 +1,0 @@
-- hosts: ramble-hard
-  vars_files:
-    - ../vars.private
-  tasks:
-
