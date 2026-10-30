@@ -3,8 +3,9 @@
 lotus-land-story is a shared Linode 4 GB running Debian 11. It has two
 problems that an in-place fix handles badly:
 
-- It is short on memory. Over 14 days, available memory averaged 0.59 GB
-  and bottomed out at 60 MB, with half a gigabyte in swap.
+- It is short on memory. Over 30 days, used memory averaged 3.5 GB and
+  peaked at 4.05 GB, with half a gigabyte in swap. paperless-ngx is
+  stopped to make room.
 - Its OS is out of support. Bullseye's LTS ended on 2026-08-31, and the
   planned move to podman needs two OS upgrades first
   ([podman migration](../lotus-land-story/2026-09-04-podman-migration.md),
@@ -15,6 +16,16 @@ imperishable-night replaces it: a shared Linode 8 GB (4 vCPU, 8 GB RAM,
 through `virtualisation.oci-containers`. Services move over one at a time
 while lotus-land-story keeps serving the rest. There is no single
 cutover.
+
+The 8 GB size comes from lotus-land-story's usage with every service
+running, paperless-ngx included. Containers average 2.8 GB according to
+cadvisor, and PostgreSQL, Docker, and the OS bring the host to about
+3.6 GB. gotosocial, gitea, and pro-tacts each spike to two or three times
+their average, and each Gitea Actions job adds up to 530 MB. NixOS also
+builds on the host, which takes an estimated 1 to 2 GB more during a
+deploy. That leaves about 2 GB of headroom at worst. CPU hit 93% of
+2 vCPU at the 99th percentile, so the extra cores matter too. The 44 GB of
+data fits on the local disk.
 
 The move is lift-and-shift. Each container keeps its image, tag, and
 environment. Replacing containers with native NixOS modules is out of
@@ -78,6 +89,8 @@ The base configuration covers the following:
 - Tailscale, joined as `imperishable-night`
 - node-exporter, added to the scrape config in
   `lotus-land-story/templates/scrape.yml`
+- cadvisor against podman's socket, scraped with its `instance` relabeled
+  to `imperishable-night:8080` like lotus-land-story's
 - PostgreSQL and the restic backup job (see
   [Back up both hosts](#back-up-both-hosts))
 - Caddy, running the same `ghcr.io/kejadlen/caddy-kejadlen` image with
@@ -184,8 +197,9 @@ breakage costs least:
    need their directories under `/mnt/lotus-land-story/caddy/data`
    copied along with them.
 
-dockhand and cadvisor talk to the Docker socket. Check whether each
-works against podman's Docker-compatible socket before moving it.
+dockhand talks to the Docker socket. Check whether it works against
+podman's Docker-compatible socket before moving it. cadvisor doesn't
+move: each host runs its own, and lotus-land-story's retires with it.
 
 ## Move gotosocial
 
