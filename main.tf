@@ -25,6 +25,11 @@ terraform {
       version = "~> 2.2"
     }
 
+    http = {
+      source  = "hashicorp/http"
+      version = "~> 3.5"
+    }
+
     linode = {
       source  = "linode/linode"
       version = "~> 4.7"
@@ -124,6 +129,24 @@ data "tailscale_device" "contacts" {
 
 locals {
   lotus_land_story = data.linode_instances.lotus_land_story.instances.0
+}
+
+data "http" "github_keys" {
+  url = "https://github.com/kejadlen.keys"
+}
+
+# Debian is only a launch pad: nixos-anywhere replaces it with NixOS.
+resource "linode_instance" "imperishable_night" {
+  label           = "imperishable-night"
+  image           = "linode/debian13"
+  region          = "us-west"
+  type            = "g6-standard-4"
+  authorized_keys = split("\n", chomp(data.http.github_keys.response_body))
+
+  lifecycle {
+    # Changing either would recreate the instance and wipe NixOS.
+    ignore_changes = [authorized_keys, image]
+  }
 }
 
 resource "pihole_dns_record" "domains" {
