@@ -48,8 +48,12 @@ both pass `--retry-lock=30m`, so a run waits out the other host's prune
 instead of failing on its exclusive lock.
 
 The unit pings its own healthchecks.io check: `/start` before the backup,
-then success or `/fail` from `$SERVICE_RESULT` after it stops. It doesn't
-push metrics to VictoriaMetrics yet. The password and check UUID come from
+then success or `/fail` from `$SERVICE_RESULT` after it stops. It then
+pushes `backup_success`, `backup_duration_seconds`, and
+`backup_completed_timestamp` to VictoriaMetrics with
+`host="imperishable-night"`, but no per-phase durations, since the module
+runs its commands without breadcrumbs. The personal dashboard's backup
+panels show one series per host. The password and check UUID come from
 `imperishable-night/secrets.sops.yml`.
 
 ## Repository

@@ -161,12 +161,31 @@ in
         OnCalendar = "03:00";
         Persistent = true;
       };
-      backupPrepareCommand = ping "/start";
+      backupPrepareCommand = ''
+        date +%s > /run/restic-backups-daily/start
+        ${ping "/start"}
+      '';
+      # Pushes the same backup_* series as lotus-land-story's backup.sh.
       backupCleanupCommand = ''
+        push() {
+          # TODO Trust Caddy's internal root so this doesn't need --insecure.
+          ${pkgs.curl}/bin/curl --insecure --fail --silent --show-error --max-time 10 \
+            --retry 3 --data-binary "$1" https://metrics/api/v1/import/prometheus || true
+        }
+
+        end=$(date +%s)
+        start=$(cat /run/restic-backups-daily/start 2>/dev/null || echo "$end")
+        ts=''${end}000 # milliseconds
+        l='{job="backup",host="imperishable-night"}'
         if [ "$SERVICE_RESULT" = success ]; then
           ${ping ""}
+          push "$(printf '%s\n' \
+            "backup_success$l 1 $ts" \
+            "backup_duration_seconds$l $((end - start)) $ts" \
+            "backup_completed_timestamp$l $end $ts")"
         else
           ${ping "/fail"}
+          push "backup_success$l 0 $ts"
         fi
       '';
     };
