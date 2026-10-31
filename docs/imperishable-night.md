@@ -4,8 +4,9 @@ A shared Linode 8 GB (4 vCPU, 8 GB RAM, 160 GB disk) in `us-west`,
 running NixOS from the flake in `imperishable-night/`. Services are moving
 here from lotus-land-story one at a time; the
 [migration plan](imperishable-night/2026-10-16-migrating-from-lotus-land-story.md)
-tracks the order. Today it runs only the base system, Tailscale,
-node-exporter, cadvisor, and Caddy with no sites yet.
+tracks the order. Today it runs the base system, Tailscale,
+node-exporter, cadvisor, restic, Caddy with no sites yet, and redis.
+paperless-ngx is defined but not started until its data moves.
 
 For first-time setup, see the [bootstrap README][readme].
 
@@ -91,6 +92,7 @@ restic. The file holds the following values:
 |---|---|
 | `caddy.ts_authkey` | `tofu output -raw imperishable_night_caddy_auth_key` |
 | `caddy.dnsimple_token` | `dnsimple.caddy_token` in `host_vars/lotus-land-story.sops.yml` |
+| `paperless_ngx.secret` | `paperless_ngx.secret` in `host_vars/lotus-land-story.sops.yml` |
 | `restic.password` | `restic.password` in `host_vars/lotus-land-story.sops.yml` |
 | `restic.healthcheck` | The UUID of imperishable-night's healthchecks.io backup check |
 

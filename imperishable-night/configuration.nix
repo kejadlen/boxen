@@ -14,6 +14,12 @@ let
   # Fixed so the Caddyfile can trust it; podman assigns subnets on creation otherwise.
   podmanNetwork = "caddy";
   podmanSubnet = "10.89.0.0/24";
+
+  versions = {
+    caddy = "2.11.7-2026.10.07";
+    paperless-ngx = "3.3.4";
+    redis = "8.10.3";
+  };
 in
 {
   imports = [ (modulesPath + "/profiles/qemu-guest.nix") ];
@@ -92,10 +98,14 @@ in
   systemd.tmpfiles.rules = [
     "d /var/lib/caddy/data 0755 root root -"
     "d /var/lib/caddy/config 0755 root root -"
+    "d /var/lib/paperless-ngx/consume 0700 root root -"
+    "d /var/lib/paperless-ngx/data 0700 root root -"
+    "d /var/lib/paperless-ngx/export 0700 root root -"
+    "d /var/lib/paperless-ngx/media 0700 root root -"
   ];
 
   virtualisation.oci-containers.containers.caddy = {
-    image = "ghcr.io/kejadlen/caddy-kejadlen:2.11.7-2026.10.07";
+    image = "ghcr.io/kejadlen/caddy-kejadlen:${versions.caddy}";
     environmentFiles = [ config.sops.templates."caddy.env".path ];
     ports = [
       "80:80"
@@ -117,6 +127,60 @@ in
     ];
   };
   systemd.services.podman-caddy = {
+    requires = [ "podman-network-${podmanNetwork}.service" ];
+    after = [ "podman-network-${podmanNetwork}.service" ];
+  };
+
+  # paperless-ngx's Celery broker; nothing in it is worth persisting.
+  virtualisation.oci-containers.containers.redis = {
+    image = "docker.io/library/redis:${versions.redis}";
+    networks = [ podmanNetwork ];
+  };
+  systemd.services.podman-redis = {
+    requires = [ "podman-network-${podmanNetwork}.service" ];
+    after = [ "podman-network-${podmanNetwork}.service" ];
+  };
+
+  sops.secrets."paperless_ngx/secret" = { };
+  sops.templates."paperless-ngx.env" = {
+    content = ''
+      PAPERLESS_SECRET_KEY=${config.sops.placeholder."paperless_ngx/secret"}
+    '';
+    restartUnits = [ "podman-paperless-ngx.service" ];
+  };
+
+  # https://github.com/paperless-ngx/paperless-ngx/blob/main/docker/compose/docker-compose.sqlite.yml
+  virtualisation.oci-containers.containers.paperless-ngx = {
+    image = "ghcr.io/paperless-ngx/paperless-ngx:${versions.paperless-ngx}";
+    # Stays stopped until its data is copied from lotus-land-story.
+    autoStart = false;
+    dependsOn = [ "redis" ];
+    environment = {
+      PAPERLESS_ENABLE_FLOWER = "true";
+      PAPERLESS_ENABLE_HTTP_REMOTE_USER = "true";
+      PAPERLESS_OCR_USER_ARGS = ''{"continue_on_soft_render_error": true}'';
+      PAPERLESS_REDIS = "redis://redis:6379";
+      PAPERLESS_TASK_WORKERS = "1";
+      PAPERLESS_THREADS_PER_WORKER = "1";
+      PAPERLESS_TIME_ZONE = "America/Los_Angeles";
+      # Training exhausted lotus-land-story's memory, so it runs overnight.
+      PAPERLESS_TRAIN_TASK_CRON = "5 0 * * *";
+      PAPERLESS_URL = "https://docs";
+      PAPERLESS_WEBSERVER_WORKERS = "1";
+    };
+    environmentFiles = [ config.sops.templates."paperless-ngx.env".path ];
+    volumes = [
+      "/var/lib/paperless-ngx/data:/usr/src/paperless/data"
+      "/var/lib/paperless-ngx/media:/usr/src/paperless/media"
+      "/var/lib/paperless-ngx/export:/usr/src/paperless/export"
+      "/var/lib/paperless-ngx/consume:/usr/src/paperless/consume"
+      "${pkgs.writeText "flowerconfig.py" ''
+        url_prefix = "/flower/"
+      ''}:/usr/src/paperless/src/paperless/flowerconfig.py:ro"
+    ];
+    networks = [ podmanNetwork ];
+  };
+  systemd.services.podman-paperless-ngx = {
     requires = [ "podman-network-${podmanNetwork}.service" ];
     after = [ "podman-network-${podmanNetwork}.service" ];
   };
