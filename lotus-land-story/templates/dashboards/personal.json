@@ -340,7 +340,7 @@
           "expr": "end() - (backup_completed_timestamp)",
           "format": "time_series",
           "instant": false,
-          "legendFormat": "__auto",
+          "legendFormat": "{{host}}",
           "range": true,
           "refId": "A"
         }
@@ -445,7 +445,7 @@
           "editorMode": "code",
           "expr": "backup_duration_seconds{job=\"backup\"}",
           "format": "time_series",
-          "legendFormat": "__auto",
+          "legendFormat": "{{host}}",
           "range": true,
           "refId": "A"
         }
@@ -473,7 +473,6 @@
             },
             "lineWidth": 1
           },
-          "displayName": "backup",
           "mappings": [],
           "thresholds": {
             "mode": "absolute",
@@ -522,7 +521,7 @@
           "expr": "changes(backup_completed_timestamp[1d]) default 0",
           "format": "time_series",
           "instant": false,
-          "legendFormat": "__auto",
+          "legendFormat": "{{host}}",
           "range": true,
           "refId": "A"
         }
