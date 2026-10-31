@@ -165,18 +165,6 @@ contacts.chislan.family {
 	}
 }
 
-docs {
-	import tsauth docs
-	reverse_proxy paperless-ngx:8000 {
-		header_up Remote-User {http.auth.user.tailscale_user}
-	}
-
-	redir /flower /flower/
-	handle /flower/* {
-		reverse_proxy paperless-ngx:5555
-	}
-}
-
 homebox {
 	import ts homebox
 	reverse_proxy homebox:7745
