@@ -121,6 +121,56 @@ in
     after = [ "podman-network-${podmanNetwork}.service" ];
   };
 
+  sops.secrets."restic/password" = { };
+  sops.secrets."restic/healthcheck" = { };
+  sops.templates."restic.env".content = ''
+    HEALTHCHECK=https://hc-ping.com/${config.sops.placeholder."restic/healthcheck"}
+  '';
+
+  programs.ssh.knownHosts.legacy-of-lunatic-kingdom.publicKey =
+    "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIG/+SIFLbFe3hXp3l0dJSE7J4DpQkEEk//62kMiQsWOZ";
+
+  # Shares lotus-land-story's repository; restic's hostname keeps the snapshots apart.
+  services.restic.backups.daily =
+    let
+      ping = path: ''
+        ${pkgs.curl}/bin/curl --fail --silent --show-error --max-time 10 \
+          --retry 5 --output /dev/null "$HEALTHCHECK${path}" || true
+      '';
+    in
+    {
+      repository = "sftp:restic@legacy-of-lunatic-kingdom:/mnt/data/restic";
+      passwordFile = config.sops.secrets."restic/password".path;
+      environmentFile = config.sops.templates."restic.env".path;
+      # lolk's restic user authorizes the host key, so there's no separate client key.
+      extraOptions = [
+        "sftp.command='ssh restic@legacy-of-lunatic-kingdom -i /etc/ssh/ssh_host_ed25519_key -s sftp'"
+      ];
+      paths = [ "/var/lib" ];
+      exclude = [ "/var/lib/containers" ];
+      # Waits out the other host's prune, which locks the shared repository.
+      extraBackupArgs = [ "--retry-lock=30m" ];
+      pruneOpts = [
+        "--retry-lock=30m"
+        "--host=imperishable-night"
+        "--keep-within-daily=1m"
+        "--keep-within-weekly=1y"
+        "--keep-within-monthly=100y"
+      ];
+      timerConfig = {
+        OnCalendar = "03:00";
+        Persistent = true;
+      };
+      backupPrepareCommand = ping "/start";
+      backupCleanupCommand = ''
+        if [ "$SERVICE_RESULT" = success ]; then
+          ${ping ""}
+        else
+          ${ping "/fail"}
+        fi
+      '';
+    };
+
   # lotus-land-story scrapes :8080 over the tailnet; the port stays closed publicly.
   services.cadvisor = {
     enable = true;

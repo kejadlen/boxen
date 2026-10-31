@@ -1,8 +1,8 @@
 # Backups
 
-A daily cron script backs lotus-land-story up with restic into a repository
-on legacy-of-lunatic-kingdom. That repository is the only copy: losing lolk
-loses the backups along with it.
+lotus-land-story and imperishable-night back up daily with restic into a
+shared repository on legacy-of-lunatic-kingdom. That repository is the only
+copy: losing lolk loses the backups along with it.
 
 ## The daily run
 
@@ -36,13 +36,31 @@ An exit trap pings healthchecks.io with success or failure and pushes
 to VictoriaMetrics. Telemetry failures never change the script's own exit
 status.
 
+## imperishable-night
+
+NixOS's `services.restic.backups.daily` runs as the
+`restic-backups-daily` service at 03:00 UTC, and catches up on boot if the
+host was down then. It backs up `/var/lib`, excluding podman's
+`/var/lib/containers`. Then it runs `unlock` and `forget --prune` with the
+same retention as lotus-land-story, limited to `--host=imperishable-night`
+so the policy never touches lotus-land-story's snapshots. Backup and prune
+both pass `--retry-lock=30m`, so a run waits out the other host's prune
+instead of failing on its exclusive lock.
+
+The unit pings its own healthchecks.io check: `/start` before the backup,
+then success or `/fail` from `$SERVICE_RESULT` after it stops. It doesn't
+push metrics to VictoriaMetrics yet. The password and check UUID come from
+`imperishable-night/secrets.sops.yml`.
+
 ## Repository
 
 `sftp:restic@legacy-of-lunatic-kingdom:/mnt/data/restic`, defined as a play
-var in `lotus-land-story/backup.yml` and templated into the script. It lives
-under a `restic` system user, reachable by SSH keys for lotus-land-story
-(the backup) and 1password (manual restores). The password is stored in
-`host_vars/lotus-land-story.sops.yml`.
+var in `lotus-land-story/backup.yml` and templated into the script, and in
+imperishable-night's configuration. It lives under a `restic` system user,
+reachable by SSH keys for lotus-land-story (the backup), imperishable-night
+(its SSH host key), and 1password (manual restores). The password is stored
+in `host_vars/lotus-land-story.sops.yml`, with a copy in
+`imperishable-night/secrets.sops.yml`.
 
 ## What the playbooks handle
 
@@ -62,3 +80,10 @@ ssh lotus-land-story journalctl -t backup
 
 The journal shows the restic output and the phase breadcrumbs;
 healthchecks.io should show the success ping for the same run.
+
+On imperishable-night:
+
+```sh
+ssh imperishable-night sudo systemctl start restic-backups-daily
+ssh imperishable-night journalctl -u restic-backups-daily
+```

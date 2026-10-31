@@ -84,12 +84,15 @@ tailnet site registers as its own Tailscale node, using a reusable
 
 sops-nix decrypts `imperishable-night/secrets.sops.yml` at activation,
 with the age key derived from the host's SSH key, and renders Caddy's
-environment file from it. The file holds the following values:
+and restic's environment files from it. [Backups](backup.md) covers
+restic. The file holds the following values:
 
 | Key | Source |
 |---|---|
 | `caddy.ts_authkey` | `tofu output -raw imperishable_night_caddy_auth_key` |
 | `caddy.dnsimple_token` | `dnsimple.caddy_token` in `host_vars/lotus-land-story.sops.yml` |
+| `restic.password` | `restic.password` in `host_vars/lotus-land-story.sops.yml` |
+| `restic.healthcheck` | The UUID of imperishable-night's healthchecks.io backup check |
 
 Edit it with `sops imperishable-night/secrets.sops.yml`. Nix only sees
 files that git tracks, so commit a new or changed secrets file before
