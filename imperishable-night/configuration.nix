@@ -152,8 +152,6 @@ in
   # https://github.com/paperless-ngx/paperless-ngx/blob/main/docker/compose/docker-compose.sqlite.yml
   virtualisation.oci-containers.containers.paperless-ngx = {
     image = "ghcr.io/paperless-ngx/paperless-ngx:${versions.paperless-ngx}";
-    # Stays stopped until its data is copied from lotus-land-story.
-    autoStart = false;
     dependsOn = [ "redis" ];
     environment = {
       PAPERLESS_ENABLE_FLOWER = "true";

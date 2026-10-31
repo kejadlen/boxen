@@ -17,3 +17,24 @@
 		state_dir /data/tailscale
 	}
 }
+
+# Tailnet-bound sites: internal TLS, a dedicated tailscale node, and access
+# logging routed to the default logger.
+(ts) {
+	tls internal
+	bind tailscale/{args[0]}
+	log
+}
+
+docs {
+	import ts docs
+	tailscale_auth
+	reverse_proxy paperless-ngx:8000 {
+		header_up Remote-User {http.auth.user.tailscale_user}
+	}
+
+	redir /flower /flower/
+	handle /flower/* {
+		reverse_proxy paperless-ngx:5555
+	}
+}
