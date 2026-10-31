@@ -5,7 +5,7 @@ running NixOS from the flake in `imperishable-night/`. Services are moving
 here from lotus-land-story one at a time; the
 [migration plan](imperishable-night/2026-10-16-migrating-from-lotus-land-story.md)
 tracks the order. Today it runs only the base system, Tailscale,
-node-exporter, cadvisor, and podman with no containers yet.
+node-exporter, cadvisor, and Caddy with no sites yet.
 
 For first-time setup, see the [bootstrap README][readme].
 
@@ -40,8 +40,8 @@ key only when the node needs a login, so the key never enters the
 repository or the Nix store.
 
 The firewall trusts `tailscale0` completely. Publicly, it opens only
-TCP 80 and 443 for web traffic and UDP 41641, so peers reach the host
-directly instead of through a relay. SSH is tailnet-only. If Tailscale
+TCP 80 and 443 and UDP 443 for web traffic, and UDP 41641, so peers reach
+the host directly instead of through a relay. SSH is tailnet-only. If Tailscale
 breaks, the way back in is Linode's rescue mode, since `alpha` has no
 password for Lish.
 
@@ -62,6 +62,40 @@ address is already the instance label, so only lotus-land-story's
 in-network target needs relabeling.
 
 [scrape]: ../lotus-land-story/templates/scrape.yml
+
+## Containers and Caddy
+
+Services run as podman containers through `virtualisation.oci-containers`,
+on a podman network named `caddy` so that Caddy and the services reach
+each other by name. A oneshot unit creates the network with a fixed subnet,
+`10.89.0.0/24`, which the Caddyfile lists in `trusted_proxies`. Container
+data lives under `/var/lib/<service>`.
+
+Caddy runs the same `ghcr.io/kejadlen/caddy-kejadlen` image as
+lotus-land-story, with the [Caddyfile][caddyfile] mounted from the Nix
+store, so changing it restarts the container on the next deploy. Each
+tailnet site registers as its own Tailscale node, using a reusable
+`tag:server` auth key that the root tofu configuration mints as
+`tailscale_tailnet_key.imperishable_night_caddy`. The key expires after
+90 days, Tailscale's maximum. It's only needed when a site registers, and
+`tofu apply` mints a new one once it expires.
+
+## Secrets
+
+sops-nix decrypts `imperishable-night/secrets.sops.yml` at activation,
+with the age key derived from the host's SSH key, and renders Caddy's
+environment file from it. The file holds the following values:
+
+| Key | Source |
+|---|---|
+| `caddy.ts_authkey` | `tofu output -raw imperishable_night_caddy_auth_key` |
+| `caddy.dnsimple_token` | `dnsimple.caddy_token` in `host_vars/lotus-land-story.sops.yml` |
+
+Edit it with `sops imperishable-night/secrets.sops.yml`. Nix only sees
+files that git tracks, so commit a new or changed secrets file before
+deploying.
+
+[caddyfile]: ../imperishable-night/Caddyfile
 
 ## Access and deploys
 

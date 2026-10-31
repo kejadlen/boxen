@@ -1,0 +1,19 @@
+{
+	log default {
+		output stdout
+		format json
+		include http.log.access tls
+	}
+
+	metrics
+
+	servers {
+		trusted_proxies static private_ranges @trusted_proxies@
+		trusted_proxies_strict
+	}
+
+	tailscale {
+		auth_key {env.TS_AUTHKEY}
+		state_dir /data/tailscale
+	}
+}

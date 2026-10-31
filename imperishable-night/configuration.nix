@@ -1,10 +1,19 @@
-{ modulesPath, ... }:
+{
+  config,
+  modulesPath,
+  pkgs,
+  ...
+}:
 
 let
   sshKeys = [
     "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPgX0tA28NO3djYaV++JxggR0t47xou+R0HQVwVjzj8s"
     "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIAmBthfb/WZo/cU1FFPQv8jAICTzkJIrNR1IMngUC3MB"
   ];
+
+  # Fixed so the Caddyfile can trust it; podman assigns subnets on creation otherwise.
+  podmanNetwork = "caddy";
+  podmanSubnet = "10.89.0.0/24";
 in
 {
   imports = [ (modulesPath + "/profiles/qemu-guest.nix") ];
@@ -36,6 +45,8 @@ in
       80
       443
     ];
+    # HTTP/3.
+    allowedUDPPorts = [ 443 ];
   };
 
   services.tailscale = {
@@ -52,6 +63,63 @@ in
 
   virtualisation.podman.enable = true;
   virtualisation.oci-containers.backend = "podman";
+
+  # Containers reach each other by name only on a user-defined network.
+  systemd.services."podman-network-${podmanNetwork}" = {
+    path = [ config.virtualisation.podman.package ];
+    serviceConfig = {
+      Type = "oneshot";
+      RemainAfterExit = true;
+    };
+    script = ''
+      podman network exists ${podmanNetwork} ||
+        podman network create --subnet ${podmanSubnet} ${podmanNetwork}
+    '';
+  };
+
+  # sops-nix decrypts with the age key derived from the SSH host key.
+  sops.defaultSopsFile = ./secrets.sops.yml;
+  sops.secrets."caddy/ts_authkey" = { };
+  sops.secrets."caddy/dnsimple_token" = { };
+  sops.templates."caddy.env" = {
+    content = ''
+      TS_AUTHKEY=${config.sops.placeholder."caddy/ts_authkey"}
+      DNSIMPLE_API_ACCESS_TOKEN=${config.sops.placeholder."caddy/dnsimple_token"}
+    '';
+    restartUnits = [ "podman-caddy.service" ];
+  };
+
+  systemd.tmpfiles.rules = [
+    "d /var/lib/caddy/data 0755 root root -"
+    "d /var/lib/caddy/config 0755 root root -"
+  ];
+
+  virtualisation.oci-containers.containers.caddy = {
+    image = "ghcr.io/kejadlen/caddy-kejadlen:2.11.7-2026.10.07";
+    environmentFiles = [ config.sops.templates."caddy.env".path ];
+    ports = [
+      "80:80"
+      "443:443"
+      "443:443/udp"
+    ];
+    volumes = [
+      "${
+        pkgs.replaceVars ./Caddyfile { trusted_proxies = podmanSubnet; }
+      }:/etc/caddy/Caddyfile:ro"
+      "/var/lib/caddy/data:/data"
+      "/var/lib/caddy/config:/config"
+    ];
+    networks = [ podmanNetwork ];
+    # Unbounded, caddy takes the host down with it. Equal memory-swap denies swap.
+    extraOptions = [
+      "--memory=1g"
+      "--memory-swap=1g"
+    ];
+  };
+  systemd.services.podman-caddy = {
+    requires = [ "podman-network-${podmanNetwork}.service" ];
+    after = [ "podman-network-${podmanNetwork}.service" ];
+  };
 
   # lotus-land-story scrapes :8080 over the tailnet; the port stays closed publicly.
   services.cadvisor = {
