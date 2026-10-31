@@ -12,11 +12,11 @@ profile in Cloud Manager:
 - Leave the kernel set to "GRUB 2".
 - Turn off every Filesystem/Boot Helper.
 
-Then install from the repository root, with the instance's public IP:
+Then install from the repository root's `nix develop` shell, with the
+instance's public IP:
 
 ```sh
-nix run github:nix-community/nixos-anywhere -- \
-  --flake ./imperishable-night#imperishable-night \
+nixos-anywhere --flake './imperishable-night#imperishable-night' \
   --build-on remote --target-host root@<ip>
 ```
 

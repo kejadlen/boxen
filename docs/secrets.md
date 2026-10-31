@@ -28,7 +28,7 @@ that environment can't decrypt anything.
 ## How Ansible decrypts
 
 `ansible.cfg` enables the `community.sops.sops` vars plugin, which comes
-from the `community.sops` collection in `requirements.yml`:
+from the `community.sops` collection in the dev shell's Ansible bundle:
 
 ```ini
 vars_plugins_enabled = host_group_vars,community.sops.sops
