@@ -50,6 +50,22 @@ in
   # the tailnet; the port stays closed publicly.
   services.prometheus.exporters.node.enable = true;
 
+  virtualisation.podman.enable = true;
+  virtualisation.oci-containers.backend = "podman";
+
+  # lotus-land-story scrapes :8080 over the tailnet; the port stays closed publicly.
+  services.cadvisor = {
+    enable = true;
+    listenAddress = "0.0.0.0";
+    extraOptions = [
+      # https://github.com/google/cadvisor/issues/2523#issuecomment-2258042352
+      "--housekeeping_interval=30s"
+      # Drops raw cgroups only; podman containers come from cadvisor's podman handler.
+      "--docker_only=true"
+      "--store_container_labels=false"
+    ];
+  };
+
   services.openssh = {
     enable = true;
     # SSH is reachable only over the trusted tailscale0.

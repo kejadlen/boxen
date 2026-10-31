@@ -4,8 +4,8 @@ A shared Linode 8 GB (4 vCPU, 8 GB RAM, 160 GB disk) in `us-west`,
 running NixOS from the flake in `imperishable-night/`. Services are moving
 here from lotus-land-story one at a time; the
 [migration plan](imperishable-night/2026-10-16-migrating-from-lotus-land-story.md)
-tracks the order. Today it runs only the base system, Tailscale, and
-node-exporter.
+tracks the order. Today it runs only the base system, Tailscale,
+node-exporter, cadvisor, and podman with no containers yet.
 
 For first-time setup, see the [bootstrap README][readme].
 
@@ -52,6 +52,14 @@ scrapes it through the `linode` job in [scrape.yml][scrape], which
 discovers every running Linode instance and scrapes `<label>:9100` over
 the tailnet, so adding the host needed no scrape config change. The
 firewall keeps the port closed publicly.
+
+cadvisor runs from NixOS's `services.cadvisor` module rather than as a
+container, so it needs no host mounts, and its version comes from nixpkgs
+instead of lotus-land-story's pin. It listens on `:8080`, also closed
+publicly, and finds containers through podman's socket. The `cadvisor` job
+in the same scrape.yml lists `imperishable-night:8080` as a target. That
+address is already the instance label, so only lotus-land-story's
+in-network target needs relabeling.
 
 [scrape]: ../lotus-land-story/templates/scrape.yml
 
