@@ -109,6 +109,7 @@ scrape_configs:
     static_configs:
       - targets:
           - cadvisor:8080
+          - imperishable-night:8080
     relabel_configs:
       - source_labels: [__address__]
         regex: 'cadvisor:8080'
