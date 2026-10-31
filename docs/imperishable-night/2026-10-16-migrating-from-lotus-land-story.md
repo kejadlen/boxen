@@ -39,9 +39,11 @@ step replaces Debian with NixOS. The NixOS configuration lives in
 a flake under `imperishable-night/`.
 
 sops-nix decrypts secrets with an age key that `ssh-to-age` derives from
-the host's SSH key. Add that age key as a recipient on the secrets the
-host needs. Those secrets are the same ones Ansible reads from
-`host_vars/lotus-land-story.sops.yml` today.
+the host's SSH key. The host's secrets live in their own file,
+`imperishable-night/secrets.sops.yml`, encrypted to that key and the
+workstation's. Each secret is copied there from
+`host_vars/lotus-land-story.sops.yml` when its service moves, so the host
+never holds secrets for services it doesn't run.
 
 The Nix tooling runs on the workstation, which has Nix installed, though
 not NixOS. The [deploy tooling](2026-10-20-deploy-tooling.md) comparison
