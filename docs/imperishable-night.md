@@ -4,7 +4,8 @@ A shared Linode 8 GB (4 vCPU, 8 GB RAM, 160 GB disk) in `us-west`,
 running NixOS from the flake in `imperishable-night/`. Services are moving
 here from lotus-land-story one at a time; the
 [migration plan](imperishable-night/2026-10-16-migrating-from-lotus-land-story.md)
-tracks the order. Today it runs only the base system and Tailscale.
+tracks the order. Today it runs only the base system, Tailscale, and
+node-exporter.
 
 For first-time setup, see the [bootstrap README][readme].
 
@@ -43,6 +44,16 @@ TCP 80 and 443 for web traffic and UDP 41641, so peers reach the host
 directly instead of through a relay. SSH is tailnet-only. If Tailscale
 breaks, the way back in is Linode's rescue mode, since `alpha` has no
 password for Lish.
+
+## Observability
+
+node-exporter listens on `:9100`. VictoriaMetrics on lotus-land-story
+scrapes it through the `linode` job in [scrape.yml][scrape], which
+discovers every running Linode instance and scrapes `<label>:9100` over
+the tailnet, so adding the host needed no scrape config change. The
+firewall keeps the port closed publicly.
+
+[scrape]: ../lotus-land-story/templates/scrape.yml
 
 ## Access and deploys
 

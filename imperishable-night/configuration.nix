@@ -46,6 +46,10 @@ in
     authKeyFile = "/var/lib/tailscale-auth-key";
   };
 
+  # lotus-land-story's linode job discovers the instance and scrapes :9100 over
+  # the tailnet; the port stays closed publicly.
+  services.prometheus.exporters.node.enable = true;
+
   services.openssh = {
     enable = true;
     # SSH is reachable only over the trusted tailscale0.

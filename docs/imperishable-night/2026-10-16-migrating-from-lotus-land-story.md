@@ -57,8 +57,8 @@ install, and deploys.
 The base configuration covers the following:
 
 - Tailscale, joined as `imperishable-night`
-- node-exporter, added to the scrape config in
-  `lotus-land-story/templates/scrape.yml`
+- node-exporter, which the `linode` job in
+  `lotus-land-story/templates/scrape.yml` already discovers
 - cadvisor against podman's socket, scraped with its `instance` relabeled
   to `imperishable-night:8080` like lotus-land-story's
 - PostgreSQL and the restic backup job (see
