@@ -4,7 +4,7 @@ A shared Linode 8 GB (4 vCPU, 8 GB RAM, 160 GB disk) in `us-west`,
 running NixOS from the flake in `imperishable-night/`. Services are moving
 here from lotus-land-story one at a time; the
 [migration plan](imperishable-night/2026-10-16-migrating-from-lotus-land-story.md)
-tracks the order. Today it runs only the base system.
+tracks the order. Today it runs only the base system and Tailscale.
 
 For first-time setup, see the [bootstrap README][readme].
 
@@ -23,6 +23,14 @@ they don't work with NixOS.
 
 Lish, Linode's out-of-band console, reaches the host over the first
 serial port at 19200 baud, through both GRUB and the kernel console.
+
+## Tailscale
+
+The host joins the tailnet as `imperishable-night`. It joined once by
+hand with `sudo tailscale login`, and the node's state persists in
+`/var/lib/tailscale`, so the config holds no auth key. The firewall
+trusts `tailscale0` completely and opens UDP 41641 publicly, so peers
+reach the host directly instead of through a relay.
 
 ## Access and deploys
 

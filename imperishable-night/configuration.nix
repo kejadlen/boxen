@@ -30,6 +30,13 @@ in
   networking.usePredictableInterfaceNames = false;
   networking.useDHCP = false;
   networking.interfaces.eth0.useDHCP = true;
+  networking.firewall.trustedInterfaces = [ "tailscale0" ];
+
+  services.tailscale = {
+    enable = true;
+    # Opens the WireGuard port so peers connect directly, not through DERP.
+    openFirewall = true;
+  };
 
   services.openssh = {
     enable = true;

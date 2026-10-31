@@ -20,5 +20,14 @@ nixos-anywhere --flake './imperishable-night#imperishable-night' \
   --build-on remote --target-host root@<ip>
 ```
 
-NixOS disables root login, so SSH in as `alpha` afterward. For later
-deploys, see the [root README](../README.md).
+NixOS disables root login, so SSH in as `alpha`, the workstation's
+username, afterward and join the tailnet:
+
+```sh
+ssh <ip>
+sudo tailscale login
+```
+
+Disable key expiry for the machine in the Tailscale admin console. After
+that, `imperishable-night` resolves over the tailnet. For later deploys,
+see the [root README](../README.md).

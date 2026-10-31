@@ -15,7 +15,7 @@ the repository root:
 ```sh
 nixos-rebuild switch --sudo \
   --flake './imperishable-night#imperishable-night' \
-  --target-host alpha@<ip> --build-host alpha@<ip>
+  --target-host <ip> --build-host <ip>
 ```
 
 The host builds the system, so macOS needs no Linux builder.
