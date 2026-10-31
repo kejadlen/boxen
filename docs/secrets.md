@@ -84,6 +84,12 @@ through the 1Password provider's ephemeral `onepassword_item` so they never
 reach state. The provider authenticates through the desktop app, which needs
 Settings → Developer → "Integrate with 1Password SDKs" turned on.
 
+`boxen-tailscale` is an OAuth client. Besides reading devices, it mints
+imperishable-night's bootstrap auth key, so it needs write access on the
+`auth_keys` scope and `tag:server` among its tags. That key is the one
+secret that does reach state, as `tailscale_tailnet_key`'s sensitive
+`key`. It's single-use and expires after a day.
+
 [external]: https://opentofu.org/docs/language/state/encryption/
 
 ## Losing the key

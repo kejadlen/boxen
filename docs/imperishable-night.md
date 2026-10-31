@@ -26,11 +26,23 @@ serial port at 19200 baud, through both GRUB and the kernel console.
 
 ## Tailscale
 
-The host joins the tailnet as `imperishable-night`. It joined once by
-hand with `sudo tailscale login`, and the node's state persists in
-`/var/lib/tailscale`, so the config holds no auth key. The firewall
-trusts `tailscale0` completely and opens UDP 41641 publicly, so peers
-reach the host directly instead of through a relay.
+The host joins the tailnet as `imperishable-night`, tagged
+`tag:server`. A tagged node belongs to the tag rather than to a user, and
+its node key doesn't expire. The tailnet keeps Tailscale's default
+allow-all policy, so the tag doesn't change what the host can reach. The
+policy only needs the tag in `tagOwners`. On first boot, NixOS's
+`tailscaled-autoconnect` service logs in with a single-use auth key that
+the root tofu configuration mints as `tailscale_tailnet_key`.
+nixos-anywhere writes the key to `/var/lib/tailscale-auth-key`. The node's
+state then persists in `/var/lib/tailscale`, and the service reads the
+key only when the node needs a login, so the key never enters the
+repository or the Nix store.
+
+The firewall trusts `tailscale0` completely. Publicly, it opens only
+TCP 80 and 443 for web traffic and UDP 41641, so peers reach the host
+directly instead of through a relay. SSH is tailnet-only. If Tailscale
+breaks, the way back in is Linode's rescue mode, since `alpha` has no
+password for Lish.
 
 ## Access and deploys
 

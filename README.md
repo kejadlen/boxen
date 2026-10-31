@@ -15,7 +15,8 @@ the repository root:
 ```sh
 nixos-rebuild switch --sudo \
   --flake './imperishable-night#imperishable-night' \
-  --target-host <ip> --build-host <ip>
+  --target-host imperishable-night --build-host imperishable-night
 ```
 
-The host builds the system, so macOS needs no Linux builder.
+The host builds the system, so macOS needs no Linux builder. SSH to the
+host works only over the tailnet.

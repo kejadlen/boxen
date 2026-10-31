@@ -149,6 +149,19 @@ resource "linode_instance" "imperishable_night" {
   }
 }
 
+# Single-use, so it's spent after the install; mint another with -replace.
+resource "tailscale_tailnet_key" "imperishable_night" {
+  description   = "imperishable-night bootstrap"
+  preauthorized = true
+  expiry        = 86400
+  tags          = ["tag:server"]
+}
+
+output "imperishable_night_auth_key" {
+  value     = tailscale_tailnet_key.imperishable_night.key
+  sensitive = true
+}
+
 resource "pihole_dns_record" "domains" {
   for_each = {
     "git.kejadlen.dev" = data.tailscale_device.lotus_land_story.addresses.0

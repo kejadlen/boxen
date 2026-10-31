@@ -30,16 +30,26 @@ in
   networking.usePredictableInterfaceNames = false;
   networking.useDHCP = false;
   networking.interfaces.eth0.useDHCP = true;
-  networking.firewall.trustedInterfaces = [ "tailscale0" ];
+  networking.firewall = {
+    trustedInterfaces = [ "tailscale0" ];
+    allowedTCPPorts = [
+      80
+      443
+    ];
+  };
 
   services.tailscale = {
     enable = true;
     # Opens the WireGuard port so peers connect directly, not through DERP.
     openFirewall = true;
+    # nixos-anywhere's --extra-files writes this at install; it's unused once joined.
+    authKeyFile = "/var/lib/tailscale-auth-key";
   };
 
   services.openssh = {
     enable = true;
+    # SSH is reachable only over the trusted tailscale0.
+    openFirewall = false;
     settings = {
       PasswordAuthentication = false;
       PermitRootLogin = "no";
