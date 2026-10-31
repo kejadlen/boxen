@@ -94,9 +94,10 @@ Settings → Developer → "Integrate with 1Password SDKs" turned on.
 
 `boxen-tailscale` is an OAuth client. Besides reading devices, it mints
 imperishable-night's bootstrap auth key, so it needs write access on the
-`auth_keys` scope and `tag:server` among its tags. That key is the one
-secret that does reach state, as `tailscale_tailnet_key`'s sensitive
-`key`. It's single-use and expires after a day.
+`auth_keys` scope and `tag:server` among its tags. The tailnet keys are the
+only secrets that do reach state, as each `tailscale_tailnet_key`'s
+sensitive `key`. The bootstrap key is single-use and expires after a day.
+Caddy's key is reusable and lasts 90 days.
 
 [external]: https://opentofu.org/docs/language/state/encryption/
 

@@ -162,6 +162,22 @@ output "imperishable_night_auth_key" {
   sensitive = true
 }
 
+# Reusable so caddy-tailscale can register a node per site. Copy it into
+# imperishable-night/secrets.sops.yml whenever it's re-minted.
+resource "tailscale_tailnet_key" "imperishable_night_caddy" {
+  description         = "imperishable-night caddy"
+  reusable            = true
+  preauthorized       = true
+  expiry              = 7776000 # 90 days, Tailscale's maximum.
+  recreate_if_invalid = "always"
+  tags                = ["tag:server"]
+}
+
+output "imperishable_night_caddy_auth_key" {
+  value     = tailscale_tailnet_key.imperishable_night_caddy.key
+  sensitive = true
+}
+
 resource "pihole_dns_record" "domains" {
   for_each = {
     "git.kejadlen.dev" = data.tailscale_device.lotus_land_story.addresses.0
