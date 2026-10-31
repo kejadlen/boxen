@@ -28,6 +28,7 @@
           default = pkgs.mkShell {
             packages = with pkgs; [
               age
+              just
               nixos-anywhere
               nixos-rebuild
               opentofu

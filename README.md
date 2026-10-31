@@ -13,10 +13,11 @@ imperishable-night runs NixOS instead of Ansible. Deploy its flake from
 the repository root:
 
 ```sh
-nixos-rebuild switch --sudo \
-  --flake './imperishable-night#imperishable-night' \
-  --target-host imperishable-night --build-host imperishable-night
+just imperishable-night
 ```
 
-The host builds the system, so macOS needs no Linux builder. SSH to the
+The recipe runs `nixos-rebuild switch` against the host. Pass another
+action, such as `just imperishable-night boot` or
+`just imperishable-night dry-activate`, to run that action instead. The
+host builds the system, so macOS needs no Linux builder. SSH to the
 host works only over the tailnet.
