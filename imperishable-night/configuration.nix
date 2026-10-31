@@ -87,6 +87,7 @@ in
   sops.defaultSopsFile = ./secrets.sops.yml;
   sops.secrets."caddy/ts_authkey" = { };
   sops.secrets."caddy/dnsimple_token" = { };
+  sops.secrets."caddy/ca_root_key".restartUnits = [ "podman-caddy.service" ];
   sops.templates."caddy.env" = {
     content = ''
       TS_AUTHKEY=${config.sops.placeholder."caddy/ts_authkey"}
@@ -116,6 +117,8 @@ in
       "${
         pkgs.replaceVars ./Caddyfile { trusted_proxies = podmanSubnet; }
       }:/etc/caddy/Caddyfile:ro"
+      "${./caddy-root.crt}:/etc/caddy/pki/root.crt:ro"
+      "${config.sops.secrets."caddy/ca_root_key".path}:/etc/caddy/pki/root.key:ro"
       "/var/lib/caddy/data:/data"
       "/var/lib/caddy/config:/config"
     ];

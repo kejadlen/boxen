@@ -16,6 +16,17 @@
 		auth_key {env.TS_AUTHKEY}
 		state_dir /data/tailscale
 	}
+
+	# lotus-land-story's root, so devices that trust it trust these sites too.
+	pki {
+		ca local {
+			root {
+				format pem_file
+				cert /etc/caddy/pki/root.crt
+				key /etc/caddy/pki/root.key
+			}
+		}
+	}
 }
 
 # Tailnet-bound sites: internal TLS, a dedicated tailscale node, and access

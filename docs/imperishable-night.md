@@ -80,6 +80,12 @@ tailnet site registers as its own Tailscale node, using a reusable
 90 days, Tailscale's maximum. It's only needed when a site registers, and
 `tofu apply` mints a new one once it expires.
 
+Tailnet sites use `tls internal`, and Caddy's local CA uses
+lotus-land-story's root, so devices that already trust that root also
+trust imperishable-night's sites. The root certificate is
+`imperishable-night/caddy-root.crt`, and its key is a sops secret. Caddy
+signs and renews its own intermediate from them.
+
 ## Secrets
 
 sops-nix decrypts `imperishable-night/secrets.sops.yml` at activation,
@@ -91,6 +97,7 @@ restic. The file holds the following values:
 |---|---|
 | `caddy.ts_authkey` | `tofu output -raw imperishable_night_caddy_auth_key` |
 | `caddy.dnsimple_token` | `dnsimple.caddy_token` in `host_vars/lotus-land-story.sops.yml` |
+| `caddy.ca_root_key` | `caddy/pki/authorities/local/root.key` in lotus-land-story's Caddy data directory |
 | `paperless_ngx.secret` | `paperless_ngx.secret` in `host_vars/lotus-land-story.sops.yml` |
 | `restic.password` | `restic.password` in `host_vars/lotus-land-story.sops.yml` |
 | `restic.healthcheck` | The UUID of imperishable-night's healthchecks.io backup check |
