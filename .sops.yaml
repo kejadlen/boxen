@@ -1,3 +1,8 @@
 creation_rules:
+  # The workstation's key, then imperishable-night's, from its SSH host key.
+  - path_regex: ^imperishable-night/secrets\.sops\.ya?ml$
+    age: >-
+      age15ars55ulrp9hz6r0utvluayrglt40wv0t997njez0y9l3e43cersn6kgh7,
+      age1v5ht948v043x49ak8apfuywpexmgrd5x0m04zvasslyg7yudu5jq9pyhzq
   - path_regex: host_vars/.*\.sops\.ya?ml$
     age: age15ars55ulrp9hz6r0utvluayrglt40wv0t997njez0y9l3e43cersn6kgh7

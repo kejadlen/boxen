@@ -7,6 +7,11 @@ the values like any other host var.
 Non-secret host vars, like `versions`, go in the plaintext
 `host_vars/<host>.yml`.
 
+imperishable-night runs NixOS rather than Ansible, so its secrets live
+next to its flake in `imperishable-night/secrets.sops.yml`. That file is
+also encrypted to the host's own age key, which `ssh-to-age` derives from
+its SSH host key, so sops-nix can decrypt it on the host.
+
 ## Why sops
 
 sops encrypts each value and leaves the keys in plaintext. A diff of an
@@ -22,8 +27,11 @@ The age private key exists only in 1Password. `.envrc` sets
 1Password on each decrypt and nothing is written to disk. A shell without
 that environment can't decrypt anything.
 
-`.sops.yaml` has one creation rule that matches `host_vars/*.sops.yml` (or
-`.sops.yaml`) and encrypts to the age public key.
+`.sops.yaml` has two creation rules. The first matches
+imperishable-night's secrets file and encrypts to both the workstation's
+key and the host's. The second matches `host_vars/*.sops.yml` (or
+`.sops.yaml`) and encrypts to the workstation's key alone. sops uses the
+first rule that matches.
 
 ## How Ansible decrypts
 
@@ -94,6 +102,7 @@ secret that does reach state, as `tailscale_tailnet_key`'s sensitive
 
 ## Losing the key
 
-`.sops.yaml` lists one recipient. If the 1Password item is lost, every
-`.sops.yml` file is unrecoverable. A second recipient, such as a recovery
+The `host_vars` files have one recipient. If the 1Password item is lost,
+every one of them is unrecoverable. imperishable-night's file survives only
+as long as the host's SSH key does. A second recipient, such as a recovery
 key stored offline, would remove that single point of failure.
