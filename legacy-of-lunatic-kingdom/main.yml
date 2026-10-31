@@ -116,6 +116,7 @@
         key_options: restrict
       loop:
         - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILrlVay1GlpCuhYSUup/K/gRYmltycViPBAdZ8t9OKtu # lotus-land-story
+        - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIO+vpLtHN3CxcPFsp1IWzM9FKWMr1dBnZuPsjqC6d2te # imperishable-night
         - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPgX0tA28NO3djYaV++JxggR0t47xou+R0HQVwVjzj8s # 1password
 
     - name: Create Restic directory
