@@ -5,7 +5,9 @@ in RAID5, running Debian trixie on the tailnet. It hosts the secondary
 restic repository and syncthing data, and is growing into running
 services: caddy today, immich and jellyfin planned.
 
-For first-time setup, see the [bootstrap README][readme].
+For first-time setup, see the [bootstrap README][readme]. lolk is
+[moving to NixOS](legacy-of-lunatic-kingdom/2026-11-01-migrating-to-nixos.md)
+to match imperishable-night.
 
 [readme]: ../legacy-of-lunatic-kingdom/README.md
 
