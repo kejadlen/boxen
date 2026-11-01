@@ -1594,7 +1594,7 @@
         "type": "victoriametrics-metrics-datasource",
         "uid": "P4169E866C3094E38"
       },
-      "description": "Docker containers only (cAdvisor runs with --docker_only). Host processes like postgres and redis aren't here.",
+      "description": "Docker containers only (cAdvisor runs with --docker_only). Host processes like postgres aren't here.",
       "fieldConfig": {
         "defaults": {
           "color": {

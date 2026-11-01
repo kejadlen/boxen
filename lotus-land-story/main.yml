@@ -61,7 +61,6 @@
 - import_playbook: docker.yml                 # noqa: name[play]
 
 - import_playbook: postgres.yml               # noqa: name[play]
-- import_playbook: redis.yml                  # noqa: name[play]
 
 - name: Listen on the docker interface
   hosts: lotus-land-story
