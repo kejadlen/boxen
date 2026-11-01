@@ -192,6 +192,9 @@ in
     HEALTHCHECK=https://hc-ping.com/${config.sops.placeholder."restic/healthcheck"}
   '';
 
+  # Tailnet sites on both hosts are signed by the shared Caddy root.
+  security.pki.certificateFiles = [ ./caddy-root.crt ];
+
   programs.ssh.knownHosts.legacy-of-lunatic-kingdom.publicKey =
     "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIG/+SIFLbFe3hXp3l0dJSE7J4DpQkEEk//62kMiQsWOZ";
 
@@ -233,8 +236,7 @@ in
       # Pushes the same backup_* series as lotus-land-story's backup.sh.
       backupCleanupCommand = ''
         push() {
-          # TODO Trust Caddy's internal root so this doesn't need --insecure.
-          ${pkgs.curl}/bin/curl --insecure --fail --silent --show-error --max-time 10 \
+          ${pkgs.curl}/bin/curl --fail --silent --show-error --max-time 10 \
             --retry 3 --data-binary "$1" https://metrics/api/v1/import/prometheus || true
         }
 
