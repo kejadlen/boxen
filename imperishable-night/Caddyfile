@@ -17,6 +17,9 @@
 		state_dir /data/tailscale
 	}
 
+	# The image has no certutil, and nothing in the container needs to trust the root.
+	skip_install_trust
+
 	# lotus-land-story's root, so devices that trust it trust these sites too.
 	pki {
 		ca local {
