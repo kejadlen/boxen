@@ -2,7 +2,12 @@
 
 lotus-land-story and imperishable-night back up daily with restic into a
 shared repository on legacy-of-lunatic-kingdom. That repository is the only
-copy: losing lolk loses the backups along with it.
+long-term copy: losing lolk loses the backup history along with it.
+
+Both hosts also have Linode's Backups service enabled, which keeps about two
+weeks of whole-disk backups. It skips attached volumes, so it covers
+imperishable-night's data but not lotus-land-story's, which lives on the
+`/mnt/lotus-land-story` volume.
 
 ## The daily run
 

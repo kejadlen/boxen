@@ -142,6 +142,7 @@ resource "linode_instance" "imperishable_night" {
   region          = "us-west"
   type            = "g6-standard-4"
   authorized_keys = split("\n", chomp(data.http.github_keys.response_body))
+  backups_enabled = true
 
   lifecycle {
     # Changing either would recreate the instance and wipe NixOS.
