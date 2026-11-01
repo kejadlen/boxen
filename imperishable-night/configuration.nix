@@ -17,7 +17,7 @@ let
 
   versions = {
     caddy = "2.11.7-2026.10.07";
-    paperless-ngx = "3.3.4";
+    paperless-ngx = "3.4.1";
     redis = "8.10.3";
   };
 in
