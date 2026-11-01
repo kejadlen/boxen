@@ -165,11 +165,6 @@ contacts.chislan.family {
 	}
 }
 
-homebox {
-	import ts homebox
-	reverse_proxy homebox:7745
-}
-
 ### Internal
 
 dockhand {
