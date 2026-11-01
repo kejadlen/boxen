@@ -5,7 +5,8 @@ running NixOS from the flake in `imperishable-night/`. Services are moving
 here from lotus-land-story one at a time; the
 [migration plan](imperishable-night/2026-10-16-migrating-from-lotus-land-story.md)
 tracks the order. Today it runs the base system, Tailscale,
-node-exporter, cadvisor, restic, Caddy, and paperless-ngx with redis.
+node-exporter, cadvisor, restic, Caddy, Vector, and paperless-ngx with
+redis. homebox is defined but not started until its data moves.
 
 For first-time setup, see the [bootstrap README][readme].
 
@@ -106,6 +107,8 @@ restic. The file holds the following values:
 | `caddy.ts_authkey` | `tofu output -raw imperishable_night_caddy_auth_key` |
 | `caddy.dnsimple_token` | `dnsimple.caddy_token` in `host_vars/lotus-land-story.sops.yml` |
 | `caddy.ca_root_key` | `caddy/pki/authorities/local/root.key` in lotus-land-story's Caddy data directory |
+| `homebox.mailer.username` | `homebox.mailer.username` in `host_vars/lotus-land-story.sops.yml` |
+| `homebox.mailer.password` | `homebox.mailer.password` in `host_vars/lotus-land-story.sops.yml` |
 | `paperless_ngx.secret` | `paperless_ngx.secret` in `host_vars/lotus-land-story.sops.yml` |
 | `restic.password` | `restic.password` in `host_vars/lotus-land-story.sops.yml` |
 | `restic.healthcheck` | The UUID of imperishable-night's healthchecks.io backup check |

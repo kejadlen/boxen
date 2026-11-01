@@ -17,6 +17,7 @@ let
 
   versions = {
     caddy = "2.11.7-2026.10.07";
+    homebox = "0.27.1";
     paperless-ngx = "3.4.1";
     redis = "8.10.3";
   };
@@ -99,6 +100,8 @@ in
   systemd.tmpfiles.rules = [
     "d /var/lib/caddy/data 0755 root root -"
     "d /var/lib/caddy/config 0755 root root -"
+    # homebox's image runs as the distroless nonroot user.
+    "d /var/lib/homebox 0755 65532 65532 -"
     "d /var/lib/paperless-ngx/consume 0700 root root -"
     "d /var/lib/paperless-ngx/data 0700 root root -"
     "d /var/lib/paperless-ngx/export 0700 root root -"
@@ -130,6 +133,37 @@ in
     ];
   };
   systemd.services.podman-caddy = {
+    requires = [ "podman-network-${podmanNetwork}.service" ];
+    after = [ "podman-network-${podmanNetwork}.service" ];
+  };
+
+  sops.secrets."homebox/mailer/username" = { };
+  sops.secrets."homebox/mailer/password" = { };
+  sops.templates."homebox.env" = {
+    content = ''
+      HBOX_MAILER_USERNAME=${config.sops.placeholder."homebox/mailer/username"}
+      HBOX_MAILER_PASSWORD=${config.sops.placeholder."homebox/mailer/password"}
+    '';
+    restartUnits = [ "podman-homebox.service" ];
+  };
+
+  virtualisation.oci-containers.containers.homebox = {
+    image = "ghcr.io/sysadminsmedia/homebox:${versions.homebox}";
+    # Stays stopped until its data is copied from lotus-land-story.
+    autoStart = false;
+    environment = {
+      TZ = "America/Los_Angeles";
+      HBOX_OPTIONS_ALLOW_ANALYTICS = "false";
+      HBOX_OPTIONS_ALLOW_REGISTRATION = "false";
+      HBOX_MAILER_HOST = "mail.smtp2go.com";
+      HBOX_MAILER_PORT = "2525";
+      HBOX_MAILER_FROM = "homebox@kejadlen.dev";
+    };
+    environmentFiles = [ config.sops.templates."homebox.env".path ];
+    volumes = [ "/var/lib/homebox:/data" ];
+    networks = [ podmanNetwork ];
+  };
+  systemd.services.podman-homebox = {
     requires = [ "podman-network-${podmanNetwork}.service" ];
     after = [ "podman-network-${podmanNetwork}.service" ];
   };
