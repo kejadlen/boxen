@@ -139,8 +139,10 @@ in
 
   sops.secrets."homebox/mailer/username" = { };
   sops.secrets."homebox/mailer/password" = { };
+  sops.secrets."homebox/api_key_pepper" = { };
   sops.templates."homebox.env" = {
     content = ''
+      HBOX_AUTH_API_KEY_PEPPER=${config.sops.placeholder."homebox/api_key_pepper"}
       HBOX_MAILER_USERNAME=${config.sops.placeholder."homebox/mailer/username"}
       HBOX_MAILER_PASSWORD=${config.sops.placeholder."homebox/mailer/password"}
     '';
