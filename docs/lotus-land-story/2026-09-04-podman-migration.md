@@ -1,5 +1,9 @@
 # Migrating lotus-land-story to podman + systemd
 
+This plan was abandoned. Services move to podman on imperishable-night
+instead, and lotus-land-story retires on Docker; see the
+[migration plan](../imperishable-night/2026-10-16-migrating-from-lotus-land-story.md).
+
 Target state: every container is a Quadlet unit in `/etc/containers/systemd/`,
 generated into systemd services, with Ansible templating the `.container` files
 instead of driving `community.docker.docker_container`. Rootful podman. Docker

@@ -17,10 +17,10 @@ each service gets a subdirectory there.
 Containers run under Podman, managed by Quadlet: systemd generates a
 service from each `.container` file in `/etc/containers/systemd/`, named
 after the file (`caddy.container` becomes `caddy.service`). lotus-land-story
-still runs Docker while it [migrates][migration], so container conventions
+runs Docker until it [retires][migration], so container conventions
 differ between the two hosts for now.
 
-[migration]: lotus-land-story/2026-09-04-podman-migration.md
+[migration]: imperishable-night/2026-10-16-migrating-from-lotus-land-story.md
 
 Containers that talk to each other join the `legacy_of_lunatic_kingdom`
 podman network, so they address each other by container name — caddy will

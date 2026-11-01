@@ -1,5 +1,9 @@
 # Upgrading lotus-land-story to bookworm
 
+This plan was abandoned. lotus-land-story stays on bullseye and retires as
+its services move to imperishable-night; see the
+[migration plan](../imperishable-night/2026-10-16-migrating-from-lotus-land-story.md).
+
 lotus-land-story runs Debian 11 (bullseye), whose LTS window closed on
 2026-08-31. The `bullseye-security` mirror went stale soon after, and every
 `apt update` on the host has failed since — unattended-upgrades included,
