@@ -17,9 +17,9 @@
       ansible.builtin.hostname:
         name: lotus-land-story
 
-    # Temporary until the bookworm upgrade: bullseye is EOL and the expired
-    # mirror breaks every apt refresh. Remove both tasks after the upgrade.
-    # docs/lotus-land-story/2026-10-16-bullseye-to-bookworm.md
+    # Bullseye is EOL and the expired mirror breaks every apt refresh. The host
+    # retires on bullseye instead of upgrading, so both tasks stay until then.
+    # docs/imperishable-night/2026-10-16-migrating-from-lotus-land-story.md
     - name: Point apt at the Debian archive
       ansible.builtin.copy:
         dest: /etc/apt/sources.list

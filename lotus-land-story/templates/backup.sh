@@ -99,8 +99,7 @@ phase unlock restic unlock
 phase pro-tacts docker exec pro-tacts rake db:dump
 
 # A file-level copy of the running cluster isn't restorable; the postgres
-# phase's pg_dumpall is. The glob also covers the postgresql-15 path the
-# bookworm upgrade moves to.
+# phase's pg_dumpall is.
 phase files restic --verbose backup \
   /mnt/lotus-land-story/ \
   --exclude=/mnt/lotus-land-story/docker \
