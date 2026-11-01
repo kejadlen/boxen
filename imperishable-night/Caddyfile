@@ -40,6 +40,11 @@
 	log
 }
 
+homebox {
+	import ts homebox
+	reverse_proxy homebox:7745
+}
+
 docs {
 	import ts docs
 	tailscale_auth

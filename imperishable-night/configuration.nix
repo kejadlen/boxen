@@ -149,8 +149,6 @@ in
 
   virtualisation.oci-containers.containers.homebox = {
     image = "ghcr.io/sysadminsmedia/homebox:${versions.homebox}";
-    # Stays stopped until its data is copied from lotus-land-story.
-    autoStart = false;
     environment = {
       TZ = "America/Los_Angeles";
       HBOX_OPTIONS_ALLOW_ANALYTICS = "false";
