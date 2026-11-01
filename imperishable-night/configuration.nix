@@ -102,10 +102,11 @@ in
     "d /var/lib/caddy/config 0755 root root -"
     # homebox's image runs as the distroless nonroot user.
     "d /var/lib/homebox 0755 65532 65532 -"
-    "d /var/lib/paperless-ngx/consume 0700 root root -"
-    "d /var/lib/paperless-ngx/data 0700 root root -"
-    "d /var/lib/paperless-ngx/export 0700 root root -"
-    "d /var/lib/paperless-ngx/media 0700 root root -"
+    # paperless-ngx's image runs as its default USERMAP_UID and USERMAP_GID.
+    "d /var/lib/paperless-ngx/consume 0700 1000 1000 -"
+    "d /var/lib/paperless-ngx/data 0700 1000 1000 -"
+    "d /var/lib/paperless-ngx/export 0700 1000 1000 -"
+    "d /var/lib/paperless-ngx/media 0700 1000 1000 -"
   ];
 
   virtualisation.oci-containers.containers.caddy = {
