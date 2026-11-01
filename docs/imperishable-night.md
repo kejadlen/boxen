@@ -61,6 +61,14 @@ in the same scrape.yml lists `imperishable-night:8080` as a target. That
 address is already the instance label, so only lotus-land-story's
 in-network target needs relabeling.
 
+Vector runs from NixOS's `services.vector` module and reads container
+logs from journald, where podman writes them. It ships them to
+VictoriaLogs on lotus-land-story at `https://logs`, verifying the
+certificate against the shared Caddy root. Entries carry the same
+`container_id` and `container_name` fields as lotus-land-story's, plus
+`host` to tell the two hosts apart. Other journald entries stay on the
+host; read them with `journalctl`.
+
 [scrape]: ../lotus-land-story/templates/scrape.yml
 
 ## Containers and Caddy

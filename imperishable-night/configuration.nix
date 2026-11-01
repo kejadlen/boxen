@@ -268,6 +268,58 @@ in
     ];
   };
 
+  # Ships container logs, which podman writes to journald, to lotus-land-story's VictoriaLogs.
+  services.vector = {
+    enable = true;
+    journaldAccess = true;
+    settings = {
+      sources.journald.type = "journald";
+      transforms.containers = {
+        type = "filter";
+        inputs = [ "journald" ];
+        condition = "exists(.CONTAINER_NAME)";
+      };
+      # Matches the fields lotus-land-story's Vector sends, plus host.
+      transforms.containers_parsed = {
+        type = "remap";
+        inputs = [ "containers" ];
+        source = ''
+          message = string(.message) ?? ""
+          event = {
+            "_time": .timestamp,
+            "_msg": message,
+            "host": .host,
+            "container_id": .CONTAINER_ID_FULL,
+            "container_name": .CONTAINER_NAME,
+          }
+
+          if event.container_name == "caddy" {
+            # Startup errors and panics go to stderr as plain text.
+            parsed, err = parse_json(message)
+            if err == null && is_object(parsed) {
+              event = merge(event, object!(parsed))
+              event._time = del(event.ts)
+              event._msg = del(event.msg)
+            }
+          }
+
+          . = event
+        '';
+      };
+      sinks.victoria_logs = {
+        type = "http";
+        inputs = [ "containers_parsed" ];
+        uri = "https://logs/insert/jsonline?_stream_fields=host,container_id,container_name";
+        compression = "gzip";
+        encoding.codec = "json";
+        framing.method = "newline_delimited";
+        # lotus-land-story's Caddy signs logs' certificate with the shared local root.
+        tls.ca_file = "${./caddy-root.crt}";
+        healthcheck.enabled = false;
+      };
+    };
+  };
+
   services.openssh = {
     enable = true;
     # SSH is reachable only over the trusted tailscale0.
