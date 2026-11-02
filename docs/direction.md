@@ -66,8 +66,8 @@ The following table lists each host and where it's headed:
 
 ## Order of work
 
-1. Investigate an offsite copy of the restic repository and lolk's own
-   data, and set it up. This is urgent.
+1. [Shrink the restic repository and copy it offsite](legacy-of-lunatic-kingdom/2026-11-01-shrinking-and-offsiting-backups.md),
+   along with lolk's own data. This is urgent.
 2. Move lotus-land-story's services to imperishable-night, and
    [retire gitea](lotus-land-story/2026-11-01-retiring-gitea.md) and
    dockhand instead of moving them.
@@ -79,5 +79,4 @@ The following table lists each host and where it's headed:
 
 ## Open questions
 
-Where does the offsite copy go? The restic repository is 187 GB today,
-and immich will add to whatever lolk itself needs backed up.
+Where does the offsite copy go? The backup plan lists the candidates.
