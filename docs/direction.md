@@ -75,14 +75,14 @@ The following table lists each host and where it's headed:
 
 1. [Shrink the restic repository and copy it offsite](legacy-of-lunatic-kingdom/2026-11-01-shrinking-and-offsiting-backups.md),
    along with lolk's own data, to Backblaze B2.
-2. Move lotus-land-story's services to imperishable-night, and
-   [retire gitea](lotus-land-story/2026-11-01-retiring-gitea.md) and
-   dockhand instead of moving them.
-3. Retire lotus-land-story.
-4. Reinstall lolk with NixOS, extracting what it shares with
+2. [Retire gitea](lotus-land-story/2026-11-01-retiring-gitea.md) and
+   drop dockhand, so that neither has to move.
+3. Move lotus-land-story's remaining services to imperishable-night.
+4. Retire lotus-land-story.
+5. Reinstall lolk with NixOS, extracting what it shares with
    imperishable-night into a common module.
-5. Move UPS monitoring, NUT and the UPS's USB cable, from
+6. Move UPS monitoring, NUT and the UPS's USB cable, from
    mountain-of-faith to lolk.
-6. Add immich and jellyfin to lolk, once their data has an offsite
+7. Add immich and jellyfin to lolk, once their data has an offsite
    backup.
-7. Add alerting.
+8. Add alerting.
