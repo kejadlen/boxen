@@ -24,20 +24,19 @@ out of scope, as it was for [imperishable-night](../imperishable-night/2026-10-1
 The restic repository under `/mnt/data/restic` is the only long-term copy
 of the backups (see [backups](../backup.md)). Linode's backups go back
 about two weeks and skip lotus-land-story's volume. A reinstall that
-touches the wrong disk loses the restic history, so copy the 187 GB
+touches the wrong disk loses the restic history, so copy the 25 GiB
 repository off lolk before installing.
 
-The copy goes on a temporary 250 GB `linode_volume`, added to
-`lotus-land-story/main.tf` and attached to lotus-land-story. Format it,
-mount it at `/mnt/restic-copy`, and push the repository from lolk over the
-tailnet with `sudo rsync -a /mnt/data/restic/ lotus-land-story:/mnt/restic-copy/`.
+The copy goes in `/mnt/mountain-of-faith/restic-copy` on mountain-of-faith,
+which has plenty of room and once held the restic repository itself. Push
+the repository from lolk over the tailnet with
+`sudo rsync -a /mnt/data/restic/ mountain-of-faith:/mnt/mountain-of-faith/restic-copy/`.
 An rsync copy is byte-identical, so a restore can point restic straight at
 it, and an interrupted transfer resumes where it stopped. Then run
-`restic check --read-data` against the copy. lotus-land-story's 1 GB of
-memory might not be enough for that, and if it isn't, run the check from
-lolk against `sftp:lotus-land-story:/mnt/restic-copy`.
+`restic check --read-data` from the workstation against
+`sftp:mountain-of-faith:/mnt/mountain-of-faith/restic-copy`.
 
-Delete the volume once lolk is verified on NixOS.
+Delete the copy once lolk is verified on NixOS.
 
 ## Keep what identifies the host
 
@@ -105,8 +104,7 @@ the module holds only what the two hosts actually share.
 ## Order of work
 
 1. Write lolk's NixOS configuration and confirm that it evaluates.
-2. Attach the temporary volume to lotus-land-story, copy the restic
-   repository onto it, and check the copy.
+2. Copy the restic repository to mountain-of-faith, and check the copy.
 3. Save the SSH host keys and Syncthing's state, which live on the root
    filesystem.
 4. Install with nixos-anywhere over the LAN, with the host keys staged
@@ -117,6 +115,6 @@ the module holds only what the two hosts actually share.
    that Caddy's sites come up.
 6. Delete `legacy-of-lunatic-kingdom/main.yml`, `caddy.yml`, and their
    templates, and update [legacy-of-lunatic-kingdom](../legacy-of-lunatic-kingdom.md).
-7. Delete the temporary volume.
+7. Delete the copy on mountain-of-faith.
 
 immich and jellyfin come after the move, defined in Nix.
