@@ -74,6 +74,22 @@
 - import_playbook: ../playbooks/unattended-upgrades.yml # noqa: name[play]
 - import_playbook: ../playbooks/journal-upload.yml      # noqa: name[play]
 
+- name: Ignore build output in the sync folder
+  tags: syncthing
+  hosts: legacy-of-lunatic-kingdom
+  become: true
+  tasks:
+
+    # .stignore itself never syncs, so each device has to include the
+    # patterns from the file that does.
+    - name: Include the synced ignore patterns
+      ansible.builtin.copy:
+        dest: "{{ (data_dir, 'syncthing', 'sync', '.stignore') | path_join }}"
+        content: "#include .stignore.sync\n"
+        owner: syncthing
+        group: syncthing
+        mode: "0644"
+
 - name: Host a Restic repository
   tags: restic
   hosts: legacy-of-lunatic-kingdom
