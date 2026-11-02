@@ -158,9 +158,8 @@ breakage costs least:
 2. PostgreSQL-backed services: miniflux.
 3. Family-facing services: calibre-web, paperless-ngx with redis, and
    pro-tacts.
-4. Public services: gitea with anubis, and gotosocial. gitea also has a
-   pihole record in the root `main.tf` that points `git.kejadlen.dev` at
-   lotus-land-story's tailnet address, so repoint it at the same time.
+4. Public services: gotosocial. gitea and anubis retire instead of
+   moving (see [Retiring gitea](../lotus-land-story/2026-11-01-retiring-gitea.md)).
 5. authelia.
 6. Observability: VictoriaMetrics, VictoriaLogs, VictoriaTraces, Grafana,
    Vector, and the OpenTelemetry collector.
