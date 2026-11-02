@@ -68,3 +68,11 @@ mints. The key expires a day after it's minted.
    `ssh <ip>` now times out, since SSH is tailnet-only.
 
 For later deploys, see the [root README](../README.md).
+
+## Rex
+
+The [Rex login server](https://www.superlogical.com/rex/docs/linux/login-server)
+runs a Rex server as `alpha` for the Tailscale login in `rex/tailscale_login`
+in `secrets.sops.yml`. Tailscale Serve exposes it on port 7297, since Caddy
+holds 443. In Rex for Mac, choose **Add Remote Host…** and enter
+`https://imperishable-night.<tailnet>.ts.net:7297`.

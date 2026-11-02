@@ -11,6 +11,11 @@
       url = "github:Mic92/sops-nix";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+
+    rex = {
+      url = "https://pkgs.superlogical.com/rex/nix/preview.tar.gz";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
   outputs =
@@ -18,6 +23,7 @@
       nixpkgs,
       disko,
       sops-nix,
+      rex,
       ...
     }:
     {
@@ -25,6 +31,7 @@
         modules = [
           disko.nixosModules.disko
           sops-nix.nixosModules.sops
+          rex.nixosModules.default
           ./configuration.nix
           ./disk-config.nix
         ];

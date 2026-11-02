@@ -372,6 +372,21 @@ in
     };
   };
 
+  # Tailscale Serve stays on Rex's default port, 7297, since caddy holds 443.
+  sops.secrets."rex/tailscale_login" = { };
+  sops.templates."rex-accounts.jsonc" = {
+    content = builtins.toJSON {
+      version = 1;
+      accounts.alpha.principals = [ "tailscale:${config.sops.placeholder."rex/tailscale_login"}" ];
+    };
+    reloadUnits = [ "rex-login-server.service" ];
+  };
+  services.rex.loginServer = {
+    enable = true;
+    accountsFile = config.sops.templates."rex-accounts.jsonc".path;
+    tailscaleServe.enable = true;
+  };
+
   users.users.alpha = {
     isNormalUser = true;
     extraGroups = [ "wheel" ];
