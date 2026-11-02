@@ -97,9 +97,16 @@ runs, and on 180 GiB that may be hours. Run `restic check` afterward.
 ## Copy offsite
 
 The offsite copy needs to hold the repository after pruning, plus
-whatever of lolk's own data needs a backup. lolk's `/mnt/data` holds
-480 GB, of which the repository is about 193 GB, which leaves about
-287 GB of lolk's own data.
+whatever of lolk's own data needs a backup. After the rewrite and prune
+on 2026-11-02, the repository held 25 GiB across 82 snapshots, down from
+180 GiB. Apart from the repository, lolk's `/mnt/data` holds 75 GiB, nearly
+all of it in `syncthing/sync`. About 65 GiB of that is build output under
+`src/`, which can be rebuilt, so the syncthing backup excludes directories
+named `target`, `node_modules`, `.venv`, `_build`, and `.direnv`. That
+leaves about 10 GiB, so the offsite copy totals about 35 GiB.
+
+syncthing replicates to its peers, but deletions replicate too, so
+syncthing isn't a backup.
 
 Whatever the target, the copy should meet the following requirements:
 
@@ -133,9 +140,6 @@ choose.
 
 ## Open questions
 
-- How much of lolk's 287 GB needs an offsite copy? syncthing replicates
-  to its peers, but deletions replicate too, so syncthing isn't a backup.
-  Re-downloadable data doesn't need one.
 - Which target?
 - Does the restic version on each host support `!` re-include patterns
   in excludes? lotus-land-story runs `restic self-update` in its backup
