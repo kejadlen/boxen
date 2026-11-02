@@ -98,21 +98,74 @@ phase unlock restic unlock
 # in the file backup.
 phase pro-tacts docker exec pro-tacts rake db:dump
 
+# A file copy of a database in WAL mode can miss committed transactions;
+# `.backup` goes through SQLite.
+phase gotosocial sqlite3 /mnt/lotus-land-story/gotosocial/data/sqlite.db \
+  '.backup /mnt/lotus-land-story/gotosocial/backup/sqlite.db'
+
+# Every other account's directory is remote media that gotosocial re-fetches.
+# Queried here rather than inside the exclude file's process substitution,
+# where a failure would silently exclude the local accounts' media too.
+gotosocial_local_ids=$(sqlite3 -readonly /mnt/lotus-land-story/gotosocial/backup/sqlite.db \
+  'select id from accounts where domain is null')
+if [[ -z ${gotosocial_local_ids} ]]; then
+  echo "no local gotosocial accounts found"
+  exit 1
+fi
+
+gotosocial_excludes() {
+  echo '/mnt/lotus-land-story/gotosocial/data/*'
+  while read -r id; do
+    echo "!/mnt/lotus-land-story/gotosocial/data/${id}"
+  done <<<"${gotosocial_local_ids}"
+}
+
+# A copy of the live data directory isn't guaranteed consistent; a snapshot is.
+phase victoria-metrics-snapshot docker run --rm \
+  --network lotus_land_story \
+  --volume /mnt/lotus-land-story/victoria-metrics/data:/storage:ro \
+  --volume /mnt/lotus-land-story/victoria-metrics/backup:/backup \
+  quay.io/victoriametrics/vmbackup:{{ versions.victoria_metrics }} \
+  -storageDataPath=/storage \
+  -snapshot.createURL=http://victoria-metrics:8428/snapshot/create \
+  -dst=fs:///backup
+
 # A file-level copy of the running cluster isn't restorable; the postgres
-# phase's pg_dumpall is.
+# phase's pg_dumpall is. victoria-logs and victoria-traces are telemetry
+# that churns too much to keep.
 phase files restic --verbose backup \
+  --tag long-term \
   /mnt/lotus-land-story/ \
   --exclude=/mnt/lotus-land-story/docker \
-  --exclude='/mnt/lotus-land-story/postgresql*'
+  --exclude='/mnt/lotus-land-story/postgresql*' \
+  --exclude=/mnt/lotus-land-story/victoria-metrics \
+  --exclude=/mnt/lotus-land-story/victoria-logs \
+  --exclude=/mnt/lotus-land-story/victoria-traces \
+  --exclude-file=<(gotosocial_excludes)
 
 phase postgres restic --verbose backup \
+  --tag long-term \
   --stdin-filename lotus-land-story.sql \
   --stdin-from-command \
   -- \
   sudo -iu postgres pg_dumpall
 
+# vmbackup rewrites as many parts as VictoriaMetrics merges, so its snapshots
+# get their own short retention.
+phase victoria-metrics restic --verbose backup \
+  --tag victoria-metrics \
+  /mnt/lotus-land-story/victoria-metrics/backup
+
+phase forget-victoria-metrics restic --verbose forget \
+  --host lotus-land-story \
+  --tag victoria-metrics \
+  --keep-within-daily 7d
+
 phase forget restic --verbose forget \
+  --host lotus-land-story \
+  --tag long-term \
   --keep-within-daily 1m \
-  --keep-within-weekly 1y \
-  --keep-within-monthly 100y \
+  --keep-within-weekly 3m \
+  --keep-within-monthly 2y \
+  --keep-within-yearly 100y \
   --prune

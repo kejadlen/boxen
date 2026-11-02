@@ -18,23 +18,35 @@ sends its own output to the journal with the `backup` tag. It sets
 `GOGC=20` so restic trades CPU for memory, since lotus-land-story has little
 headroom and the OOM killer has taken restic mid-backup.
 
-Each phase — unlock, pro-tacts, files, postgres, forget — logs a `> name`
-breadcrumb when it starts and `< name: Ns` when it finishes, so the journal
-shows where a slow or dead run sits. Each run:
+Each phase logs a `> name` breadcrumb when it starts and `< name: Ns` when
+it finishes, so the journal shows where a slow or dead run sits. Each run:
 
 1. Pings healthchecks.io `/start`, distinguishing a run that died early from
    one that never fired.
-2. Dumps pro-tacts' database with `docker exec pro-tacts rake db:dump`,
-   which writes under `/data` ahead of the file backup.
-3. Removes stale locks from the repository, so a run killed mid-flight (for
+2. Removes stale locks from the repository, so a run killed mid-flight (for
    example, by the OOM killer) doesn't block every later prune.
-4. Backs up `/mnt/lotus-land-story/`, excluding `docker/` and the live
-   `postgresql*` cluster — a file-level copy of a running cluster can't be
-   restored, so the dump in step 5 is the backup. The pro-tacts dump from
-   step 2 rides along.
-5. Backs up `pg_dumpall` output via stdin as `lotus-land-story.sql`.
-6. Runs `forget --prune` with retention of daily for one month, weekly for
-   one year, monthly forever.
+3. Dumps pro-tacts' database with `docker exec pro-tacts rake db:dump`,
+   which writes under `/data` ahead of the file backup.
+4. Dumps gotosocial's SQLite database with `.backup` into
+   `gotosocial/backup/`, since a file copy of a database in WAL mode can
+   miss committed transactions.
+5. Snapshots VictoriaMetrics into `victoria-metrics/backup/` with
+   `vmbackup`.
+6. Backs up `/mnt/lotus-land-story/`, tagged `long-term`. It excludes
+   `docker/`; the live `postgresql*` cluster, whose dump step 7 backs up;
+   all of `victoria-metrics/`, `victoria-logs/`, and `victoria-traces/`;
+   and every directory in `gotosocial/data/` except the local accounts',
+   since the rest is remote media that gotosocial re-fetches. That also
+   excludes the live `sqlite.db`, whose dump from step 4 rides along.
+7. Backs up `pg_dumpall` output via stdin as `lotus-land-story.sql`, tagged
+   `long-term`.
+8. Backs up `victoria-metrics/backup/`, tagged `victoria-metrics`.
+9. Forgets this host's `victoria-metrics` snapshots older than 7 days.
+   `vmbackup` rewrites as many parts as VictoriaMetrics merges, so a longer
+   retention would keep gigabytes of churn.
+10. Runs `forget --prune` on this host's `long-term` snapshots, keeping
+    daily for one month, weekly for three months, monthly for two years,
+    and yearly forever.
 
 An exit trap pings healthchecks.io with success or failure and pushes
 `backup_*` metrics — including per-phase `backup_phase_duration_seconds` —
