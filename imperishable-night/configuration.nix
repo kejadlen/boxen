@@ -252,13 +252,18 @@ in
       paths = [ "/var/lib" ];
       exclude = [ "/var/lib/containers" ];
       # Waits out the other host's prune, which locks the shared repository.
-      extraBackupArgs = [ "--retry-lock=30m" ];
+      extraBackupArgs = [
+        "--retry-lock=30m"
+        "--tag=long-term"
+      ];
       pruneOpts = [
         "--retry-lock=30m"
         "--host=imperishable-night"
+        "--tag=long-term"
         "--keep-within-daily=1m"
-        "--keep-within-weekly=1y"
-        "--keep-within-monthly=100y"
+        "--keep-within-weekly=3m"
+        "--keep-within-monthly=2y"
+        "--keep-within-yearly=100y"
       ];
       timerConfig = {
         OnCalendar = "03:00";

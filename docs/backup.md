@@ -58,9 +58,10 @@ status.
 NixOS's `services.restic.backups.daily` runs as the
 `restic-backups-daily` service at 03:00 UTC, and catches up on boot if the
 host was down then. It backs up `/var/lib`, excluding podman's
-`/var/lib/containers`. Then it runs `unlock` and `forget --prune` with the
-same retention as lotus-land-story, limited to `--host=imperishable-night`
-so the policy never touches lotus-land-story's snapshots. Backup and prune
+`/var/lib/containers`, tagged `long-term`. Then it runs `unlock` and
+`forget --prune` with the same `long-term` retention as lotus-land-story,
+limited to `--host=imperishable-night` so the policy never touches
+lotus-land-story's snapshots. Backup and prune
 both pass `--retry-lock=30m`, so a run waits out the other host's prune
 instead of failing on its exclusive lock.
 
