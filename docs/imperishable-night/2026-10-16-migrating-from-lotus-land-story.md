@@ -166,7 +166,9 @@ breakage costs least:
 7. Sites that only Caddy serves: `setup`, `gists`, `files`, `birbs`,
    `pihole`, and the two Home Assistant proxies. The file-serving sites
    need their directories under `/mnt/lotus-land-story/caddy/data`
-   copied along with them.
+   copied along with them. The gists repository's `bin/sync` rsyncs to
+   lotus-land-story by default, so change its `GISTS_HOST` and
+   `GISTS_DEST` defaults when `gists` moves.
 
 cadvisor doesn't move: each host runs its own, and lotus-land-story's
 retires with it.

@@ -115,12 +115,6 @@ the following differences:
 
 [move]: ../imperishable-night/2026-10-16-migrating-from-lotus-land-story.md#move-a-service
 
-## Open questions
-
-The `gists.kejadlen.dev` site serves `/data/gists`, "synced from
-quire/gists." Whatever does that sync needs to work from
-imperishable-night, or the gists site has to move with quire.
-
 ## Order of work
 
 1. Confirm that quire has every repository, and port any workflows to
