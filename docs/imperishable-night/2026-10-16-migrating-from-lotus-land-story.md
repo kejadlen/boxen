@@ -142,10 +142,9 @@ tests the backups along the way.
 
 ### Shared state
 
-miniflux and ketchup share lotus-land-story's PostgreSQL 13
-cluster. Each database moves with its service. Moving one database at a
-time also spreads the jump from 13 to the newer nixpkgs PostgreSQL across
-services instead of doing it all at once.
+miniflux is the only user of lotus-land-story's PostgreSQL 13 cluster,
+so its database is the only one to move. Restoring it on
+imperishable-night also jumps it from 13 to the newer nixpkgs PostgreSQL.
 
 paperless-ngx is the only redis user, so redis moves with it.
 
