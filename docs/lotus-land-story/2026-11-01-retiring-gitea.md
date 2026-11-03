@@ -1,16 +1,18 @@
 # Retiring gitea
 
-quire hosts the source for every repository, and GitHub mirrors it from
-quire. gitea is now only a second mirror. This plan retires gitea, along
-with anubis and the Actions runner, instead of moving them to
-imperishable-night with the rest of lotus-land-story's services. quire
-moves to imperishable-night as planned in the
+quire hosts the source for most repositories, and GitHub mirrors them
+from quire. For those, gitea is only a second mirror. The rest still
+live on gitea and need a new home first (see
+[Repositories still on gitea](#repositories-still-on-gitea)). This plan
+retires gitea, along with anubis and the Actions runner, instead of
+moving them to imperishable-night with the rest of lotus-land-story's
+services. quire moves to imperishable-night as planned in the
 [migration plan](../imperishable-night/2026-10-16-migrating-from-lotus-land-story.md).
 
-Nothing on gitea needs to survive except the source, which quire already
-has. Issues, wikis, and releases are not exported. restic's snapshots of
-`/mnt/lotus-land-story/` include gitea's data directory, so a copy
-remains until those snapshots age out.
+Nothing on gitea needs to survive except the source. Issues, wikis, and
+releases are not exported. restic's snapshots of `/mnt/lotus-land-story/`
+include gitea's data directory, so a copy remains until those snapshots
+age out.
 
 ## Confirm that quire has everything
 
@@ -23,6 +25,44 @@ Before gitea stops, follow these steps:
    mirror.
 3. Remove the `:gitea-mirror` entry from each repository's
    `.quire/config.fnl`, so that quire stops pushing to gitea.
+
+### Repositories that were on both
+
+Six repositories were on both gitea and quire: boxen, frork, ketchup,
+low-quality-transcripts, ramekin, and ranger. On 2026-11-03, they were
+deleted from gitea after a fetch from each showed that gitea had nothing
+quire lacked. The exceptions were six ranger release tags whose commits
+are on quire, which weren't worth keeping. Their `.quire/config.fnl`
+files no longer mirror to gitea.
+
+### Repositories still on gitea
+
+The following 17 repositories are on gitea and not on quire. Each one
+moves to quire, stays only on GitHub, or is dropped:
+
+| Repository | Last updated on gitea | Notes |
+|---|---|---|
+| dotfiles | 2026-11-03 | Local clone pushes to gitea as `origin` |
+| rank-king | 2026-10-29 | Local clone pushes to gitea as `origin` |
+| notes | 2026-04-03 | The only private repository |
+| serde-kdl2 | 2026-03-25 | |
+| pinch | 2026-02-21 | |
+| advent-of-code | 2025-12-10 | |
+| junk-drawer | 2025-10-22 | |
+| birbnet | 2025-08-21 | |
+| vim-colors-paramount | 2025-05-03 | |
+| homebrew-tap | 2025-02-22 | |
+| alphadex | 2025-02-19 | |
+| alpheus-v2 | 2025-02-19 | |
+| crafting-interpreters | 2025-02-19 | |
+| Kaleidoscope | 2025-02-19 | |
+| minitest-thesis | 2025-02-19 | |
+| prezto | 2025-02-19 | |
+| qmk_userspace | 2025-02-19 | |
+
+The 2025-02-19 repositories share a date that looks like an import, not
+activity. A repository that moves to quire also switches its local
+clones' `origin` from gitea to quire.
 
 ## Redirect git.kejadlen.dev
 
