@@ -16,8 +16,8 @@ stays on Ansible until a reason to touch it comes along. The fleet is
 too small for one configuration model to be worth forcing.
 
 The fleet runs fewer things. A service nobody uses gets dropped rather
-than migrated: monica and ramble-hard are gone, and gitea retires in
-favor of quire. dockhand is next. What remains moves as-is, with
+than migrated: monica, ramble-hard, and dockhand are gone, and gitea
+retires in favor of quire. What remains moves as-is, with
 upgrades kept out of the move so that a failure has one cause.
 
 Every host stays on a supported OS and takes updates. lotus-land-story's
@@ -75,8 +75,8 @@ The following table lists each host and where it's headed:
 
 1. [Shrink the restic repository and copy it offsite](legacy-of-lunatic-kingdom/2026-11-01-shrinking-and-offsiting-backups.md),
    along with lolk's own data, to Backblaze B2.
-2. [Retire gitea](lotus-land-story/2026-11-01-retiring-gitea.md) and
-   drop dockhand, so that neither has to move.
+2. [Retire gitea](lotus-land-story/2026-11-01-retiring-gitea.md), so
+   that it doesn't have to move.
 3. Move lotus-land-story's remaining services to imperishable-night.
 4. Retire lotus-land-story.
 5. Reinstall lolk with NixOS, extracting what it shares with

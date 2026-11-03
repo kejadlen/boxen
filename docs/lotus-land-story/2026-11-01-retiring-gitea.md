@@ -99,8 +99,7 @@ the following differences:
 
 - quire mounts the Docker socket, and its sshd `ForceCommand` runs
   `docker exec`. On imperishable-night, both use podman's
-  Docker-compatible socket and `podman exec`. dockhand raises the same
-  question of whether the compatible socket is enough.
+  Docker-compatible socket and `podman exec`.
 - The `Match User quire` block moves into `services.openssh`.
 - quire has a tailnet site, `quire`, and a public site,
   `quire.kejadlen.dev`. Each one moves as the migration plan describes.

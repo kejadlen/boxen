@@ -74,7 +74,7 @@ The base configuration covers the following:
 Each site moves to imperishable-night's Caddy along with its service.
 lotus-land-story's Caddy doesn't proxy to imperishable-night's
 containers. That would mean publishing every container port on the host,
-and several collide: gitea, quire, docket, dockhand, and grafana all
+and several collide: gitea, quire, docket, and grafana all
 listen on 3000. With a Caddy on each host, every upstream stays a
 container name on that host's own network.
 
@@ -168,9 +168,8 @@ breakage costs least:
    need their directories under `/mnt/lotus-land-story/caddy/data`
    copied along with them.
 
-dockhand talks to the Docker socket. Check whether it works against
-podman's Docker-compatible socket before moving it. cadvisor doesn't
-move: each host runs its own, and lotus-land-story's retires with it.
+cadvisor doesn't move: each host runs its own, and lotus-land-story's
+retires with it.
 
 ## Move gotosocial
 
