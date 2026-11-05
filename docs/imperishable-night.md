@@ -137,5 +137,10 @@ out of the profile. To pick up a dotfiles change, push it, run
 neovim comes from neovim-nightly-overlay, whose builds aren't in a
 binary cache, so a deploy that bumps it builds neovim on the host.
 
+The `dotfiles-clone` service clones the dotfiles from gitea into
+`~alpha/.dotfiles` if they aren't already there. It never pulls, so
+updating the checkout is up to `alpha`. To start over, remove the
+directory and run `sudo systemctl start dotfiles-clone`.
+
 The root tofu configuration ignores changes to the instance's image and
 SSH keys, since either would recreate the instance and wipe NixOS.

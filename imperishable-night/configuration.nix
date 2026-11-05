@@ -394,6 +394,29 @@ in
     openssh.authorizedKeys.keys = sshKeys;
     packages = [ dotfiles.packages.${pkgs.stdenv.hostPlatform.system}.profile ];
   };
+
+  # Clones once and never pulls, so the checkout is alpha's to manage.
+  systemd.services.dotfiles-clone =
+    let
+      dest = "${config.users.users.alpha.home}/.dotfiles";
+    in
+    {
+      wantedBy = [ "multi-user.target" ];
+      wants = [ "network-online.target" ];
+      after = [ "network-online.target" ];
+      unitConfig.ConditionPathExists = "!${dest}";
+      path = [ pkgs.git ];
+      serviceConfig = {
+        Type = "oneshot";
+        User = "alpha";
+      };
+      # A failed clone leaves no dest behind, so the next boot retries.
+      script = ''
+        rm -rf ${dest}.tmp
+        git clone https://git.kejadlen.dev/alpha/dotfiles.git ${dest}.tmp
+        mv ${dest}.tmp ${dest}
+      '';
+    };
   security.sudo.wheelNeedsPassword = false;
 
   # Lets nixos-rebuild --target-host copy closures in as alpha.
