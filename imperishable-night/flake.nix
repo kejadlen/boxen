@@ -16,6 +16,9 @@
       url = "https://pkgs.superlogical.com/rex/nix/preview.tar.gz";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+
+    # Its own nixpkgs, so its lock sets alpha's package versions on every machine.
+    dotfiles.url = "git+https://git.kejadlen.dev/alpha/dotfiles.git?shallow=1";
   };
 
   outputs =
@@ -24,10 +27,12 @@
       disko,
       sops-nix,
       rex,
+      dotfiles,
       ...
     }:
     {
       nixosConfigurations.imperishable-night = nixpkgs.lib.nixosSystem {
+        specialArgs = { inherit dotfiles; };
         modules = [
           disko.nixosModules.disko
           sops-nix.nixosModules.sops

@@ -1,5 +1,6 @@
 {
   config,
+  dotfiles,
   modulesPath,
   pkgs,
   ...
@@ -391,6 +392,7 @@ in
     isNormalUser = true;
     extraGroups = [ "wheel" ];
     openssh.authorizedKeys.keys = sshKeys;
+    packages = [ dotfiles.packages.${pkgs.stdenv.hostPlatform.system}.profile ];
   };
   security.sudo.wheelNeedsPassword = false;
 

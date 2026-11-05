@@ -128,5 +128,14 @@ user, so nixos-rebuild can copy closures in. The workstation evaluates
 the flake and the host builds it; the [root README](../README.md) has the
 deploy command.
 
+`alpha`'s packages come from the `profile` package in the dotfiles flake,
+an input that `imperishable-night/flake.lock` pins. The dotfiles flake
+locks its own nixpkgs, so every machine that uses it gets the same
+versions. Tools that have DotSlash files in the dotfiles' `bin/` stay
+out of the profile. To pick up a dotfiles change, push it, run
+`nix flake update dotfiles --flake ./imperishable-night`, and deploy.
+neovim comes from neovim-nightly-overlay, whose builds aren't in a
+binary cache, so a deploy that bumps it builds neovim on the host.
+
 The root tofu configuration ignores changes to the instance's image and
 SSH keys, since either would recreate the instance and wipe NixOS.
