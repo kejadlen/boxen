@@ -168,6 +168,36 @@
 
 - import_playbook: ../playbooks/syncthing.yml
 
+# Syncthing once grew to 1 GB on this 2 GB Pi and starved the host into
+# thrashing; a cap makes the kernel kill Syncthing instead.
+- name: Cap Syncthing's memory
+  tags: syncthing
+  hosts: mountain-of-faith
+  become: true
+  tasks:
+
+    - name: Create the Syncthing drop-in directory
+      ansible.builtin.file:
+        path: /etc/systemd/system/syncthing@syncthing.service.d
+        state: directory
+        mode: "0755"
+
+    - name: Limit Syncthing's memory
+      ansible.builtin.copy:
+        dest: /etc/systemd/system/syncthing@syncthing.service.d/memory.conf
+        content: |
+          [Service]
+          MemoryMax=768M
+        mode: "0644"
+      notify: Restart syncthing
+
+  handlers:
+    - name: Restart syncthing
+      ansible.builtin.systemd:
+        name: syncthing@syncthing.service
+        state: restarted
+        daemon_reload: true
+
 - name: Set up metrics
   tags: metrics
   hosts: mountain-of-faith
