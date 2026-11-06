@@ -51,7 +51,11 @@ reinstall instead of regenerating them:
   Tailscale auth key.
 - Syncthing's certificate and key under
   `/home/syncthing/.local/state/syncthing/`. Syncthing derives the device
-  ID from them, and every peer knows lolk by that ID.
+  ID from them, and every peer knows lolk by that ID. Carry the whole
+  directory to `/var/lib/syncthing/.config/syncthing/`, owned by
+  `syncthing`, since its `config.xml` also holds the folders, devices,
+  GUI credentials, and disk-free thresholds that the NixOS configuration
+  leaves undeclared.
 - Caddy's data directory, `/mnt/data/caddy/data`, which holds each tailnet
   site's node state. It's on the array, so it survives if the array does.
 
@@ -87,7 +91,7 @@ Each piece of lolk's Ansible configuration has a NixOS counterpart:
 | syncthing from the Debian package | `services.syncthing`, with its data under `/mnt/data/syncthing` |
 | restic's sftp-only user (`main.yml`) | `users.users.restic` and a `Match User restic` block in `services.openssh` |
 | node-exporter with the systemd and apt collectors | `services.prometheus.exporters.node`; the apt collector goes away with apt |
-| journal-upload to `lotus-land-story:9428` | `services.journald.upload`, pointed at VictoriaLogs on imperishable-night once the observability stack moves there |
+| journal-upload to `lotus-land-story:9428` | `services.journald.upload` to `https://logs`, the tailnet site in front of VictoriaLogs, so the URL survives the observability stack moving |
 | unattended-upgrades | Nothing. Updates come from bumping `flake.lock` and deploying, as on imperishable-night |
 | Tailscale from the Debian package | `services.tailscale`, as on imperishable-night |
 | `secure.yml`'s SSH and sudo settings | The same settings imperishable-night uses |
@@ -100,6 +104,13 @@ NixOS host, the shared pieces (Tailscale, SSH and users, node-exporter,
 and the Caddy container) can move into a module that both configurations
 import. Extract them when lolk's configuration is written, not before, so
 the module holds only what the two hosts actually share.
+
+Each host keeps its own flake and lock, and the shared module lives in
+`modules/nixos/`. Merging the hosts into one fleet flake with a single
+lock is still an open question. Before a third NixOS host arrives, weigh
+one bump updating the whole fleet against updating hosts independently.
+The same review covers deployment: multi-host tools such as colmena and
+deploy-rs, against the per-host `nixos-rebuild` recipes in the justfile.
 
 ## Order of work
 

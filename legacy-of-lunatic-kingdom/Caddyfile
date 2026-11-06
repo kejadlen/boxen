@@ -1,0 +1,42 @@
+{
+	log default {
+		output stdout
+		format json
+		include http.log.access tls
+	}
+
+	metrics
+
+	tailscale {
+		auth_key {env.TS_AUTHKEY}
+		state_dir /data/tailscale
+	}
+
+	# The image has no certutil, and nothing in the container needs to trust the root.
+	skip_install_trust
+
+	# The fleet's shared root, so devices that trust it trust these sites too.
+	pki {
+		ca local {
+			root {
+				format pem_file
+				cert /etc/caddy/pki/root.crt
+				key /etc/caddy/pki/root.key
+			}
+		}
+	}
+}
+
+# Tailnet-bound sites: internal TLS, a dedicated tailscale node, and access
+# logging routed to the default logger (shipped to VictoriaLogs via journald).
+(ts) {
+	tls internal
+	bind tailscale/{args[0]}
+	log
+}
+
+:2019 {
+	metrics /metrics
+}
+
+# vim: ts=4

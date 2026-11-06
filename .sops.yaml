@@ -4,5 +4,10 @@ creation_rules:
     age: >-
       age15ars55ulrp9hz6r0utvluayrglt40wv0t997njez0y9l3e43cersn6kgh7,
       age1v5ht948v043x49ak8apfuywpexmgrd5x0m04zvasslyg7yudu5jq9pyhzq
+  # The workstation's key, then legacy-of-lunatic-kingdom's, from its SSH host key.
+  - path_regex: ^legacy-of-lunatic-kingdom/secrets\.sops\.ya?ml$
+    age: >-
+      age15ars55ulrp9hz6r0utvluayrglt40wv0t997njez0y9l3e43cersn6kgh7,
+      age19svk6vjdau03ns9qvxh9za92nvux92esqxsu7ezez4ppguecnvtssuayvf
   - path_regex: host_vars/.*\.sops\.ya?ml$
     age: age15ars55ulrp9hz6r0utvluayrglt40wv0t997njez0y9l3e43cersn6kgh7
