@@ -17,7 +17,7 @@ let
   podmanSubnet = "10.89.0.0/24";
 
   versions = {
-    caddy = "2.11.7-2026.10.07";
+    caddy = "2.11.9-2026.11.06";
     homebox = "0.27.1";
     paperless-ngx = "3.4.2";
     redis = "8.10.3";
