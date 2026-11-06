@@ -1,9 +1,5 @@
 scrape_configs:
 
-  - job_name: anubis
-    static_configs:
-      - targets: ['anubis:9090']
-
   - job_name: authelia
     static_configs:
       - targets: ['authelia:9959']
@@ -125,11 +121,6 @@ scrape_configs:
   - job_name: docker
     static_configs:
       - targets: ['host.docker.internal:9323']
-
-  - job_name: gitea
-    bearer_token: {{ gitea.metrics.token }}
-    static_configs:
-      - targets: ['gitea:3000']
 
   - job_name: gotosocial
     metrics_path: /metrics

@@ -179,15 +179,6 @@ output "imperishable_night_caddy_auth_key" {
   sensitive = true
 }
 
-resource "pihole_dns_record" "domains" {
-  for_each = {
-    "git.kejadlen.dev" = data.tailscale_device.lotus_land_story.addresses.0
-  }
-
-  domain = each.key
-  ip     = each.value
-}
-
 # doesn't seem to work
 # resource "pihole_dns_record" "pi_hole" {
 #   for_each = toset(["pi.hole"])

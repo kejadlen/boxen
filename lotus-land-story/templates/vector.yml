@@ -16,36 +16,13 @@ transforms:
 
       ._time = del(.timestamp)
 
-      if .container_name == "anubis" {
-        parsed, err = parse_json(.message)
-        if err == null {
-          . = merge!(., parsed)
-          ._time = del(.time)
-          ._msg = del(.msg)
-        }
-      } else if .container_name == "caddy" {
+      if .container_name == "caddy" {
         # Startup errors and panics go to stderr as plain text.
         parsed, err = parse_json(.message)
         if err == null && is_object(parsed) {
           . = merge!(., parsed)
           ._time = del(.ts)
           ._msg = del(.msg)
-        }
-      } else if .container_name == "gitea" {
-        # TODO handle router logs: https://github.com/go-gitea/gitea/pull/33814
-        # gitea's common log doesn't match the vector common log because of the referer and user agent
-        router, router_err = parse_regex(
-            .message,
-            r'^(?P<remote_host>.*?) - (?P<identity>.*?) \[(?P<datetime>.*?)\] "(?P<request>.*?)" (?P<status>.*?) (?P<size>.*?) "(?P<referer>.*?)" "(?P<user_agent>.*?)"$',
-        )
-        if router_err == null {
-            . = merge(., router)
-
-            request = parse_regex!(.request, r'^(?P<method>.*?) (?P<request_uri>.*?) (?P<proto>.*?)$')
-            . = merge(., request)
-
-            ._time = parse_timestamp!(del(.datetime), format: "%d/%b/%Y:%H:%M:%S %z")
-            ._msg = del(.request)
         }
       } else if .container_name == "gotosocial" {
         . = merge(., parse_key_value!(.message))
@@ -80,36 +57,7 @@ transforms:
 
       ._stream_id = .file
 
-  # A subset of gitea logs from docker that contain SSH information
-  gitea_ssh:
-    type: remap
-    inputs:
-      - docker
-    source: |
-      if .container_name == "gitea" && contains(string!(.message), "[preauth]") {
-        . = join!(
-          [
-            format_timestamp!(now(), "%b %d %H:%M:%S"),
-            .message,
-          ],
-          separator: " ",
-        )
-      } else {
-        . = []
-      }
-
 sinks:
-  # console:
-  #   inputs:
-  #     - gitea_ssh
-  #   type: console
-  #   encoding:
-  #     codec: csv
-  #     csv:
-  #       fields:
-  #         - message
-  #       quote_style: never
-
   victoria_logs:
     inputs:
       - docker_parsed
@@ -123,19 +71,3 @@ sinks:
       method: newline_delimited
     healthcheck:
       enabled: false
-
-  # Since ssh logs from gitea only show up in docker logs and not gitea logs,
-  # ship them to /var/log for use with fail2ban
-  gitea_log:
-    inputs:
-      - gitea_ssh
-    type: file
-    path: /var/log/gitea.log
-    encoding:
-      # Surely there must be a better way to do unstructured logging than using
-      # CSV rows with a single field?
-      codec: csv
-      csv:
-        fields:
-          - message
-        quote_style: never

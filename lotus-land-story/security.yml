@@ -24,7 +24,7 @@
         from_ip: "{{ docker_network.network.IPAM.Config[0].Subnet }}"
       notify: Reload ufw
 
-    # for gitea from work laptop
+    # for quire from work laptop
     - name: Allow SSH access
       community.general.ufw:
         rule: allow
@@ -66,31 +66,6 @@
           bantime = 1w
           findtime = 12h
         mode: "0600"
-
-    - name: Configure Fail2Ban for gitea
-      block:
-        - name: Create gitea filter
-          ansible.builtin.copy:
-            dest: /etc/fail2ban/filter.d/gitea.local
-            content: |
-              [Definition]
-              failregex = .*(Disconnected from invalid user).* <HOST> port
-              ignoreregex =
-            mode: "0600"
-
-        - name: Create gitea jail
-          ansible.builtin.copy:
-            dest: /etc/fail2ban/jail.d/gitea.local
-            content: |
-              [gitea]
-              enabled = true
-              filter = gitea
-              logpath = /var/log/gitea.log
-              maxretry = 3
-              bantime = 1w
-              findtime = 12h
-              action = iptables-allports[chain="FORWARD"]
-            mode: "0600"
 
     - name: Start Fail2Ban
       ansible.builtin.service:

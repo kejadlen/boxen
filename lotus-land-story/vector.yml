@@ -30,19 +30,4 @@
         networks:
           - name: lotus_land_story
 
-    - name: Set up logrotate for gitea.log
-      ansible.builtin.copy:
-        content: |
-          /var/log/gitea.log
-          {
-            rotate 4
-            weekly
-            missingok
-            notifempty
-            compress
-            delaycompress
-          }
-        dest: /etc/logrotate.d/gitea-ssh
-        mode: "0600"
-
 # vim: ft=yaml.ansible

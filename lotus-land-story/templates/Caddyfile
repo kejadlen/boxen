@@ -221,31 +221,22 @@ files.chislan.family {
 git.kejadlen.dev {
 	log
 
-	# Meta's web indexer hammers gitea's blame/diff endpoints hard enough
-	# to spike load; throttle it to one request per minute per source IP.
-	rate_limit {
-		zone meta_webindexer {
-			match {
-				header User-Agent meta-webindexer/*
-			}
-			key {http.request.remote.host}
-			events 1
-			window 1m
-			log_key
-		}
-	}
+	# Maps gitea's URLs onto quire's. quire only shows the default branch,
+	# so links to other branches, tags, and commits land on its tip.
+	route {
+		@file path_regexp file ^/alpha/([^/]+)/(src|raw)/(branch|tag|commit)/[^/]+/(.+)$
+		redir @file https://quire.kejadlen.dev/{re.file.1}/tree/{re.file.4} permanent
 
-	# hacky way to reverse auth only from my laptop
-	# remote_ip, not client_ip: any container can forge X-Forwarded-For.
-	@undefined-fantastic-object remote_ip {{ undefined_fantastic_object_ip }}
-	reverse_proxy @undefined-fantastic-object gitea:3000 {
-		header_up X-Webauth-User alpha
-	}
+		@commit path_regexp commit ^/alpha/([^/]+)/commit/([0-9a-f]+)
+		redir @commit https://quire.kejadlen.dev/{re.commit.1}/commits/{re.commit.2} permanent
 
-	# Gitea trusts X-Webauth-User from caddy, so never pass a client's through.
-	reverse_proxy anubis:8923 {
-		header_up X-Real-Ip {remote_host}
-		header_up -X-Webauth-User
+		@log path_regexp log ^/alpha/([^/]+)/commits(/|$)
+		redir @log https://quire.kejadlen.dev/{re.log.1}/log permanent
+
+		@repo path_regexp repo ^/alpha/([^/]+?)(\.git)?(/|$)
+		redir @repo https://quire.kejadlen.dev/{re.repo.1} permanent
+
+		redir * https://quire.kejadlen.dev permanent
 	}
 }
 

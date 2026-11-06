@@ -32,8 +32,6 @@
         mode: "0600"
         owner: "{{ quire_user.name }}"
       loop:
-        - name: gitea_mirror
-          content: "{{ quire.gitea_mirror }}"
         - name: github_mirror
           content: "{{ quire.github_mirror }}"
         - name: github_auth_header
@@ -47,7 +45,6 @@
         content: |
           {:host "quire.kejadlen.dev"
            :secrets {:github_auth_header {:file "/var/quire/secrets/github_auth_header"}
-                     :gitea-mirror {:file "/var/quire/secrets/gitea_mirror"}
                      :github-mirror {:file "/var/quire/secrets/github_mirror"}}
            :sentry {:dsn "{{ quire.sentry_dsn }}"}}
         dest: /mnt/lotus-land-story/quire/config.fnl

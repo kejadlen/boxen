@@ -69,28 +69,25 @@ from GitHub over HTTPS instead.
 
 ## Redirect git.kejadlen.dev
 
-`git.kejadlen.dev/alpha/<path>` redirects permanently to
-`quire.kejadlen.dev/<path>`. Any other path redirects to quire's root.
-git follows a redirect on the first request of a clone or fetch, so old
-remotes keep working over HTTPS as long as quire serves the same path.
-Deep links into gitea's web UI, such as `/alpha/boxen/src/branch/main/...`,
-only resolve if quire uses the same layout, which is unverified.
+The `git.kejadlen.dev` site in lotus-land-story's Caddyfile maps gitea's
+URLs onto quire's with permanent redirects:
 
-The site replaces gitea's in lotus-land-story's Caddyfile:
+| gitea | quire |
+|---|---|
+| `/alpha/<repo>` and `/alpha/<repo>.git` | `/<repo>` |
+| `/alpha/<repo>/src/<kind>/<ref>/<path>`, and the same under `raw` | `/<repo>/tree/<path>` |
+| `/alpha/<repo>/commit/<sha>` | `/<repo>/commits/<sha>` |
+| `/alpha/<repo>/commits/...` | `/<repo>/log` |
+| Any other path under `/alpha/<repo>/`, such as issues | `/<repo>` |
+| Anything else | `/` |
 
-```caddy
-git.kejadlen.dev {
-	log
+quire shows only the default branch, so a link to another branch, a tag,
+or a commit's tree lands on the tip of the default branch. Links to
+repositories that aren't on quire under the same name land on a missing
+quire page.
 
-	handle_path /alpha/* {
-		redir https://quire.kejadlen.dev{uri} permanent
-	}
-
-	handle {
-		redir https://quire.kejadlen.dev permanent
-	}
-}
-```
+quire doesn't serve git over HTTPS, so old HTTPS remotes stop working
+instead of following the redirect.
 
 The redirect moves to imperishable-night with quire, and the `git` A
 record in `dns.tf` moves with quire's record.

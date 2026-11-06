@@ -12,11 +12,6 @@ docket:
         alydipha: ENC[AES256_GCM,data:JzBUzQuC+hJK/vQjKakPzzMNDovHzcfoyHXQ/2lEc6/5xWsx/tS2WXpn/ATE8JFO6xuYSCem310e3tYHFdwST543icgx9MSH04kaPEVhh917,iv:FOyNtLRkMjXtZsFhAejYGAUGey010qn+eYOOCT6gxko=,tag:Eh7joACnnKSJyIF+by/rUA==,type:str]
         sneath: ENC[AES256_GCM,data:O+oaQVHL4wZwuBkS1bwuDxj4i5riXN8E9EXa8rEYY9Y0lL0q67hSF+bOYWQX81iaOcA506JgmbXw2YKDkT16tKC4LvZFe8YLhXucuoAIgp33,iv:e/ucLA3Ii5Lu/ouXpYfmDHB8i0oBFDvwTbWUDqmCxjE=,tag:eGqE3aHcjREslEHtDIAnvg==,type:str]
     sentry_dsn: ENC[AES256_GCM,data:Mo86EN8UHhY9G8HjlK4+f3yOAPm/MYP58cqnL0QxulH2SEwZPAYcNcdTDP3GFxue6AUSoOIUpFQfWxsmTCuRFM2TWmKXvn6dp3NIaCEFru/Tg6dLsfXLFF5b4h1KaJI=,iv:M/KpIaT0yRNc2DYqhXVzfQaPGDzv0zrHO75mAuf3EMc=,tag:f+ZksnKnasqflvzj+K+rfQ==,type:str]
-gitea:
-    mailer_password: ENC[AES256_GCM,data:B+o/G/mZmwx8/oA/U+7JhdyDFMCgjxZhwD7SbNOcJswZfVZ47c49IQo84H8qyvZf1Ab0eTJPRBLSb9fIJ1WEPWQvMRbu,iv:m6DRcCR1D0sP8WQVctjdDQgLQ+B/YiTzUqz7KbnU0Pg=,tag:XkoyW/uZsLsnq49bxMY3Og==,type:str]
-    metrics:
-        token: ENC[AES256_GCM,data:yBwazD1WQTBCFk7g38kI7e3guRQvugzBx2ZVEe3RAM0=,iv:YBNTyF5Ob4EulAOwztrMqLoYd67391rOcrzIVwWMhSY=,tag:3OYkLje6jQWR+slyRp4mBA==,type:str]
-    runner_registration_token: ENC[AES256_GCM,data:MHo92oJYMiioD+wAofM7JIA3kmw9BllWCN9+dhj8fDRgDaJf9/UsRA==,iv:jCtXYyCd/NUwk1z4wHP+GCIRB1ej04SPHmk410IkJtc=,tag:WmFbWSlpw9hIfap1gd2wPQ==,type:str]
 gotosocial:
     oidc_client_secret: ENC[AES256_GCM,data:khaYbnlqZQB0+h+VcLFP3QfJ30PjyHkKc5eK7+wF9klPPkmklkSSsXBA48LmBm1ZT5JXZvL+pnhEv9ayO95BFA==,iv:PLBSWCIrBjhN2/t5gZF7hsoTr9eHTk9L+HuHMuIt/BI=,tag:e2ysSB8/jZOj9hoWzpCo/w==,type:str]
 grafana:
@@ -43,7 +38,6 @@ monica:
     db_password: ENC[AES256_GCM,data:jGFSSj44b6aiN+k3om6JV6wYdhO0g7NeM7WTHRM6lI0=,iv:KT6AQRSfd3USSdSz4D7xn6VC935rPCfgVoIFsneGiXk=,tag:1+L6+YVbL98uemphc3E6gw==,type:str]
     mail_password: ENC[AES256_GCM,data:xL4rNXq8QOiOT/16JAqqO9bNBlHRkytHsXM8c9I0dKqOzvT4geMm//2COU/vzOChYcYg+aOcgX+b9xj/bzlnvBT0cVpl,iv:G6KSTUaiL3AVY+EKrBfGsOmIlrK3QwpIpEPGpssSii8=,tag:pMU6XRfJ1UdU1djTZ/WcVw==,type:str]
 quire:
-    gitea_mirror: ENC[AES256_GCM,data:WvuJmA+nTJhZ9+NFQ5IRTLEU4zeTgKGr8Kd1KveNENK9pX/hWElGoA==,iv:s9tW/qKrRFcW/JMlYDrN04/JiJ4VFgsLoSW1/GW9TVM=,tag:kvG2NXc6IeljjxFtEe4uvg==,type:str]
     github_mirror: ENC[AES256_GCM,data:Kfq+7xo/nQW0PSd6Kg+KNWu9TWrInSUnqMnLkj+NG1GPYoKDHUAonqXbWE+04BgwRyhxLjqUm/3y7kHsiNhUp0oLZIo6I0E2n/VK46JWDbZnSm+HTRc1n+lLUIPF,iv:wq0nnFJlg/gHlTMLNY5aaZ07UVZ4moLMCadImnEJ5Ok=,tag:y9oJqExtqrpIqogxYAQVYA==,type:str]
     sentry_dsn: ENC[AES256_GCM,data:cBL4aIMFcKUoeajki/qrxjCK222Wj8yTtbLslPKrQID7WJDmbu5zJ/AVZbTD4Zw1YckfS9ZXEE5bwK8mrUn9OFrHLqq79ob2AkdqVPLAI38H3hKLPB08Ina0/VXtamE=,iv:57KJAVPCLgSf+0fX4U+c0+LQ1/OgFGQDZvJc9hMOTWo=,tag:zQfLtm3PF3Vrcxp3kHz4pw==,type:str]
     #ENC[AES256_GCM,data:VEO32WbdHwWtAX5u4Q8HhD0O0r3zPfx1vNemj75SbgcqyUVDOrLkqB4e3iNhI0PEE5eHvSEyHP1fyfFs7YQ4ON7Y92GA0Kj/74mmbw==,iv:CjyXoU3TmGKQVqvIXK2XyxsAJ0WVmIxlZb+8+9ToWdM=,tag:C/cjN45x7QAgNwpVjmiaVw==,type:comment]
@@ -71,7 +65,7 @@ sops:
             LEedZQPpxvyODlXv/10aLZhO2DZBOtjw9W2ctfg9WoyX7OxZvdbFnA==
             -----END AGE ENCRYPTED FILE-----
           recipient: age15ars55ulrp9hz6r0utvluayrglt40wv0t997njez0y9l3e43cersn6kgh7
-    lastmodified: "2026-11-01T16:14:33Z"
-    mac: ENC[AES256_GCM,data:XYDl1K5k+gk2jXy8/KzBrr4sm9bbp3lPowhynkaJy64mIbvlgFMGDk0Q0VYNl1zvlLVD1FNqF67ITy38gIdq46WObA+vqg7K/g/sG74kHxvV4hvmoJ8SNg66ANOu+D5EJp4KEpMmumB2HRfzyCVjK5KYNy73MHlzMtZtQALZHPs=,iv:jgTbO1mePkzh4dFOjUk0jz5BjHoJvEsbgmgKKsSFh+s=,tag:LVim5VxO11iTALSu62K90w==,type:str]
+    lastmodified: "2026-11-06T17:54:15Z"
+    mac: ENC[AES256_GCM,data:Tz5SB6kScBiUgOEfzMfwYT7soyqKBuCcEcHj9rnSE5U2YS963bP/ZXh/coWLuzqmpY92ZlCqgVWjcSNSss/N4JtepH+QkW6ONAsEdqzjapIll+DLG/AawZwlSGn+CDbFs/WSikAORvyxAiN5STpXIFP8FyPYs7FNddskOBwty8M=,iv:B42yLoJP+JfcxGXR3Oka9Xs1BGpLTUjIXGrBvsZi2FU=,tag:So7JB5kvx4y6AG190gx4Dg==,type:str]
     unencrypted_suffix: _unencrypted
     version: 3.13.3
