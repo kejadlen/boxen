@@ -26,18 +26,18 @@
         "nixpkgs": "nixpkgs_2"
       },
       "locked": {
-        "lastModified": 1793896604,
-        "narHash": "sha256-Yd3MRaMCwxESigiTy2Q8p4ivnbFMSZE0JHI3HZNFeyU=",
+        "lastModified": 1793984299,
+        "narHash": "sha256-t7KHC6aWY99fLFvy2FbKN53L+fXbfvVMlSN9OYX+PDM=",
         "ref": "refs/heads/main",
-        "rev": "da9d6223ed6a0bd59be6025aa2a1c1fa32f9bcbc",
+        "rev": "73828328ae779f3b639a9f2738033fc98ec0dcdf",
         "shallow": true,
         "type": "git",
-        "url": "https://git.kejadlen.dev/alpha/dotfiles.git"
+        "url": "https://github.com/kejadlen/dotfiles.git"
       },
       "original": {
         "shallow": true,
         "type": "git",
-        "url": "https://git.kejadlen.dev/alpha/dotfiles.git"
+        "url": "https://github.com/kejadlen/dotfiles.git"
       }
     },
     "flake-parts": {

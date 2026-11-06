@@ -13,7 +13,7 @@
     };
 
     # Its own nixpkgs, so its lock sets alpha's package versions on every machine.
-    dotfiles.url = "git+https://git.kejadlen.dev/alpha/dotfiles.git?shallow=1";
+    dotfiles.url = "git+https://github.com/kejadlen/dotfiles.git?shallow=1";
   };
 
   outputs =

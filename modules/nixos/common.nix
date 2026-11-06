@@ -67,7 +67,7 @@ in
       # A failed clone leaves no dest behind, so the next boot retries.
       script = ''
         rm -rf ${dest}.tmp
-        git clone https://git.kejadlen.dev/alpha/dotfiles.git ${dest}.tmp
+        git clone https://github.com/kejadlen/dotfiles.git ${dest}.tmp
         mv ${dest}.tmp ${dest}
       '';
     };
