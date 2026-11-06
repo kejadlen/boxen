@@ -1,16 +1,12 @@
 {
   config,
-  dotfiles,
   modulesPath,
   pkgs,
   ...
 }:
 
 let
-  sshKeys = [
-    "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPgX0tA28NO3djYaV++JxggR0t47xou+R0HQVwVjzj8s"
-    "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIAmBthfb/WZo/cU1FFPQv8jAICTzkJIrNR1IMngUC3MB"
-  ];
+  caddyRoot = ../modules/nixos/caddy-root.crt;
 
   # Fixed so the Caddyfile can trust it; podman assigns subnets on creation otherwise.
   podmanNetwork = "caddy";
@@ -48,7 +44,6 @@ in
   networking.useDHCP = false;
   networking.interfaces.eth0.useDHCP = true;
   networking.firewall = {
-    trustedInterfaces = [ "tailscale0" ];
     allowedTCPPorts = [
       80
       443
@@ -56,21 +51,6 @@ in
     # HTTP/3.
     allowedUDPPorts = [ 443 ];
   };
-
-  services.tailscale = {
-    enable = true;
-    # Opens the WireGuard port so peers connect directly, not through DERP.
-    openFirewall = true;
-    # nixos-anywhere's --extra-files writes this at install; it's unused once joined.
-    authKeyFile = "/var/lib/tailscale-auth-key";
-  };
-
-  # lotus-land-story's linode job discovers the instance and scrapes :9100 over
-  # the tailnet; the port stays closed publicly.
-  services.prometheus.exporters.node.enable = true;
-
-  virtualisation.podman.enable = true;
-  virtualisation.oci-containers.backend = "podman";
 
   # Containers reach each other by name only on a user-defined network.
   systemd.services."podman-network-${podmanNetwork}" = {
@@ -122,7 +102,7 @@ in
       "${
         pkgs.replaceVars ./Caddyfile { trusted_proxies = podmanSubnet; }
       }:/etc/caddy/Caddyfile:ro"
-      "${./caddy-root.crt}:/etc/caddy/pki/root.crt:ro"
+      "${caddyRoot}:/etc/caddy/pki/root.crt:ro"
       "${config.sops.secrets."caddy/ca_root_key".path}:/etc/caddy/pki/root.key:ro"
       "/var/lib/caddy/data:/data"
       "/var/lib/caddy/config:/config"
@@ -227,9 +207,6 @@ in
   sops.templates."restic.env".content = ''
     HEALTHCHECK=https://hc-ping.com/${config.sops.placeholder."restic/healthcheck"}
   '';
-
-  # Tailnet sites on both hosts are signed by the shared Caddy root.
-  security.pki.certificateFiles = [ ./caddy-root.crt ];
 
   programs.ssh.knownHosts.legacy-of-lunatic-kingdom.publicKey =
     "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIG/+SIFLbFe3hXp3l0dJSE7J4DpQkEEk//62kMiQsWOZ";
@@ -357,19 +334,9 @@ in
         encoding.codec = "json";
         framing.method = "newline_delimited";
         # lotus-land-story's Caddy signs logs' certificate with the shared local root.
-        tls.ca_file = "${./caddy-root.crt}";
+        tls.ca_file = "${caddyRoot}";
         healthcheck.enabled = false;
       };
-    };
-  };
-
-  services.openssh = {
-    enable = true;
-    # SSH is reachable only over the trusted tailscale0.
-    openFirewall = false;
-    settings = {
-      PasswordAuthentication = false;
-      PermitRootLogin = "no";
     };
   };
 
@@ -387,38 +354,4 @@ in
     accountsFile = config.sops.templates."rex-accounts.jsonc".path;
     tailscaleServe.enable = true;
   };
-
-  users.users.alpha = {
-    isNormalUser = true;
-    extraGroups = [ "wheel" ];
-    openssh.authorizedKeys.keys = sshKeys;
-    packages = [ dotfiles.packages.${pkgs.stdenv.hostPlatform.system}.profile ];
-  };
-
-  # Clones once and never pulls, so the checkout is alpha's to manage.
-  systemd.services.dotfiles-clone =
-    let
-      dest = "${config.users.users.alpha.home}/.dotfiles";
-    in
-    {
-      wantedBy = [ "multi-user.target" ];
-      wants = [ "network-online.target" ];
-      after = [ "network-online.target" ];
-      unitConfig.ConditionPathExists = "!${dest}";
-      path = [ pkgs.git ];
-      serviceConfig = {
-        Type = "oneshot";
-        User = "alpha";
-      };
-      # A failed clone leaves no dest behind, so the next boot retries.
-      script = ''
-        rm -rf ${dest}.tmp
-        git clone https://git.kejadlen.dev/alpha/dotfiles.git ${dest}.tmp
-        mv ${dest}.tmp ${dest}
-      '';
-    };
-  security.sudo.wheelNeedsPassword = false;
-
-  # Lets nixos-rebuild --target-host copy closures in as alpha.
-  nix.settings.trusted-users = [ "@wheel" ];
 }

@@ -92,7 +92,7 @@ tailnet site registers as its own Tailscale node, using a reusable
 Tailnet sites use `tls internal`, and Caddy's local CA uses
 lotus-land-story's root, so devices that already trust that root also
 trust imperishable-night's sites. The root certificate is
-`imperishable-night/caddy-root.crt`, and its key is a sops secret. Caddy
+`modules/nixos/caddy-root.crt`, and its key is a sops secret. Caddy
 signs and renews its own intermediate from them.
 
 ## Secrets

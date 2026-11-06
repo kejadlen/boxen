@@ -37,6 +37,7 @@
           disko.nixosModules.disko
           sops-nix.nixosModules.sops
           rex.nixosModules.default
+          ../modules/nixos/common.nix
           ./configuration.nix
           ./disk-config.nix
         ];
