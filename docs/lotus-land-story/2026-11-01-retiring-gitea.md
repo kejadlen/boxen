@@ -1,9 +1,9 @@
 # Retiring gitea
 
 quire hosts the source for most repositories, and GitHub mirrors them
-from quire. For those, gitea is only a second mirror. The rest still
-live on gitea and need a new home first (see
-[Repositories still on gitea](#repositories-still-on-gitea)). This plan
+from quire. For those, gitea is only a second mirror. The rest needed a
+new home first (see
+[Repositories that were only on gitea](#repositories-that-were-only-on-gitea)). This plan
 retires gitea, along with anubis and the Actions runner, instead of
 moving them to imperishable-night with the rest of lotus-land-story's
 services. quire moves to imperishable-night as planned in the
@@ -35,34 +35,37 @@ quire lacked. The exceptions were six ranger release tags whose commits
 are on quire, which weren't worth keeping. Their `.quire/config.fnl`
 files no longer mirror to gitea.
 
-### Repositories still on gitea
+### Repositories that were only on gitea
 
-The following 17 repositories are on gitea and not on quire. Each one
-moves to quire, stays only on GitHub, or is dropped:
+Seventeen repositories were on gitea and not on quire. By 2026-11-06,
+each one had moved or been dropped, and gitea held none of them:
 
-| Repository | Last updated on gitea | Notes |
-|---|---|---|
-| dotfiles | 2026-11-03 | Local clone pushes to gitea as `origin` |
-| rank-king | 2026-10-29 | Local clone pushes to gitea as `origin` |
-| notes | 2026-04-03 | The only private repository |
-| serde-kdl2 | 2026-03-25 | |
-| pinch | 2026-02-21 | |
-| advent-of-code | 2025-12-10 | |
-| junk-drawer | 2025-10-22 | |
-| birbnet | 2025-08-21 | |
-| vim-colors-paramount | 2025-05-03 | |
-| homebrew-tap | 2025-02-22 | |
-| alphadex | 2025-02-19 | |
-| alpheus-v2 | 2025-02-19 | |
-| crafting-interpreters | 2025-02-19 | |
-| Kaleidoscope | 2025-02-19 | |
-| minitest-thesis | 2025-02-19 | |
-| prezto | 2025-02-19 | |
-| qmk_userspace | 2025-02-19 | |
+| Repository | Outcome |
+|---|---|
+| dotfiles | Moved to quire, which mirrors it to GitHub |
+| rank-king | Moved to quire, which mirrors it to GitHub |
+| advent-of-code | Moved to quire, which mirrors it to GitHub |
+| minitest-thesis | Moved to quire |
+| junk-drawer | Moved to quire |
+| pinch | Moved to quire, and archived on GitHub |
+| serde-kdl2 | Moved to quire, and archived on GitHub |
+| vim-colors-paramount | Moved to quire, and archived on GitHub |
+| Kaleidoscope | Folded into quire's `keyboards` repository |
+| qmk_userspace | Folded into quire's `keyboards` repository |
+| crafting-interpreters | Folded into quire's `katas` repository |
+| prezto | Archived on GitHub only |
+| homebrew-tap | Dropped; GitHub's copy is archived |
+| notes | Dropped |
+| alphadex | Dropped |
+| alpheus-v2 | Dropped |
+| birbnet | Dropped |
 
-The 2025-02-19 repositories share a date that looks like an import, not
-activity. A repository that moves to quire also switches its local
-clones' `origin` from gitea to quire.
+Only `main` moved for most repositories. Other branches either stayed on
+GitHub or were dropped. Local clones of the moved repositories push to
+quire as `origin`.
+
+quire serves git over SSH only, so the NixOS hosts fetch the dotfiles
+from GitHub over HTTPS instead.
 
 ## Redirect git.kejadlen.dev
 
@@ -83,7 +86,9 @@ git.kejadlen.dev {
 		redir https://quire.kejadlen.dev{uri} permanent
 	}
 
-	redir https://quire.kejadlen.dev permanent
+	handle {
+		redir https://quire.kejadlen.dev permanent
+	}
 }
 ```
 
