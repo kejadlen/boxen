@@ -8,7 +8,7 @@ versions:
   gotosocial:       0.22.1
   grafana:          12.4.3
   ketchup:          20260525-e75f249
-  miniflux:         2.3.4
+  miniflux:         2.3.5
   pro_tacts:        ruby-head-zjit # TODO Pin the version once we're not in active development anymore
   quire:            latest # TODO Pin the version once we're not in active development anymore
   soju:             0.11.1 # remember to update the docker-soju image to bump this
