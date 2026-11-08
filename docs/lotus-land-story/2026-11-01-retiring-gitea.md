@@ -118,21 +118,24 @@ tailnet, where the webauth bypass could match its address. Without the
 bypass, `git.kejadlen.dev` needs no tailnet address. The pihole provider
 stays, because its commented-out resources may come back.
 
-## Tear down the host
+## Tearing down the host
 
-Removing a playbook doesn't stop what it started. After deploying the
-configuration changes, follow these steps on lotus-land-story:
+Removing a playbook doesn't stop what it started. On 2026-11-08, after
+the configuration changes were deployed, the following was removed by hand
+from lotus-land-story:
 
-1. Remove the `gitea`, `anubis`, and `gitea-runner` containers.
-2. Delete `/etc/fail2ban/filter.d/gitea.local`,
+1. The `gitea`, `anubis`, and `gitea-runner` containers.
+2. `/etc/fail2ban/filter.d/gitea.local`,
    `/etc/fail2ban/jail.d/gitea.local`, and `/etc/logrotate.d/gitea-ssh`,
-   then restart fail2ban.
-3. Delete `/usr/local/bin/gitea` and the `git` user.
-4. Deregister the runner, if gitea's admin UI is still reachable, or
-   ignore it, since it disappears with gitea.
+   followed by a fail2ban restart.
+3. `/usr/local/bin/gitea` and the `git` user, with its home directory.
 
-Leave `/mnt/lotus-land-story/gitea` in place until lotus-land-story
-retires, as a faster rollback than restic.
+The runner wasn't deregistered, since it disappeared with gitea.
+
+`/mnt/lotus-land-story/gitea` and `/mnt/lotus-land-story/gitea-runner`
+stay in place until lotus-land-story retires, as a faster rollback than
+restic. The `git` user's UID now owns nothing by name, so a rollback
+recreates `git` with the same UID that gitea's container ran as.
 
 ## Move quire
 
