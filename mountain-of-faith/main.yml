@@ -131,7 +131,7 @@
   tags: pihole
   hosts: mountain-of-faith
   vars:
-    version: 2025.11.1
+    version: 2026.10.1
   tasks:
 
     - name: Run the Pi-Hole container
