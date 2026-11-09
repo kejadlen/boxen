@@ -54,6 +54,7 @@
 # TODO disallow network access from non-tailscale interfaces
 - import_playbook: ../playbooks/secure.yml # noqa: name[play]
 - import_playbook: ../playbooks/tailscale.yml # noqa: name[play]
+- import_playbook: ../playbooks/unattended-upgrades.yml # noqa: name[play]
 
 # https://setup.vector.dev
 # https://grafana.com/blog/2024/07/12/obirdability-how-to-build-an-observability-system-for-bird-songs/

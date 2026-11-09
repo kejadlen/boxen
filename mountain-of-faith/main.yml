@@ -71,6 +71,7 @@
 
 - import_playbook: ../playbooks/tailscale.yml
 - import_playbook: ../playbooks/docker.yml
+- import_playbook: ../playbooks/unattended-upgrades.yml
 
 - name: Mount USB drive
   hosts: mountain-of-faith
