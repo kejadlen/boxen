@@ -15,6 +15,9 @@ in
 {
   networking.firewall.trustedInterfaces = [ "tailscale0" ];
 
+  # restartUnits via systemctl try-restart, not the restart list NixOS 26.11 removes.
+  sops.useSystemdActivation = true;
+
   services.tailscale = {
     enable = true;
     # Opens the WireGuard port so peers connect directly, not through DERP.
