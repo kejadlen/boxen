@@ -167,47 +167,17 @@
 # TODO Remove Minio
 - import_playbook: minio.yml
 
-- import_playbook: ../playbooks/syncthing.yml
-
-# Syncthing once grew to 1 GB on this 2 GB Pi and starved the host into
-# thrashing; a cap makes the kernel kill Syncthing instead.
-- name: Cap Syncthing's memory
+# Syncthing stalls at a 768M cap on this 2 GB Pi, so it stays off for now.
+- name: Stop Syncthing
   tags: syncthing
   hosts: mountain-of-faith
   become: true
   tasks:
-
-    # The Pi firmware adds cgroup_disable=memory, which leaves MemoryMax
-    # unenforced; a later cgroup_enable=memory wins. Takes effect on reboot.
-    - name: Enable the memory cgroup controller
-      ansible.builtin.lineinfile:
-        path: /boot/firmware/cmdline.txt
-        regexp: '^((?!.*\bcgroup_enable=memory\b).*)$'
-        line: '\1 cgroup_enable=memory'
-        backrefs: true
-
-    - name: Create the Syncthing drop-in directory
-      ansible.builtin.file:
-        path: /etc/systemd/system/syncthing@syncthing.service.d
-        state: directory
-        mode: "0755"
-
-    - name: Limit Syncthing's memory
-      ansible.builtin.copy:
-        dest: /etc/systemd/system/syncthing@syncthing.service.d/memory.conf
-        content: |
-          [Service]
-          MemoryMax=768M
-          MemorySwapMax=0
-        mode: "0644"
-      notify: Restart syncthing
-
-  handlers:
-    - name: Restart syncthing
+    - name: Stop and disable Syncthing
       ansible.builtin.systemd:
         name: syncthing@syncthing.service
-        state: restarted
-        daemon_reload: true
+        enabled: false
+        state: stopped
 
 - name: Set up metrics
   tags: metrics
