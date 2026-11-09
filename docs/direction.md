@@ -23,11 +23,15 @@ upgrades kept out of the move so that a failure has one cause.
 Every host stays on a supported OS and takes updates. lotus-land-story's
 bullseye went out of support with no clean upgrade path, which is what
 started the move to NixOS. On NixOS, updating is bumping `flake.lock`
-and deploying.
+and deploying. Pending updates show which hosts are behind, but not
+which known vulnerabilities they're exposed to. Measuring that, for
+example by diffing vulnix reports against the branch head, comes later.
 
-Backups are verified, not assumed. Each host backs up nightly with
-restic to lolk, pings healthchecks.io, and pushes metrics to
-VictoriaMetrics. See [backups](backup.md). The servers' backups don't
+Backups are verified, not assumed. lotus-land-story and
+imperishable-night back up nightly with restic to lolk, ping
+healthchecks.io, and push metrics to
+VictoriaMetrics. See [backups](backup.md). mountain-of-faith and
+hopeless-masquerade don't back up. The servers' backups don't
 leave home, though: the restic repository and lolk's own data have no
 offsite copy, so a fire at home loses every server backup at once. An
 offsite copy is important but not urgent.
