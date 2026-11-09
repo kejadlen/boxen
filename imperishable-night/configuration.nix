@@ -164,8 +164,6 @@ in
 
   virtualisation.oci-containers.containers.ketchup = {
     image = "ghcr.io/kejadlen/ketchup:${versions.ketchup}";
-    # Stays stopped until its data is copied from lotus-land-story.
-    autoStart = false;
     environment = {
       AUTH_HEADER = "Tailscale-User-Login";
       DATABASE_URL = "/data/ketchup.db";
