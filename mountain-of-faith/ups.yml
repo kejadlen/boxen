@@ -22,7 +22,7 @@
         owner: root
         group: nut
         mode: "0640"
-      notify: restart nut-driver-enumerator
+      notify: Restart nut-driver-enumerator
 
     - name: Configure upsd
       ansible.builtin.copy:
@@ -32,7 +32,7 @@
         owner: root
         group: nut
         mode: "0640"
-      notify: restart nut-server
+      notify: Restart nut-server
 
     # No upsmon yet, so nothing needs to log in - upsc reads variables
     # anonymously.
@@ -43,7 +43,7 @@
         owner: root
         group: nut
         mode: "0640"
-      notify: restart nut-server
+      notify: Restart nut-server
 
     - name: Run NUT in standalone mode
       ansible.builtin.copy:
@@ -53,7 +53,7 @@
         owner: root
         group: nut
         mode: "0640"
-      notify: restart nut-server
+      notify: Restart nut-server
 
     - name: Enable and start upsd
       ansible.builtin.systemd:
@@ -63,12 +63,12 @@
 
   handlers:
     # Picks up ups.conf changes by (re)generating the nut-driver@ units.
-    - name: restart nut-driver-enumerator
+    - name: Restart nut-driver-enumerator
       ansible.builtin.systemd:
         name: nut-driver-enumerator
         state: restarted
 
-    - name: restart nut-server
+    - name: Restart nut-server
       ansible.builtin.systemd:
         name: nut-server
         state: restarted

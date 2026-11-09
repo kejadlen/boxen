@@ -69,7 +69,7 @@
         owner: root
         group: root
         mode: "0644"
-      notify: restart minio
+      notify: Restart minio
 
     # groupadd -r minio-user
     - name: Create MinIO group
@@ -117,7 +117,7 @@
         owner: root
         group: root
         mode: "0644"
-      notify: restart minio
+      notify: Restart minio
 
     - name: Enable and start MinIO service
       ansible.builtin.systemd:
@@ -127,7 +127,7 @@
         daemon_reload: true
 
   handlers:
-    - name: restart minio
+    - name: Restart minio
       ansible.builtin.systemd:
         name: minio
         state: restarted

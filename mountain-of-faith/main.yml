@@ -55,7 +55,7 @@
           # pihole
           DNSStubListener=no
         mode: "0644"
-      notify: restart systemd-resolved
+      notify: Restart systemd-resolved
 
     - name: Enable and start systemd-resolved
       ansible.builtin.systemd:
@@ -64,7 +64,7 @@
         state: started
 
   handlers:
-    - name: restart systemd-resolved
+    - name: Restart systemd-resolved
       ansible.builtin.systemd:
         name: systemd-resolved
         state: restarted
@@ -271,24 +271,24 @@
               icmp:
                 preferred_ip_protocol: "ip4"
         mode: "0644"
-      notify: restart blackbox-exporter
+      notify: Restart blackbox-exporter
 
     - name: Configure blackbox-exporter service
       ansible.builtin.lineinfile:
         path: /etc/default/prometheus-blackbox-exporter
         regexp: '^ARGS='
         line: 'ARGS="--config.file=/mnt/mountain-of-faith/blackbox-exporter/blackbox.yml"'
-      notify: restart blackbox-exporter
+      notify: Restart blackbox-exporter
 
     # Not sure if this actually works, but can alternatively use
     # `dpkg-reconfigure prometheus-blackbox-exporter`
     - name: Enable ICMP capabilities for blackbox-exporter
       ansible.builtin.command: setcap cap_net_raw+ep /usr/bin/prometheus-blackbox-exporter
       changed_when: false
-      notify: restart blackbox-exporter
+      notify: Restart blackbox-exporter
 
   handlers:
-    - name: restart blackbox-exporter
+    - name: Restart blackbox-exporter
       ansible.builtin.systemd:
         name: prometheus-blackbox-exporter
         state: restarted
@@ -320,7 +320,7 @@
       vars:
         # can we get this dynamically?
         address: 192.168.40.60
-      notify: restart prusa-exporter
+      notify: Restart prusa-exporter
 
     - name: Run the Prusa Exporter container
       community.docker.docker_container:
@@ -345,7 +345,7 @@
         host_ip: "{{ ansible_facts.default_ipv4.address }}"
 
   handlers:
-    - name: restart prusa-exporter
+    - name: Restart prusa-exporter
       community.docker.docker_container:
         name: prusa-exporter
         state: started
