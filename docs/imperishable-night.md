@@ -6,7 +6,8 @@ here from lotus-land-story one at a time; the
 [migration plan](imperishable-night/2026-10-16-migrating-from-lotus-land-story.md)
 tracks the order. Today it runs the base system, Tailscale,
 node-exporter, cadvisor, restic, Caddy, Vector, homebox, and
-paperless-ngx with redis.
+paperless-ngx with redis. ketchup is defined but not started until its
+data moves.
 
 For first-time setup, see the [bootstrap README][readme].
 
@@ -110,6 +111,8 @@ restic. The file holds the following values:
 | `homebox.api_key_pepper` | `openssl rand -base64 48`; rotating it invalidates homebox's API keys |
 | `homebox.mailer.username` | `homebox.mailer.username` in `host_vars/lotus-land-story.sops.yml` |
 | `homebox.mailer.password` | `homebox.mailer.password` in `host_vars/lotus-land-story.sops.yml` |
+| `ketchup.session_secret` | `ketchup.session_secret` in `host_vars/lotus-land-story.sops.yml` |
+| `ketchup.otel_exporter_otlp_headers` | `ketchup.otel_exporter_otlp_headers` in `host_vars/lotus-land-story.sops.yml` |
 | `paperless_ngx.secret` | `paperless_ngx.secret` in `host_vars/lotus-land-story.sops.yml` |
 | `restic.password` | `restic.password` in `host_vars/lotus-land-story.sops.yml` |
 | `restic.healthcheck` | The UUID of imperishable-night's healthchecks.io backup check |

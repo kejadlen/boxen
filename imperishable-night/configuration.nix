@@ -15,6 +15,7 @@ let
   versions = {
     caddy = "2.11.9-2026.11.06";
     homebox = "0.27.1";
+    ketchup = "20260525-e75f249";
     paperless-ngx = "3.4.2";
     redis = "8.10.3";
   };
@@ -83,6 +84,7 @@ in
     "d /var/lib/caddy/config 0755 root root -"
     # homebox's image runs as the distroless nonroot user.
     "d /var/lib/homebox 0755 65532 65532 -"
+    "d /var/lib/ketchup 0755 root root -"
     # paperless-ngx's image runs as its default USERMAP_UID and USERMAP_GID.
     "d /var/lib/paperless-ngx/consume 0700 1000 1000 -"
     "d /var/lib/paperless-ngx/data 0700 1000 1000 -"
@@ -146,6 +148,36 @@ in
     networks = [ podmanNetwork ];
   };
   systemd.services.podman-homebox = {
+    requires = [ "podman-network-${podmanNetwork}.service" ];
+    after = [ "podman-network-${podmanNetwork}.service" ];
+  };
+
+  sops.secrets."ketchup/session_secret" = { };
+  sops.secrets."ketchup/otel_exporter_otlp_headers" = { };
+  sops.templates."ketchup.env" = {
+    content = ''
+      SESSION_SECRET=${config.sops.placeholder."ketchup/session_secret"}
+      OTEL_EXPORTER_OTLP_HEADERS=${config.sops.placeholder."ketchup/otel_exporter_otlp_headers"}
+    '';
+    restartUnits = [ "podman-ketchup.service" ];
+  };
+
+  virtualisation.oci-containers.containers.ketchup = {
+    image = "ghcr.io/kejadlen/ketchup:${versions.ketchup}";
+    # Stays stopped until its data is copied from lotus-land-story.
+    autoStart = false;
+    environment = {
+      AUTH_HEADER = "Tailscale-User-Login";
+      DATABASE_URL = "/data/ketchup.db";
+      OTEL_EXPORTER_OTLP_PROTOCOL = "http/protobuf";
+      OTEL_EXPORTER_OTLP_ENDPOINT = "https://api.honeycomb.io";
+      TZ = "America/Los_Angeles";
+    };
+    environmentFiles = [ config.sops.templates."ketchup.env".path ];
+    volumes = [ "/var/lib/ketchup:/data" ];
+    networks = [ podmanNetwork ];
+  };
+  systemd.services.podman-ketchup = {
     requires = [ "podman-network-${podmanNetwork}.service" ];
     after = [ "podman-network-${podmanNetwork}.service" ];
   };
