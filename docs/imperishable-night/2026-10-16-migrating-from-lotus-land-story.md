@@ -164,7 +164,7 @@ breakage costs least:
 6. Observability: VictoriaMetrics, VictoriaLogs, VictoriaTraces, Grafana,
    Vector, and the OpenTelemetry collector.
 7. Sites that only Caddy serves: `setup`, `gists`, `files`, `birbs`,
-   `pihole`, and the two Home Assistant proxies. The file-serving sites
+   `pihole`, and the `home-assistant-5119` proxy. The file-serving sites
    need their directories under `/mnt/lotus-land-story/caddy/data`
    copied along with them. The gists repository's `bin/sync` rsyncs to
    lotus-land-story by default, so change its `GISTS_HOST` and

@@ -159,11 +159,6 @@ contacts.chislan.family {
 
 ### Internal
 
-home-assistant-509 {
-	import ts home-assistant-509
-	reverse_proxy homeassistant-509:8123
-}
-
 home-assistant-5119 {
 	import ts home-assistant-5119
 	reverse_proxy homeassistant-5119:8123

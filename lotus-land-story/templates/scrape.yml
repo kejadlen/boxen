@@ -62,7 +62,6 @@ scrape_configs:
         - https://books
         - https://docs
         - https://grafana
-        - https://home-assistant-509
         - https://home-assistant-5119
         - https://homebox
         - https://irc
