@@ -127,6 +127,10 @@ data "tailscale_device" "contacts" {
   hostname = "contacts"
 }
 
+data "tailscale_device" "hopeless_masquerade" {
+  hostname = "hopeless-masquerade"
+}
+
 locals {
   lotus_land_story = data.linode_instances.lotus_land_story.instances.0
 }
@@ -189,7 +193,8 @@ resource "tailscale_acl" "policy" {
     {
       "tagOwners": {
         "tag:server":  ["autogroup:admin"],
-        "tag:birdnet": ["autogroup:admin"],
+        // tofu's OAuth client carries tag:server, so it can apply tag:birdnet.
+        "tag:birdnet": ["autogroup:admin", "tag:server"],
       },
 
       "hosts": {
@@ -234,6 +239,13 @@ resource "tailscale_acl" "policy" {
       ],
     }
   EOT
+}
+
+resource "tailscale_device_tags" "hopeless_masquerade" {
+  device_id = data.tailscale_device.hopeless_masquerade.node_id
+  tags      = ["tag:birdnet"]
+
+  depends_on = [tailscale_acl.policy]
 }
 
 # doesn't seem to work
