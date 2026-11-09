@@ -154,7 +154,7 @@ paperless-ngx is the only redis user, so redis moves with it.
 Move the services in the following order, starting with those whose
 breakage costs least:
 
-1. Personal services: ketchup, docket, quire, irc (soju), and homebox.
+1. Personal services: ketchup, quire, irc (soju), and homebox.
 2. PostgreSQL-backed services: miniflux.
 3. Family-facing services: calibre-web, paperless-ngx with redis, and
    pro-tacts.
@@ -172,6 +172,11 @@ breakage costs least:
 
 cadvisor doesn't move: each host runs its own, and lotus-land-story's
 retires with it.
+
+docket doesn't move either. Its development is paused and nothing uses
+it, so its site and playbook retire with lotus-land-story, and its data
+survives only in restic. When development resumes, docket deploys on
+imperishable-night with a fresh database.
 
 ## Move gotosocial
 
