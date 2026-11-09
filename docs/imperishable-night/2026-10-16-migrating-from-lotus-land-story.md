@@ -128,7 +128,8 @@ Follow these steps for each service:
 3. Stop the container on lotus-land-story, and remove its site from
    lotus-land-story's Caddyfile.
 4. Copy the service's data:
-   - For files, rsync `/mnt/lotus-land-story/<service>/`.
+   - For files, rsync `/mnt/lotus-land-story/<service>/` with `--delete`,
+     so that nothing already in the target directory survives.
    - For a database, `pg_dump` that one database and restore it on
      imperishable-night.
 5. Start the container on imperishable-night.
