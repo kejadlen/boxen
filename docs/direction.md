@@ -64,6 +64,11 @@ sites open ports to the internet. The exception is SSH on
 imperishable-night, which lets only the `quire` user in from the
 internet so that the work laptop can push.
 
+The tailnet policy lives in `main.tf` as `tailscale_acl.policy`. Members
+and `tag:server` nodes reach every node. hopeless-masquerade is tagged
+`tag:birdnet` and reaches only VictoriaLogs and pi-hole, because it runs
+BirdNET-Pi's third-party installer.
+
 ## Where each host is going
 
 The following table lists each host and where it's headed:

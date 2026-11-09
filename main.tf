@@ -179,6 +179,63 @@ output "imperishable_night_caddy_auth_key" {
   sensitive = true
 }
 
+import {
+  to = tailscale_acl.policy
+  id = "acl"
+}
+
+resource "tailscale_acl" "policy" {
+  acl = <<-EOT
+    {
+      "tagOwners": {
+        "tag:server":  ["autogroup:admin"],
+        "tag:birdnet": ["autogroup:admin"],
+      },
+
+      "hosts": {
+        "lotus-land-story":  "${data.tailscale_device.lotus_land_story.addresses[0]}",
+        "mountain-of-faith": "${data.tailscale_device.mountain_of_faith.addresses[0]}",
+      },
+
+      "acls": [
+        {
+          "action": "accept",
+          "src":    ["autogroup:member", "tag:server"],
+          "dst":    ["*:*"],
+        },
+        // hopeless-masquerade runs BirdNET-Pi's third-party installer, so it
+        // reaches only where it ships logs and resolves DNS.
+        {
+          "action": "accept",
+          "src":    ["tag:birdnet"],
+          "dst":    ["lotus-land-story:9428", "mountain-of-faith:53"],
+        },
+      ],
+
+      "ssh": [
+        {
+          "action": "check",
+          "src":    ["autogroup:member"],
+          "dst":    ["autogroup:self"],
+          "users":  ["autogroup:nonroot", "root"],
+        },
+      ],
+
+      "tests": [
+        {
+          "src":    "tag:birdnet",
+          "accept": ["lotus-land-story:9428", "mountain-of-faith:53"],
+          "deny":   ["lotus-land-story:22", "mountain-of-faith:22", "mountain-of-faith:9000"],
+        },
+        {
+          "src":    "tag:server",
+          "accept": ["mountain-of-faith:22"],
+        },
+      ],
+    }
+  EOT
+}
+
 # doesn't seem to work
 # resource "pihole_dns_record" "pi_hole" {
 #   for_each = toset(["pi.hole"])
