@@ -67,7 +67,9 @@ internet so that the work laptop can push.
 The tailnet policy lives in `main.tf` as `tailscale_acl.policy`. Members
 and `tag:server` nodes reach every node. hopeless-masquerade is tagged
 `tag:birdnet` and reaches only VictoriaLogs and pi-hole, because it runs
-BirdNET-Pi's third-party installer.
+BirdNET-Pi's third-party installer. The policy is narrowing so that each
+device and server reaches only what it uses; see [tailnet
+access](tailnet.md).
 
 ## Where each host is going
 
