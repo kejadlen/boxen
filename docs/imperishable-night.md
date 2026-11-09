@@ -107,6 +107,8 @@ restic. The file holds the following values:
 | `caddy.ts_authkey` | `tofu output -raw imperishable_night_caddy_auth_key` |
 | `caddy.dnsimple_token` | `dnsimple.caddy_token` in `host_vars/lotus-land-story.sops.yml` |
 | `caddy.ca_root_key` | `caddy/pki/authorities/local/root.key` in lotus-land-story's Caddy data directory |
+| `docket.fastmail_tokens.<name>` | `docket.fastmail_tokens.<name>` in `host_vars/lotus-land-story.sops.yml`; unused until docket deploys |
+| `docket.sentry_dsn` | `docket.sentry_dsn` in `host_vars/lotus-land-story.sops.yml`; unused until docket deploys |
 | `homebox.api_key_pepper` | `openssl rand -base64 48`; rotating it invalidates homebox's API keys |
 | `homebox.mailer.username` | `homebox.mailer.username` in `host_vars/lotus-land-story.sops.yml` |
 | `homebox.mailer.password` | `homebox.mailer.password` in `host_vars/lotus-land-story.sops.yml` |
