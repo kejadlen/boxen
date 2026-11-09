@@ -56,7 +56,9 @@ lotus-land-story retires.
 Access goes through the tailnet. SSH is tailnet-only on NixOS hosts,
 private sites are their own Tailscale nodes through caddy-tailscale, and
 one Caddy root CA signs every host's internal certificates. Only public
-sites open ports to the internet.
+sites open ports to the internet. The exception is SSH on
+imperishable-night, which lets only the `quire` user in from the
+internet so that the work laptop can push.
 
 ## Where each host is going
 

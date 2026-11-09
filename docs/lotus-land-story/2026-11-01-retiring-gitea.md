@@ -151,12 +151,16 @@ the following differences:
 - quire-gitweb moves with quire, since it reads quire's repositories.
 - `quire.github_mirror`, `quire.github_auth_header`, and
   `quire.sentry_dsn` move to `imperishable-night/secrets.sops.yml`.
-- lotus-land-story allows public SSH "for gitea from work laptop," and
-  quire takes pushes over that same port. imperishable-night's SSH is
-  tailnet-only, so the work laptop switches to pushing over HTTPS to
-  `quire.kejadlen.dev`, with credentials from a git credential helper.
-  quire doesn't authenticate pushes on its public site yet, so it needs
-  that feature before it moves.
+- lotus-land-story allows public SSH so that the work laptop, which isn't
+  on the tailnet, can push to quire. imperishable-night opens SSH
+  publicly for the same reason, overriding `openFirewall = false` from
+  `modules/nixos/common.nix`. `AllowUsers quire alpha@100.64.0.0/10
+  alpha@fd7a:115c:a1e0::/48` lets only `quire` log in from the internet,
+  and its `ForceCommand` limits it to quire's git commands. alpha stays
+  tailnet-only. fail2ban waits until the logs show it's needed.
+- If work blocks outbound SSH, the work laptop can push over HTTPS to
+  `quire.kejadlen.dev` instead, once quire authenticates pushes on its
+  public site.
 
 [move]: ../imperishable-night/2026-10-16-migrating-from-lotus-land-story.md#move-a-service
 
@@ -168,6 +172,5 @@ the following differences:
 3. Replace the gitea site with the redirect, remove the rest of gitea's
    configuration, and deploy lotus-land-story and tofu.
 4. Tear down gitea on lotus-land-story.
-5. Add authenticated HTTPS pushes to quire, and switch the work laptop's
-   remotes to HTTPS.
-6. Move quire, the redirect, and both A records to imperishable-night.
+5. Move quire, the redirect, and both A records to imperishable-night,
+   with public SSH locked down to `quire`.
