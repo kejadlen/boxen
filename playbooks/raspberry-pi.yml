@@ -1,0 +1,17 @@
+# https://www.raspberrypi.com/documentation/computers/configuration.html#kernel-command-line-cmdline-txt
+- name: Configure Raspberry Pi boot
+  tags: raspberry-pi
+  hosts: "{{ ansible_limit | default([]) }}"
+  become: true
+  tasks:
+
+    # The Raspberry Pi kernel ships PSI off, which leaves node-exporter's
+    # pressure metrics empty. cmdline.txt is a single line, so append rather
+    # than use lineinfile. Takes effect on the next reboot.
+    - name: Enable pressure stall information
+      ansible.builtin.replace:
+        path: /boot/firmware/cmdline.txt
+        regexp: '^(?!.*\bpsi=1\b)(\S.*?)[ \t]*$'
+        replace: '\1 psi=1'
+
+# vim: ft=yaml.ansible

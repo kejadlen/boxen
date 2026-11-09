@@ -72,6 +72,7 @@
 - import_playbook: ../playbooks/tailscale.yml
 - import_playbook: ../playbooks/docker.yml
 - import_playbook: ../playbooks/unattended-upgrades.yml
+- import_playbook: ../playbooks/raspberry-pi.yml
 
 - name: Mount USB drive
   hosts: mountain-of-faith
