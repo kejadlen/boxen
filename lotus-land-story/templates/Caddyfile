@@ -130,14 +130,6 @@ rss {
 	}
 }
 
-ketchup {
-	import tsauth ketchup
-	reverse_proxy ketchup:9292 {
-		header_up Tailscale-User-Login {http.auth.user.tailscale_login}
-		header_up Tailscale-User-Name {http.auth.user.tailscale_user}
-	}
-}
-
 docket {
 	import tsauth docket
 	reverse_proxy docket:3000
