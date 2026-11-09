@@ -222,6 +222,14 @@
         - prometheus-blackbox-exporter
         - prometheus-node-exporter
 
+    # Debian's default exclusion hides /mnt, where the USB drive is mounted.
+    - name: Report the USB drive in node-exporter
+      ansible.builtin.lineinfile:
+        path: /etc/default/prometheus-node-exporter
+        regexp: '^ARGS='
+        line: 'ARGS="--collector.filesystem.mount-points-exclude=^/(dev|proc|run|sys|media|var/lib/docker/.+|var/lib/containers/storage/.+)($|/)"'
+      notify: Restart node-exporter
+
     - name: Create Blackbox config directory
       ansible.builtin.file:
         path: /mnt/mountain-of-faith/blackbox-exporter
@@ -283,6 +291,11 @@
     - name: restart blackbox-exporter
       ansible.builtin.systemd:
         name: prometheus-blackbox-exporter
+        state: restarted
+
+    - name: Restart node-exporter
+      ansible.builtin.systemd:
+        name: prometheus-node-exporter
         state: restarted
 
 - name: Run Prusa Exporter
