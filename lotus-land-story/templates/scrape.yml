@@ -213,12 +213,6 @@ scrape_configs:
       - targets:
         - legacy-of-lunatic-kingdom:8384
 
-  - job_name: syncthing-mountain-of-faith
-    bearer_token: {{ syncthing.mountain_of_faith.api_key }}
-    static_configs:
-      - targets:
-        - mountain-of-faith:8384
-
   - job_name: victoria-logs
     static_configs:
       - targets: ['victoria-logs:9428']
