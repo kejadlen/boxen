@@ -21,11 +21,464 @@
   "links": [],
   "panels": [
     {
+      "datasource": {
+        "type": "victoriametrics-metrics-datasource",
+        "uid": "P4169E866C3094E38"
+      },
+      "description": "Red when an expected host hasn't completed a backup in 26 hours. Add a host to the query's list when it starts backing up.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "decimals": 0,
+          "mappings": [
+            {
+              "type": "value",
+              "options": {
+                "0": {
+                  "index": 0,
+                  "text": "OK",
+                  "color": "green"
+                },
+                "1": {
+                  "index": 1,
+                  "text": "overdue"
+                }
+              }
+            }
+          ],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 1
+              }
+            ]
+          },
+          "unit": "none"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 4,
+        "x": 0,
+        "y": 0
+      },
+      "id": 37,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "value_and_name",
+        "wideLayout": true
+      },
+      "pluginVersion": "12.4.3",
+      "targets": [
+        {
+          "datasource": {
+            "type": "victoriametrics-metrics-datasource",
+            "uid": "P4169E866C3094E38"
+          },
+          "editorMode": "code",
+          "exemplar": false,
+          "expr": "(\n  (\n    label_set(vector(1), \"host\", \"lotus-land-story\")\n    or label_set(vector(1), \"host\", \"imperishable-night\")\n  )\n  unless on (host)\n  (time() - max by (host) (last_over_time(backup_completed_timestamp{job=\"backup\"}[2d])) < 26 * 3600)\n)\nor on () label_set(vector(0), \"host\", \"all\")",
+          "format": "time_series",
+          "instant": true,
+          "legendFormat": "{{host}}",
+          "range": false,
+          "refId": "A"
+        }
+      ],
+      "title": "backups",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "victoriametrics-metrics-datasource",
+        "uid": "P4169E866C3094E38"
+      },
+      "description": "Red when a filesystem is over 85% full or an expected mount is missing.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "decimals": 0,
+          "mappings": [
+            {
+              "type": "value",
+              "options": {
+                "0": {
+                  "index": 0,
+                  "text": "OK",
+                  "color": "green"
+                },
+                "2": {
+                  "index": 1,
+                  "text": "missing"
+                }
+              }
+            }
+          ],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 0.85
+              }
+            ]
+          },
+          "unit": "percentunit"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 5,
+        "x": 4,
+        "y": 0
+      },
+      "id": 38,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "value_and_name",
+        "wideLayout": true
+      },
+      "pluginVersion": "12.4.3",
+      "targets": [
+        {
+          "datasource": {
+            "type": "victoriametrics-metrics-datasource",
+            "uid": "P4169E866C3094E38"
+          },
+          "editorMode": "code",
+          "exemplar": false,
+          "expr": "label_replace(\n  (\n    max by (instance, mountpoint) (\n      1 - node_filesystem_avail_bytes{fstype!~\"tmpfs|ramfs|vfat|squashfs|overlay|nsfs|fuse.*\", mountpoint!=\"/nix/store\"}\n        / node_filesystem_size_bytes\n    ) > 0.85\n  )\n  or (\n    (\n      label_set(vector(2), \"instance\", \"lotus-land-story:9100\", \"mountpoint\", \"/mnt/lotus-land-story\")\n      or label_set(vector(2), \"instance\", \"legacy-of-lunatic-kingdom:9100\", \"mountpoint\", \"/mnt/data\")\n      or label_set(vector(2), \"instance\", \"mountain-of-faith:9100\", \"mountpoint\", \"/mnt/mountain-of-faith\")\n    )\n    unless on (instance, mountpoint) node_filesystem_size_bytes\n  )\n  or on () label_set(vector(0), \"instance\", \"all\"),\n  \"instance\", \"$1\", \"instance\", \"(.*):\\\\d+\"\n)",
+          "format": "time_series",
+          "instant": true,
+          "legendFormat": "{{instance}} {{mountpoint}}",
+          "range": false,
+          "refId": "A"
+        }
+      ],
+      "title": "storage",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "victoriametrics-metrics-datasource",
+        "uid": "P4169E866C3094E38"
+      },
+      "description": "Red when one of our sites or exporters is down. Third-party probes and the Prusa, which is usually off, are left out.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "decimals": 0,
+          "mappings": [
+            {
+              "type": "value",
+              "options": {
+                "0": {
+                  "index": 0,
+                  "text": "OK",
+                  "color": "green"
+                },
+                "1": {
+                  "index": 1,
+                  "text": "down"
+                }
+              }
+            }
+          ],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 1
+              }
+            ]
+          },
+          "unit": "none"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 5,
+        "x": 9,
+        "y": 0
+      },
+      "id": 39,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "value_and_name",
+        "wideLayout": true
+      },
+      "pluginVersion": "12.4.3",
+      "targets": [
+        {
+          "datasource": {
+            "type": "victoriametrics-metrics-datasource",
+            "uid": "P4169E866C3094E38"
+          },
+          "editorMode": "code",
+          "exemplar": false,
+          "expr": "(\n  max by (name) (label_copy((1 - up{job=~\"blackbox-exporter-http(-internal)?\", instance!~\"https://(www\\\\.)?(google|facebook|youtube|linuxserver)\\\\..*\"}) > 0, \"instance\", \"name\"))\n  or max by (name) (label_copy((1 - probe_success{job=~\"blackbox-exporter-http(-internal)?\", instance!~\"https://(www\\\\.)?(google|facebook|youtube|linuxserver)\\\\..*\"}) > 0, \"instance\", \"name\"))\n  or max by (name) (label_copy((1 - up{job!~\"blackbox-exporter.*|prusalink|prusaudp\"}) > 0, \"job\", \"name\"))\n  or on () label_set(absent(up), \"name\", \"no scrape data\")\n)\nor on () label_set(vector(0), \"name\", \"all\")",
+          "format": "time_series",
+          "instant": true,
+          "legendFormat": "{{name}}",
+          "range": false,
+          "refId": "A"
+        }
+      ],
+      "title": "reachability",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "victoriametrics-metrics-datasource",
+        "uid": "P4169E866C3094E38"
+      },
+      "description": "Pending security updates on Debian, or a needed reboot. On NixOS, the deployed nixpkgs being more than 7 days behind its branch head stands in for missing security fixes.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "decimals": 0,
+          "mappings": [
+            {
+              "type": "value",
+              "options": {
+                "0": {
+                  "index": 0,
+                  "text": "OK",
+                  "color": "green"
+                },
+                "-1": {
+                  "index": 1,
+                  "text": "reboot needed"
+                },
+                "-2": {
+                  "index": 2,
+                  "text": "behind nixpkgs"
+                },
+                "-3": {
+                  "index": 3,
+                  "text": "no data"
+                }
+              }
+            }
+          ],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": null
+              },
+              {
+                "color": "green",
+                "value": 0
+              },
+              {
+                "color": "red",
+                "value": 1
+              }
+            ]
+          },
+          "unit": "none"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 5,
+        "x": 14,
+        "y": 0
+      },
+      "id": 40,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "value_and_name",
+        "wideLayout": true
+      },
+      "pluginVersion": "12.4.3",
+      "targets": [
+        {
+          "datasource": {
+            "type": "victoriametrics-metrics-datasource",
+            "uid": "P4169E866C3094E38"
+          },
+          "editorMode": "code",
+          "exemplar": false,
+          "expr": "label_replace(\n  (\n    max by (instance) (apt_upgrades_pending{origin=~\"(?i).*security.*\"}) > 0\n    or (max by (instance) (nixpkgs_branch_lag_seconds) > 7 * 86400) * 0 - 2\n    or (max by (instance) (node_reboot_required) > 0) * 0 - 1\n    or (max by (instance) (up{job=\"node-exporter\"}) unless on (instance) node_reboot_required) * 0 - 3\n  )\n  or on () label_set(vector(0), \"instance\", \"all\"),\n  \"instance\", \"$1\", \"instance\", \"(.*):\\\\d+\"\n)",
+          "format": "time_series",
+          "instant": true,
+          "legendFormat": "{{instance}}",
+          "range": false,
+          "refId": "A"
+        }
+      ],
+      "title": "security updates",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "victoriametrics-metrics-datasource",
+        "uid": "P4169E866C3094E38"
+      },
+      "description": "Pending non-security updates: apt packages on Debian, nixpkgs commits behind on NixOS. Red only when a host reports no update data.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "decimals": 0,
+          "mappings": [
+            {
+              "type": "value",
+              "options": {
+                "0": {
+                  "index": 0,
+                  "text": "none"
+                },
+                "-1": {
+                  "index": 1,
+                  "text": "no data",
+                  "color": "red"
+                }
+              }
+            }
+          ],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "transparent",
+                "value": null
+              }
+            ]
+          },
+          "unit": "none"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 5,
+        "x": 19,
+        "y": 0
+      },
+      "id": 41,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "value_and_name",
+        "wideLayout": true
+      },
+      "pluginVersion": "12.4.3",
+      "targets": [
+        {
+          "datasource": {
+            "type": "victoriametrics-metrics-datasource",
+            "uid": "P4169E866C3094E38"
+          },
+          "editorMode": "code",
+          "exemplar": false,
+          "expr": "label_replace(\n  (\n    sum by (instance) (apt_upgrades_pending{origin!~\"(?i).*security.*\"}) > 0\n    or max by (instance) (nixpkgs_branch_commits_behind) > 0\n    or (max by (instance) (up{job=\"node-exporter\"}) unless on (instance) (apt_upgrades_pending or nixpkgs_branch_commits_behind)) * 0 - 1\n  )\n  or on () label_set(vector(0), \"instance\", \"all\"),\n  \"instance\", \"$1\", \"instance\", \"(.*):\\\\d+\"\n)",
+          "format": "time_series",
+          "instant": true,
+          "legendFormat": "{{instance}}",
+          "range": false,
+          "refId": "A"
+        }
+      ],
+      "title": "other updates",
+      "type": "stat"
+    },
+    {
       "gridPos": {
         "h": 14,
         "w": 7,
         "x": 0,
-        "y": 0
+        "y": 5
       },
       "id": 1,
       "libraryPanel": {
@@ -73,7 +526,7 @@
         "h": 14,
         "w": 6,
         "x": 7,
-        "y": 0
+        "y": 5
       },
       "id": 5,
       "options": {
@@ -186,7 +639,7 @@
         "h": 14,
         "w": 11,
         "x": 13,
-        "y": 0
+        "y": 5
       },
       "id": 6,
       "options": {
@@ -268,7 +721,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 14
+        "y": 19
       },
       "id": 10,
       "panels": [],
@@ -311,7 +764,7 @@
         "h": 3,
         "w": 5,
         "x": 0,
-        "y": 15
+        "y": 20
       },
       "hideTimeOverride": false,
       "id": 12,
@@ -422,7 +875,7 @@
         "h": 6,
         "w": 7,
         "x": 5,
-        "y": 15
+        "y": 20
       },
       "id": 11,
       "interval": "24h",
@@ -494,7 +947,7 @@
         "h": 3,
         "w": 5,
         "x": 0,
-        "y": 18
+        "y": 23
       },
       "id": 13,
       "interval": "1d",
@@ -535,7 +988,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 29
+        "y": 34
       },
       "id": 8,
       "panels": [],
@@ -607,7 +1060,7 @@
         "h": 6,
         "w": 11,
         "x": 0,
-        "y": 30
+        "y": 35
       },
       "id": 7,
       "options": {
@@ -702,7 +1155,7 @@
         "h": 6,
         "w": 10,
         "x": 11,
-        "y": 30
+        "y": 35
       },
       "id": 14,
       "options": {
@@ -800,7 +1253,7 @@
         "h": 6,
         "w": 11,
         "x": 0,
-        "y": 36
+        "y": 41
       },
       "id": 9,
       "interval": "10m",
@@ -925,7 +1378,7 @@
         "h": 6,
         "w": 13,
         "x": 11,
-        "y": 36
+        "y": 41
       },
       "id": 21,
       "options": {
@@ -968,7 +1421,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 42
+        "y": 47
       },
       "id": 15,
       "panels": [],
@@ -1023,7 +1476,7 @@
         "h": 4,
         "w": 8,
         "x": 0,
-        "y": 43
+        "y": 48
       },
       "id": 16,
       "options": {
@@ -1109,7 +1562,7 @@
         "h": 4,
         "w": 8,
         "x": 8,
-        "y": 43
+        "y": 48
       },
       "id": 17,
       "options": {
@@ -1206,7 +1659,7 @@
         "h": 4,
         "w": 8,
         "x": 16,
-        "y": 43
+        "y": 48
       },
       "id": 18,
       "options": {
@@ -1251,7 +1704,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 47
+        "y": 52
       },
       "id": 22,
       "panels": [],
@@ -1324,7 +1777,7 @@
         "h": 6,
         "w": 12,
         "x": 0,
-        "y": 48
+        "y": 53
       },
       "id": 23,
       "options": {
@@ -1427,7 +1880,7 @@
         "h": 6,
         "w": 12,
         "x": 12,
-        "y": 48
+        "y": 53
       },
       "id": 24,
       "options": {
@@ -1479,7 +1932,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 54
+        "y": 59
       },
       "id": 25,
       "panels": [],
@@ -1554,7 +2007,7 @@
         "h": 8,
         "w": 12,
         "x": 0,
-        "y": 55
+        "y": 60
       },
       "id": 26,
       "options": {
@@ -1657,7 +2110,7 @@
         "h": 8,
         "w": 12,
         "x": 12,
-        "y": 55
+        "y": 60
       },
       "id": 27,
       "options": {
@@ -1759,7 +2212,7 @@
         "h": 8,
         "w": 12,
         "x": 0,
-        "y": 63
+        "y": 68
       },
       "id": 28,
       "options": {
@@ -1873,7 +2326,7 @@
         "h": 8,
         "w": 12,
         "x": 12,
-        "y": 63
+        "y": 68
       },
       "id": 29,
       "options": {
@@ -1925,7 +2378,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 79
+        "y": 84
       },
       "id": 30,
       "panels": [],
@@ -2000,7 +2453,7 @@
         "h": 8,
         "w": 8,
         "x": 0,
-        "y": 80
+        "y": 85
       },
       "id": 31,
       "interval": "1h",
@@ -2103,7 +2556,7 @@
         "h": 8,
         "w": 8,
         "x": 8,
-        "y": 80
+        "y": 85
       },
       "id": 32,
       "interval": "1h",
@@ -2236,7 +2689,7 @@
         "h": 8,
         "w": 8,
         "x": 16,
-        "y": 80
+        "y": 85
       },
       "id": 33,
       "options": {
@@ -2345,7 +2798,7 @@
         "h": 8,
         "w": 12,
         "x": 0,
-        "y": 71
+        "y": 76
       },
       "id": 34,
       "options": {
@@ -2454,7 +2907,7 @@
         "h": 8,
         "w": 12,
         "x": 12,
-        "y": 71
+        "y": 76
       },
       "id": 35,
       "options": {
@@ -2561,7 +3014,7 @@
         "h": 8,
         "w": 24,
         "x": 0,
-        "y": 21
+        "y": 26
       },
       "id": 36,
       "options": {

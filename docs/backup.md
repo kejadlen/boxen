@@ -71,7 +71,9 @@ pushes `backup_success`, `backup_duration_seconds`, and
 `backup_completed_timestamp` to VictoriaMetrics with
 `host="imperishable-night"`, but no per-phase durations, since the module
 runs its commands without breadcrumbs. The personal dashboard's backup
-panels show one series per host. The password and check UUID come from
+panels show one series per host. Its backups tile only checks the hosts
+listed in its query, so a host that starts backing up needs adding there.
+The password and check UUID come from
 `imperishable-night/secrets.sops.yml`.
 
 ## Repository
