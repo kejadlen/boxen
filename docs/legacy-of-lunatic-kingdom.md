@@ -1,7 +1,7 @@
 # legacy-of-lunatic-kingdom
 
 The NAS — "lolk" for short. A Beelink ME mini with three 2 TB NVMe drives
-in RAID5, running Debian trixie on the tailnet. It hosts the secondary
+in RAID5, running Debian trixie on the tailnet. It hosts the servers'
 restic repository and syncthing data, and is growing into running
 services: caddy today, immich and jellyfin planned.
 
@@ -81,8 +81,9 @@ journal-upload, which carries caddy's JSON access logs.
 
 ## Backup role
 
-lotus-land-story's daily backup mirrors every restic snapshot into the
-secondary repository on lolk, which is append-only — snapshots accumulate
-without pruning. The full flow lives in [backup.md][backup].
+lotus-land-story and imperishable-night back up daily into one shared
+restic repository on lolk, over SFTP as the `restic` user, and each prunes
+its own snapshots. It's the only long-term copy of their backups. The full
+flow lives in [backup.md][backup].
 
 [backup]: backup.md
