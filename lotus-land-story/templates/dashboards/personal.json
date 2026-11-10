@@ -805,7 +805,7 @@
               }
             ]
           },
-          "unit": "Bps"
+          "unit": "decbytes"
         },
         "overrides": []
       },
@@ -816,6 +816,7 @@
         "y": 5
       },
       "id": 47,
+      "interval": "1d",
       "options": {
         "colorMode": "none",
         "graphMode": "area",
@@ -824,7 +825,7 @@
         "percentChangeColorMode": "standard",
         "reduceOptions": {
           "calcs": [
-            "lastNotNull"
+            "sum"
           ],
           "fields": "",
           "values": false
@@ -842,7 +843,7 @@
           },
           "editorMode": "code",
           "exemplar": false,
-          "expr": "label_replace(\n  sum by (instance) (rate(node_network_receive_bytes_total{device!~\"lo|veth.*|docker.*|br-.*|podman.*|tailscale.*|cni.*|wg.*\"}[$__rate_interval])),\n  \"instance\", \"$1\", \"instance\", \"(.*):\\\\d+\"\n)",
+          "expr": "label_replace(\n  sum by (instance) (increase(node_network_receive_bytes_total{device!~\"lo|veth.*|docker.*|br-.*|podman.*|tailscale.*|cni.*|wg.*\"}[1d]))\n    and on (instance) (up{job=\"node-exporter\"} @ end()),\n  \"instance\", \"$1\", \"instance\", \"(.*):\\\\d+\"\n)",
           "format": "time_series",
           "instant": false,
           "legendFormat": "{{instance}}",
@@ -850,10 +851,10 @@
           "refId": "A"
         }
       ],
-      "timeFrom": "24h",
+      "timeFrom": "30d",
       "title": "network in",
       "type": "stat",
-      "description": "Physical interfaces only, so tunnel and container traffic isn't counted twice.",
+      "description": "Bytes received over the last 30 days; the sparkline is per UTC day. Physical interfaces only, so tunnel and container traffic isn't counted twice.",
       "hideTimeOverride": true
     },
     {
@@ -878,7 +879,7 @@
               }
             ]
           },
-          "unit": "Bps"
+          "unit": "decbytes"
         },
         "overrides": []
       },
@@ -889,6 +890,7 @@
         "y": 5
       },
       "id": 48,
+      "interval": "1d",
       "options": {
         "colorMode": "none",
         "graphMode": "area",
@@ -897,7 +899,7 @@
         "percentChangeColorMode": "standard",
         "reduceOptions": {
           "calcs": [
-            "lastNotNull"
+            "sum"
           ],
           "fields": "",
           "values": false
@@ -915,7 +917,7 @@
           },
           "editorMode": "code",
           "exemplar": false,
-          "expr": "label_replace(\n  sum by (instance) (rate(node_network_transmit_bytes_total{device!~\"lo|veth.*|docker.*|br-.*|podman.*|tailscale.*|cni.*|wg.*\"}[$__rate_interval])),\n  \"instance\", \"$1\", \"instance\", \"(.*):\\\\d+\"\n)",
+          "expr": "label_replace(\n  sum by (instance) (increase(node_network_transmit_bytes_total{device!~\"lo|veth.*|docker.*|br-.*|podman.*|tailscale.*|cni.*|wg.*\"}[1d]))\n    and on (instance) (up{job=\"node-exporter\"} @ end()),\n  \"instance\", \"$1\", \"instance\", \"(.*):\\\\d+\"\n)",
           "format": "time_series",
           "instant": false,
           "legendFormat": "{{instance}}",
@@ -923,10 +925,10 @@
           "refId": "A"
         }
       ],
-      "timeFrom": "24h",
+      "timeFrom": "30d",
       "title": "network out",
       "type": "stat",
-      "description": "Physical interfaces only, so tunnel and container traffic isn't counted twice.",
+      "description": "Bytes sent over the last 30 days; the sparkline is per UTC day. Physical interfaces only, so tunnel and container traffic isn't counted twice.",
       "hideTimeOverride": true
     },
     {
