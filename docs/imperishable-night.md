@@ -151,6 +151,16 @@ out of the profile. To pick up a dotfiles change, push it, run
 neovim comes from neovim-nightly-overlay, whose builds aren't in a
 binary cache, so a deploy that bumps it builds neovim on the host.
 
+When the personal dashboard shows the host behind nixpkgs, run
+`nix flake update nixpkgs --flake ./imperishable-night`, commit the lock
+file, and deploy. Inputs that follow nixpkgs build against the new
+revision, but `alpha`'s packages don't change, since dotfiles locks its
+own. The update tiles refresh within the hour, when the
+`update-metrics` timer next runs. If the bump changes the kernel or
+initrd, the security updates tile asks for a reboot; deploying with
+`just imperishable-night boot` and then rebooting skips the extra
+switch.
+
 The `dotfiles-clone` service clones the dotfiles from GitHub into
 `~alpha/.dotfiles` if they aren't already there. It never pulls, so
 updating the checkout is up to `alpha`. To start over, remove the
