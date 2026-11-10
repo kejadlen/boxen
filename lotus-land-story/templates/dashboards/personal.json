@@ -594,7 +594,7 @@
       },
       "gridPos": {
         "h": 9,
-        "w": 4,
+        "w": 3,
         "x": 0,
         "y": 5
       },
@@ -666,8 +666,8 @@
       },
       "gridPos": {
         "h": 9,
-        "w": 4,
-        "x": 4,
+        "w": 3,
+        "x": 3,
         "y": 5
       },
       "id": 45,
@@ -739,8 +739,8 @@
       },
       "gridPos": {
         "h": 9,
-        "w": 4,
-        "x": 8,
+        "w": 3,
+        "x": 6,
         "y": 5
       },
       "id": 44,
@@ -812,7 +812,7 @@
       "gridPos": {
         "h": 9,
         "w": 4,
-        "x": 12,
+        "x": 9,
         "y": 5
       },
       "id": 47,
@@ -885,7 +885,7 @@
       "gridPos": {
         "h": 9,
         "w": 4,
-        "x": 16,
+        "x": 13,
         "y": 5
       },
       "id": 48,
@@ -964,7 +964,7 @@
       "gridPos": {
         "h": 9,
         "w": 4,
-        "x": 20,
+        "x": 17,
         "y": 5
       },
       "id": 49,
@@ -1017,6 +1017,93 @@
       "timeFrom": "now/M",
       "title": "linode transfer",
       "type": "gauge",
+      "hideTimeOverride": true
+    },
+    {
+      "datasource": {
+        "type": "victoriametrics-metrics-datasource",
+        "uid": "P4169E866C3094E38"
+      },
+      "description": "Traffic through the UDR's WAN ports this month, from unpoller. The home data cap is unknown, so there's nothing to measure against.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "fixedColor": "blue",
+            "mode": "fixed"
+          },
+          "decimals": 1,
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "blue",
+                "value": null
+              }
+            ]
+          },
+          "unit": "decbytes"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 3,
+        "x": 21,
+        "y": 5
+      },
+      "id": 50,
+      "options": {
+        "colorMode": "none",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "orientation": "horizontal",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "value_and_name",
+        "wideLayout": true
+      },
+      "pluginVersion": "12.4.3",
+      "targets": [
+        {
+          "datasource": {
+            "type": "victoriametrics-metrics-datasource",
+            "uid": "P4169E866C3094E38"
+          },
+          "editorMode": "code",
+          "exemplar": false,
+          "expr": "sum(increase(unpoller_device_wan_receive_bytes_total[$__range]))",
+          "format": "time_series",
+          "instant": true,
+          "legendFormat": "in",
+          "range": false,
+          "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "victoriametrics-metrics-datasource",
+            "uid": "P4169E866C3094E38"
+          },
+          "editorMode": "code",
+          "exemplar": false,
+          "expr": "sum(increase(unpoller_device_wan_transmit_bytes_total[$__range]))",
+          "format": "time_series",
+          "instant": true,
+          "legendFormat": "out",
+          "range": false,
+          "refId": "B"
+        }
+      ],
+      "timeFrom": "now/M",
+      "title": "home transfer",
+      "type": "stat",
       "hideTimeOverride": true
     },
     {

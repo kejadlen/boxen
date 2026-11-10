@@ -199,6 +199,12 @@ scrape_configs:
       - targets:
         - legacy-of-lunatic-kingdom:8384
 
+  # Each scrape polls the UDR, so this stays slow.
+  - job_name: unpoller
+    scrape_interval: 60s
+    static_configs:
+      - targets: ['mountain-of-faith:9130']
+
   - job_name: victoria-logs
     static_configs:
       - targets: ['victoria-logs:9428']

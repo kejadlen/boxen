@@ -367,6 +367,31 @@
         state: started
         restart: true
 
+# https://unpoller.com/
+- name: Run unpoller
+  tags: unpoller
+  hosts: mountain-of-faith
+  become: true
+  vars:
+    version: v5.9.4
+  tasks:
+
+    - name: Run the unpoller container
+      community.docker.docker_container:
+        name: unpoller
+        image: ghcr.io/unpoller/unpoller:{{ version }}
+        ports:
+          - "9130:9130/tcp"
+        env:
+          UP_INFLUXDB_DISABLE: "true"
+          UP_UNIFI_DEFAULT_URL: https://192.168.10.1
+          # A read-only local account on the UDR.
+          UP_UNIFI_DEFAULT_USER: unpoller
+          UP_UNIFI_DEFAULT_PASS: "{{ unpoller.password }}"
+        restart_policy: unless-stopped
+        state: started
+      no_log: true
+
 - import_playbook: ups.yml
 
 # vim: ft=yaml.ansible
