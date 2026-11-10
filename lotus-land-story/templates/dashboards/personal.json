@@ -579,7 +579,7 @@
           },
           "editorMode": "code",
           "exemplar": false,
-          "expr": "label_replace(\n  (\n    sum by (instance) (apt_upgrades_pending{origin!~\"(?i).*security.*\"}) > 0\n    or max by (instance) (nixpkgs_branch_commits_behind) > 0\n    or (max by (instance) (up{job=\"node-exporter\"}) unless on (instance) (apt_upgrades_pending or nixpkgs_branch_commits_behind)) * 0 - 1\n  )\n  or on () label_set(vector(0), \"instance\", \"all\"),\n  \"instance\", \"$1\", \"instance\", \"(.*):\\\\d+\"\n)",
+          "expr": "label_replace(\n  (\n    sum by (instance) (apt_upgrades_pending{origin!~\"(?i).*security.*\"}) > 0\n    or max by (instance) (nixpkgs_branch_commits_behind) > 0\n    or (max by (instance) (up{job=\"node-exporter\"}) unless on (instance) (apt_autoremove_pending or nixpkgs_branch_commits_behind)) * 0 - 1\n  )\n  or on () label_set(vector(0), \"instance\", \"all\"),\n  \"instance\", \"$1\", \"instance\", \"(.*):\\\\d+\"\n)",
           "format": "time_series",
           "instant": true,
           "legendFormat": "{{instance}}",
