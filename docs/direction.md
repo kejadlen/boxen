@@ -47,7 +47,11 @@ Most services that aren't about the home stay up when home is down, so
 they run on a Linode. That includes monitoring, which needs to keep
 running when the hosts it watches go down. Home runs what's about the
 home, such as Home Assistant, pihole, BirdNET-Pi, and syncthing, plus
-the storage-heavy media that's planned for lolk. When a home service
+the storage-heavy media that's planned for lolk. At home,
+mountain-of-faith is the network box. It runs pihole, the blackbox
+probes, NUT for the UPS, and exporters that poll other devices on the
+LAN. lolk is the data box. It holds storage, backups, syncthing, and
+media. When a home service
 needs a public site, the Linode's Caddy serves it and proxies to home
 over the tailnet, as `birbs.chislan.family` does, so the home network
 opens no ports.
@@ -79,8 +83,8 @@ The following table lists each host and where it's headed:
 |---|---|---|
 | lotus-land-story | Linode, Debian bullseye, Docker, Ansible | Retires once its services [move to imperishable-night](imperishable-night/2026-10-16-migrating-from-lotus-land-story.md) |
 | imperishable-night | Linode, NixOS | Takes over lotus-land-story's services, including observability |
-| legacy-of-lunatic-kingdom | Home NAS, Debian trixie, Quadlet, Ansible | [Reinstalls with NixOS](legacy-of-lunatic-kingdom/2026-11-01-migrating-to-nixos.md), then takes over UPS monitoring and runs immich and jellyfin |
-| mountain-of-faith | minio and UPS monitoring, Ansible | Hands UPS monitoring to lolk and stays on Ansible |
+| legacy-of-lunatic-kingdom | Home NAS, Debian trixie, Quadlet, Ansible | [Reinstalls with NixOS](legacy-of-lunatic-kingdom/2026-11-01-migrating-to-nixos.md), then runs immich and jellyfin |
+| mountain-of-faith | Raspberry Pi running pihole, probes, exporters, minio, and NUT, Docker, Ansible | Drops minio and stays on Ansible |
 | hopeless-masquerade | Raspberry Pi running BirdNET-Pi, Ansible | Stays on Ansible |
 | double-dealing-character | Brume 2 exit node, configured by hand | Stays hand-configured |
 
@@ -92,8 +96,6 @@ The following table lists each host and where it's headed:
    with imperishable-night.
 4. [Copy the restic repository offsite](legacy-of-lunatic-kingdom/2026-11-01-shrinking-and-offsiting-backups.md),
    along with lolk's own data, to Backblaze B2.
-5. Move UPS monitoring, NUT and the UPS's USB cable, from
-   mountain-of-faith to lolk.
-6. Add immich and jellyfin to lolk, once their data has an offsite
+5. Add immich and jellyfin to lolk, once their data has an offsite
    backup.
-7. Add alerting.
+6. Add alerting.
