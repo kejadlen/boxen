@@ -60,7 +60,7 @@ can scrape caddy's metrics endpoint.
 | restic repository | sftp-only `restic` user | [main.yml][main] |
 | node-exporter | Debian package, with apt and systemd collectors | [main.yml][main] |
 | journal-upload | ships journald to VictoriaLogs on lotus-land-story | [journal-upload.yml][journal] |
-| unattended-upgrades | Debian package, weekly apply with security-only origins | [unattended-upgrades.yml][upgrades] |
+| unattended-upgrades | Debian package, security updates nightly, and Debian, Syncthing, and Tailscale updates weekly, rebooting at 05:00 when an upgrade needs it | [unattended-upgrades.yml][upgrades] |
 | tailscale | Debian package | [tailscale.yml][tailscale] |
 
 [caddy]: ../legacy-of-lunatic-kingdom/caddy.yml

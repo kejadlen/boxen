@@ -19,8 +19,7 @@
         update_cache: true
 
     # Refresh package lists and pre-download upgrades daily (via apt-daily.timer)
-    # so the weekly apply below is fast. Origins stay at the package default
-    # (security only), the safe choice for an unattended box holding data on /mnt.
+    # so the applies below are fast.
     - name: Enable periodic unattended upgrades
       ansible.builtin.copy:
         content: |
@@ -31,26 +30,90 @@
         dest: /etc/apt/apt.conf.d/20auto-upgrades
         mode: "0644"
 
+    # Only after an upgrade leaves /var/run/reboot-required. 05:00 clears the
+    # weekly run, which can start as late as 04:30.
+    - name: Reboot after upgrades that need it
+      ansible.builtin.copy:
+        content: |
+          Unattended-Upgrade::Automatic-Reboot "true";
+          Unattended-Upgrade::Automatic-Reboot-Time "05:00";
+        dest: /etc/apt/apt.conf.d/52unattended-upgrades-reboot
+        mode: "0644"
+
     - name: Create apt-daily-upgrade.timer override directory
       ansible.builtin.file:
         path: /etc/systemd/system/apt-daily-upgrade.timer.d
         state: directory
         mode: "0755"
 
-    # Apply upgrades weekly instead of daily. The empty OnCalendar clears the
-    # packaged daily schedule before setting the weekly one (OnCalendar is
-    # additive otherwise). Persistent catches up a run missed while powered off.
-    - name: Apply unattended upgrades weekly
+    # The packaged run applies security updates only, nightly at 03:00 rather
+    # than 06:00. The empty OnCalendar clears the packaged schedule first
+    # (OnCalendar is additive otherwise). Persistent catches up a run missed
+    # while powered off.
+    - name: Apply security upgrades nightly
       ansible.builtin.copy:
         content: |
           [Timer]
           OnCalendar=
-          OnCalendar=Sun *-*-* 03:00
+          OnCalendar=*-*-* 03:00
           RandomizedDelaySec=30m
           Persistent=true
         dest: /etc/systemd/system/apt-daily-upgrade.timer.d/override.conf
         mode: "0644"
       notify: Reload apt-daily-upgrade timer
+
+    # APT_CONFIG adds one file ahead of apt.conf.d rather than replacing it, so
+    # these patterns extend the packaged security-only list.
+    - name: Configure the general origins
+      ansible.builtin.copy:
+        content: |
+          Unattended-Upgrade::Origins-Pattern {
+            "origin=Debian,codename=${distro_codename},label=Debian";
+            "origin=Debian,codename=${distro_codename}-updates,label=Debian";
+            "origin=Syncthing";
+            "origin=Tailscale";
+          };
+        dest: /etc/apt/unattended-upgrades-general.conf
+        mode: "0644"
+
+    # An hour after the nightly run, so the two don't contend for the dpkg lock.
+    - name: Apply general upgrades weekly
+      ansible.builtin.copy:
+        content: "{{ item.content }}"
+        dest: /etc/systemd/system/{{ item.name }}
+        mode: "0644"
+      loop:
+        - name: unattended-upgrades-general.service
+          content: |
+            [Unit]
+            Description=Unattended upgrades from the general origins
+            Wants=network-online.target
+            After=network-online.target
+
+            [Service]
+            Type=oneshot
+            Environment=APT_CONFIG=/etc/apt/unattended-upgrades-general.conf
+            ExecStart=/usr/bin/unattended-upgrade
+            KillMode=process
+            TimeoutStopSec=900
+        - name: unattended-upgrades-general.timer
+          content: |
+            [Timer]
+            OnCalendar=Sun *-*-* 04:00
+            RandomizedDelaySec=30m
+            Persistent=true
+
+            [Install]
+            WantedBy=timers.target
+      loop_control:
+        label: "{{ item.name }}"
+
+    - name: Enable the general upgrades timer
+      ansible.builtin.systemd:
+        name: unattended-upgrades-general.timer
+        enabled: true
+        state: started
+        daemon_reload: true
 
   handlers:
 
