@@ -17,7 +17,11 @@ For first-time setup, see the [bootstrap README][readme].
 The layout follows Linode's
 [NixOS guide](https://www.akamai.com/cloud/guides/install-nixos-on-linode/).
 `/dev/sda` is ext4 with no partition table, and `/dev/sdb` is the 512 MB
-swap disk that Linode creates with the instance. The configuration
+swap disk that Linode creates with the instance. Those are the
+configuration profile's slots. The kernel's own `sda` and `sdb` can come
+up in the other order, so NixOS mounts both by their
+`/dev/disk/by-id/scsi-0QEMU_QEMU_HARDDISK_drive-scsi-disk-{0,1}` paths,
+which follow the slots. The configuration
 profile's "GRUB 2" kernel option reads GRUB's configuration off
 `/dev/sda`, so NixOS installs GRUB with `device = "nodev"` and never
 writes a boot sector. Linode's Filesystem/Boot Helpers are off because
