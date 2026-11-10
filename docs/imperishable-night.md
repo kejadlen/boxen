@@ -7,6 +7,7 @@ here from lotus-land-story one at a time; the
 tracks the order. Today it runs the base system, Tailscale,
 node-exporter, cadvisor, restic, Caddy, Vector, homebox, ketchup,
 paperless-ngx with redis, and irc (soju, with gamja served by Caddy).
+quire is defined but not started until its data moves.
 
 For first-time setup, see the [bootstrap README][readme].
 
@@ -129,6 +130,9 @@ restic. The file holds the following values:
 | `ketchup.session_secret` | `ketchup.session_secret` in `host_vars/lotus-land-story.sops.yml` |
 | `ketchup.otel_exporter_otlp_headers` | `ketchup.otel_exporter_otlp_headers` in `host_vars/lotus-land-story.sops.yml` |
 | `paperless_ngx.secret` | `paperless_ngx.secret` in `host_vars/lotus-land-story.sops.yml` |
+| `quire.github_mirror` | `quire.github_mirror` in `host_vars/lotus-land-story.sops.yml` |
+| `quire.github_auth_header` | `quire.github_auth_header` in `host_vars/lotus-land-story.sops.yml` |
+| `quire.sentry_dsn` | `quire.sentry_dsn` in `host_vars/lotus-land-story.sops.yml` |
 | `restic.password` | `restic.password` in `host_vars/lotus-land-story.sops.yml` |
 | `restic.healthcheck` | The UUID of imperishable-night's healthchecks.io backup check |
 

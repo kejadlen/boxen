@@ -99,6 +99,7 @@ in
     "d /var/lib/paperless-ngx/export 0700 1000 1000 -"
     "d /var/lib/paperless-ngx/media 0700 1000 1000 -"
     "d /var/lib/soju 0755 root root -"
+    "d /var/lib/quire 0755 quire quire -"
   ];
 
   virtualisation.oci-containers.containers.caddy = {
@@ -258,6 +259,79 @@ in
     networks = [ podmanNetwork ];
   };
   systemd.services.podman-soju = {
+    requires = [ "podman-network-${podmanNetwork}.service" ];
+    after = [ "podman-network-${podmanNetwork}.service" ];
+  };
+
+  # The container runs as quire's uid so the repositories' ownership matches
+  # inside and out, and sshd dispatches the quire user's git commands into it.
+  users.groups.quire.gid = 1001;
+  users.users.quire = {
+    isNormalUser = true;
+    uid = 1001;
+    group = "quire";
+    # Reaches the root podman socket for the ForceCommand's podman exec.
+    extraGroups = [ "podman" ];
+    openssh.authorizedKeys.keys = config.users.users.alpha.openssh.authorizedKeys.keys;
+  };
+
+  services.openssh = {
+    settings.AllowUsers = [
+      "quire"
+      "alpha@100.64.0.0/10"
+      "alpha@fd7a:115c:a1e0::/48"
+    ];
+    # NixOS writes extraConfig through an unquoted heredoc, which would expand
+    # $SSH_ORIGINAL_COMMAND at build time, so a script reads it instead.
+    extraConfig = ''
+      Match User quire
+          ForceCommand ${pkgs.writeShellScript "quire-ssh" ''
+            exec ${config.virtualisation.podman.package}/bin/podman --remote --url unix:///run/podman/podman.sock \
+              exec --interactive quire quire exec "$SSH_ORIGINAL_COMMAND"
+          ''}
+          AllowTcpForwarding no
+          AllowAgentForwarding no
+          X11Forwarding no
+          PermitTTY no
+    '';
+  };
+
+  sops.secrets."quire/github_mirror" = {
+    owner = "quire";
+    restartUnits = [ "podman-quire.service" ];
+  };
+  sops.secrets."quire/github_auth_header" = {
+    owner = "quire";
+    restartUnits = [ "podman-quire.service" ];
+  };
+  sops.secrets."quire/sentry_dsn" = { };
+  sops.templates."quire-config.fnl" = {
+    owner = "quire";
+    content = ''
+      {:host "quire.kejadlen.dev"
+       :secrets {:github_auth_header {:file "/var/quire/secrets/github_auth_header"}
+                 :github-mirror {:file "/var/quire/secrets/github_mirror"}}
+       :sentry {:dsn "${config.sops.placeholder."quire/sentry_dsn"}"}}
+    '';
+    restartUnits = [ "podman-quire.service" ];
+  };
+
+  virtualisation.oci-containers.containers.quire = {
+    image = "ghcr.io/kejadlen/quire:latest";
+    pull = "always";
+    # Stays stopped until its data is copied from lotus-land-story.
+    autoStart = false;
+    user = "${toString config.users.users.quire.uid}:${toString config.users.groups.quire.gid}";
+    environment.QUIRE_LOG = "INFO";
+    volumes = [
+      "/var/lib/quire:/var/quire"
+      "${config.sops.templates."quire-config.fnl".path}:/var/quire/config.fnl:ro"
+      "${config.sops.secrets."quire/github_mirror".path}:/var/quire/secrets/github_mirror:ro"
+      "${config.sops.secrets."quire/github_auth_header".path}:/var/quire/secrets/github_auth_header:ro"
+    ];
+    networks = [ podmanNetwork ];
+  };
+  systemd.services.podman-quire = {
     requires = [ "podman-network-${podmanNetwork}.service" ];
     after = [ "podman-network-${podmanNetwork}.service" ];
   };
