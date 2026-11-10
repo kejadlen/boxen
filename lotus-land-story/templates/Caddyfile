@@ -229,7 +229,10 @@ hey.kejadlen.dev {
 }
 
 quire.kejadlen.dev {
-	reverse_proxy quire:3000
+	# quire trusts Remote-User as proof of login.
+	reverse_proxy quire:3000 {
+		header_up -Remote-User
+	}
 }
 
 # vim: ts=4
