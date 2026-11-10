@@ -34,10 +34,10 @@ resource "dnsimple_zone_record" "kejadlen_dev_subdomains" {
   for_each = {
     auth    = local.lotus_land_story.ip_address
     gists   = local.lotus_land_story.ip_address
-    git     = local.lotus_land_story.ip_address
+    git     = one(linode_instance.imperishable_night.ipv4)
     grafana = local.lotus_land_story.ip_address
     hey     = local.lotus_land_story.ip_address
-    quire   = local.lotus_land_story.ip_address
+    quire   = one(linode_instance.imperishable_night.ipv4)
   }
 
   zone_name = dnsimple_zone.zones["kejadlen_dev"].name
