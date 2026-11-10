@@ -75,3 +75,42 @@ ketchup {
 		header_up Tailscale-User-Name {http.auth.user.tailscale_user}
 	}
 }
+
+quire {
+	import ts quire
+	tailscale_auth
+	reverse_proxy quire:3000 {
+		header_up Remote-User {http.auth.user.tailscale_login}
+	}
+}
+
+### Public
+
+quire.kejadlen.dev {
+	# quire trusts Remote-User as proof of login.
+	reverse_proxy quire:3000 {
+		header_up -Remote-User
+	}
+}
+
+git.kejadlen.dev {
+	log
+
+	# Maps gitea's URLs onto quire's. quire only shows the default branch,
+	# so links to other branches, tags, and commits land on its tip.
+	route {
+		@file path_regexp file ^/alpha/([^/]+)/(src|raw)/(branch|tag|commit)/[^/]+/(.+)$
+		redir @file https://quire.kejadlen.dev/{re.file.1}/tree/{re.file.4} permanent
+
+		@commit path_regexp commit ^/alpha/([^/]+)/commit/([0-9a-f]+)
+		redir @commit https://quire.kejadlen.dev/{re.commit.1}/commits/{re.commit.2} permanent
+
+		@log path_regexp log ^/alpha/([^/]+)/commits(/|$)
+		redir @log https://quire.kejadlen.dev/{re.log.1}/log permanent
+
+		@repo path_regexp repo ^/alpha/([^/]+?)(\.git)?(/|$)
+		redir @repo https://quire.kejadlen.dev/{re.repo.1} permanent
+
+		redir * https://quire.kejadlen.dev permanent
+	}
+}

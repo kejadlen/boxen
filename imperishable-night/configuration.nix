@@ -1,5 +1,6 @@
 {
   config,
+  lib,
   modulesPath,
   pkgs,
   ...
@@ -276,6 +277,8 @@ in
   };
 
   services.openssh = {
+    # Public so the work laptop, which isn't on the tailnet, can push to quire.
+    openFirewall = lib.mkForce true;
     settings.AllowUsers = [
       "quire"
       "alpha@100.64.0.0/10"
@@ -319,8 +322,6 @@ in
   virtualisation.oci-containers.containers.quire = {
     image = "ghcr.io/kejadlen/quire:latest";
     pull = "always";
-    # Stays stopped until its data is copied from lotus-land-story.
-    autoStart = false;
     user = "${toString config.users.users.quire.uid}:${toString config.users.groups.quire.gid}";
     environment.QUIRE_LOG = "INFO";
     volumes = [

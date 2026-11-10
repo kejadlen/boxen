@@ -6,8 +6,8 @@ here from lotus-land-story one at a time; the
 [migration plan](imperishable-night/2026-10-16-migrating-from-lotus-land-story.md)
 tracks the order. Today it runs the base system, Tailscale,
 node-exporter, cadvisor, restic, Caddy, Vector, homebox, ketchup,
-paperless-ngx with redis, and irc (soju, with gamja served by Caddy).
-quire is defined but not started until its data moves.
+paperless-ngx with redis, irc (soju, with gamja served by Caddy), and
+quire.
 
 For first-time setup, see the [bootstrap README][readme].
 
@@ -46,8 +46,10 @@ key only when the node needs a login, so the key never enters the
 repository or the Nix store.
 
 The firewall trusts `tailscale0` completely. Publicly, it opens only
-TCP 80 and 443 and UDP 443 for web traffic, and UDP 41641, so peers reach
-the host directly instead of through a relay. SSH is tailnet-only. If Tailscale
+TCP 80 and 443 and UDP 443 for web traffic, TCP 22 for quire, and UDP
+41641, so peers reach the host directly instead of through a relay.
+sshd's `AllowUsers` admits only `quire` from the internet, and `alpha`
+only from tailnet addresses. If Tailscale
 breaks, the way back in is Linode's rescue mode, since `alpha` has no
 password for Lish.
 
