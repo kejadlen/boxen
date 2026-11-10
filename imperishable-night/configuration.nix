@@ -18,6 +18,7 @@ let
     ketchup = "20260525-e75f249";
     paperless-ngx = "3.4.2";
     redis = "8.10.3";
+    soju = "0.11.1"; # Bump the docker-soju image first.
   };
 in
 {
@@ -90,6 +91,7 @@ in
     "d /var/lib/paperless-ngx/data 0700 1000 1000 -"
     "d /var/lib/paperless-ngx/export 0700 1000 1000 -"
     "d /var/lib/paperless-ngx/media 0700 1000 1000 -"
+    "d /var/lib/soju 0755 root root -"
   ];
 
   virtualisation.oci-containers.containers.caddy = {
@@ -228,6 +230,28 @@ in
     networks = [ podmanNetwork ];
   };
   systemd.services.podman-paperless-ngx = {
+    requires = [ "podman-network-${podmanNetwork}.service" ];
+    after = [ "podman-network-${podmanNetwork}.service" ];
+  };
+
+  # gamja reaches soju through Caddy's /socket, so neither listener is published.
+  virtualisation.oci-containers.containers.soju = {
+    image = "ghcr.io/kejadlen/soju:${versions.soju}";
+    # Stays stopped until its data is copied from lotus-land-story.
+    autoStart = false;
+    volumes = [
+      "/var/lib/soju:/soju"
+      "${pkgs.writeText "soju.conf" ''
+        listen irc+insecure://0.0.0.0:6697
+        listen ws+insecure://0.0.0.0:3030
+        listen http+prometheus://localhost:9090
+
+        db sqlite3 /soju/soju.db
+      ''}:/soju/soju.conf:ro"
+    ];
+    networks = [ podmanNetwork ];
+  };
+  systemd.services.podman-soju = {
     requires = [ "podman-network-${podmanNetwork}.service" ];
     after = [ "podman-network-${podmanNetwork}.service" ];
   };
