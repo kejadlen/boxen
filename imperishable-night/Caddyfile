@@ -58,6 +58,15 @@ docs {
 	}
 }
 
+irc {
+	import ts irc
+	tailscale_auth
+
+	root * /srv/gamja
+	file_server
+	reverse_proxy /socket soju:3030
+}
+
 ketchup {
 	import ts ketchup
 	tailscale_auth

@@ -14,11 +14,18 @@ let
 
   versions = {
     caddy = "2.11.9-2026.11.06";
+    gamja = "caf6e99";
     homebox = "0.27.1";
     ketchup = "20260525-e75f249";
     paperless-ngx = "3.4.2";
     redis = "8.10.3";
     soju = "0.11.1"; # Bump the docker-soju image first.
+  };
+
+  # Bumping the version needs a new hash.
+  gamja = pkgs.fetchzip {
+    url = "https://github.com/kejadlen/gamja-build/releases/download/gamja-${versions.gamja}/gamja.tar.gz";
+    hash = "sha256-Pv12p9VDkWMAz/qfTEjIXQrNglMVXC3jBn3wLpYXSbQ=";
   };
 in
 {
@@ -110,6 +117,7 @@ in
       "${config.sops.secrets."caddy/ca_root_key".path}:/etc/caddy/pki/root.key:ro"
       "/var/lib/caddy/data:/data"
       "/var/lib/caddy/config:/config"
+      "${gamja}:/srv/gamja:ro"
     ];
     networks = [ podmanNetwork ];
     # Unbounded, caddy takes the host down with it. Equal memory-swap denies swap.
@@ -237,8 +245,6 @@ in
   # gamja reaches soju through Caddy's /socket, so neither listener is published.
   virtualisation.oci-containers.containers.soju = {
     image = "ghcr.io/kejadlen/soju:${versions.soju}";
-    # Stays stopped until its data is copied from lotus-land-story.
-    autoStart = false;
     volumes = [
       "/var/lib/soju:/soju"
       "${pkgs.writeText "soju.conf" ''
