@@ -13,6 +13,8 @@ let
   ];
 in
 {
+  imports = [ ./update-metrics.nix ];
+
   networking.firewall.trustedInterfaces = [ "tailscale0" ];
 
   # restartUnits via systemctl try-restart, not the restart list NixOS 26.11 removes.

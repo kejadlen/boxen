@@ -54,6 +54,16 @@ discovers every running Linode instance and scrapes `<label>:9100` over
 the tailnet, so adding the host needed no scrape config change. The
 firewall keeps the port closed publicly.
 
+An hourly `update-metrics` timer, from `modules/nixos/update-metrics.nix`
+and shared with every NixOS host, feeds node-exporter's textfile collector
+for the personal dashboard's update tiles. It writes `node_reboot_required`
+when the booted kernel, modules, or initrd differ from the current
+system's, and asks GitHub how far the deployed nixpkgs revision trails the
+`nixos-26.05` head, as `nixpkgs_branch_lag_seconds` and
+`nixpkgs_branch_commits_behind`. When GitHub is unreachable, the branch
+metrics keep their last values, and `node_textfile_mtime_seconds` shows
+their age.
+
 cadvisor runs from NixOS's `services.cadvisor` module rather than as a
 container, so it needs no host mounts, and its version comes from nixpkgs
 instead of lotus-land-story's pin. It listens on `:8080`, also closed
