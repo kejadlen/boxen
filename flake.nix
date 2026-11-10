@@ -28,6 +28,7 @@
           default = pkgs.mkShell {
             packages = with pkgs; [
               age
+              ansible-lint
               just
               nixos-anywhere
               nixos-rebuild
