@@ -114,15 +114,6 @@ quire {
 	}
 }
 
-irc {
-	import tsauth irc
-
-	file_server
-	root * /data/gamja/dist
-
-	reverse_proxy /socket soju:3030
-}
-
 rss {
 	import tsauth rss
 	reverse_proxy miniflux:8080 {
