@@ -135,6 +135,62 @@ locals {
   lotus_land_story = data.linode_instances.lotus_land_story.instances.0
 }
 
+# Docker-published ports skip ufw, so the host's own firewall can't close them.
+resource "linode_firewall" "lotus_land_story" {
+  label = "lotus-land-story"
+
+  inbound {
+    label    = "web"
+    action   = "ACCEPT"
+    protocol = "TCP"
+    ports    = "80,443"
+    ipv4     = ["0.0.0.0/0"]
+    ipv6     = ["::/0"]
+  }
+
+  inbound {
+    label    = "http3"
+    action   = "ACCEPT"
+    protocol = "UDP"
+    ports    = "443"
+    ipv4     = ["0.0.0.0/0"]
+    ipv6     = ["::/0"]
+  }
+
+  # quire pushes from the work laptop.
+  inbound {
+    label    = "ssh"
+    action   = "ACCEPT"
+    protocol = "TCP"
+    ports    = "22"
+    ipv4     = ["0.0.0.0/0"]
+    ipv6     = ["::/0"]
+  }
+
+  # Lets peers reach tailscaled directly instead of through a relay.
+  inbound {
+    label    = "tailscale"
+    action   = "ACCEPT"
+    protocol = "UDP"
+    ports    = "41641"
+    ipv4     = ["0.0.0.0/0"]
+    ipv6     = ["::/0"]
+  }
+
+  inbound {
+    label    = "icmp"
+    action   = "ACCEPT"
+    protocol = "ICMP"
+    ipv4     = ["0.0.0.0/0"]
+    ipv6     = ["::/0"]
+  }
+
+  inbound_policy  = "DROP"
+  outbound_policy = "ACCEPT"
+
+  linodes = [local.lotus_land_story.id]
+}
+
 data "http" "github_keys" {
   url = "https://github.com/kejadlen.keys"
 }
