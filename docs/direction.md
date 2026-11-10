@@ -66,7 +66,10 @@ private sites are their own Tailscale nodes through caddy-tailscale, and
 one Caddy root CA signs every host's internal certificates. Only public
 sites open ports to the internet. The exception is SSH on
 imperishable-night, which lets only the `quire` user in from the
-internet so that the work laptop can push.
+internet so that the work laptop can push. The exception is temporary:
+once the work laptop pushes over HTTPS instead, for example because work
+blocks outbound SSH, public SSH closes and SSH is tailnet-only
+everywhere.
 
 The tailnet policy lives in `main.tf` as `tailscale_acl.policy`. Members
 and `tag:server` nodes reach every node. hopeless-masquerade is tagged
