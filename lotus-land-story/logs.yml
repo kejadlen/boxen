@@ -26,7 +26,7 @@
         command: -storageDataPath=/data -syslog.listenAddr.tcp=:514
         restart_policy: unless-stopped
         ports:
-          - "514:514"   # syslog
+          - "127.0.0.1:514:514"   # syslog, from the local rsyslog only
           # Exposed for journald via systemd-journal-upload - at some point, it
           # might be nice to have journald go through vector, but would need to
           # figure out how to make that work through docker.
