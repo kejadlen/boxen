@@ -165,8 +165,52 @@
         state: started
       no_log: true
 
-# TODO Remove Minio
-- import_playbook: minio.yml
+- name: Remove MinIO
+  tags: minio
+  hosts: mountain-of-faith
+  become: true
+  tasks:
+
+    - name: Gather service facts
+      ansible.builtin.service_facts:
+
+    - name: Stop and disable MinIO
+      ansible.builtin.systemd:
+        name: minio.service
+        enabled: false
+        state: stopped
+      when: "'minio.service' in ansible_facts.services"
+
+    - name: Purge the MinIO package
+      ansible.builtin.apt:
+        name: minio
+        state: absent
+        purge: true
+
+    - name: Remove MinIO's unit, environment, and data
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: absent
+      loop:
+        - /usr/lib/systemd/system/minio.service
+        - /etc/default/minio
+        - /mnt/mountain-of-faith/minio
+      notify: Reload systemd
+
+    - name: Remove the MinIO user
+      ansible.builtin.user:
+        name: minio
+        state: absent
+
+    - name: Remove the MinIO group
+      ansible.builtin.group:
+        name: minio
+        state: absent
+
+  handlers:
+    - name: Reload systemd
+      ansible.builtin.systemd:
+        daemon_reload: true
 
 # Syncthing stalls at a 768M cap on this 2 GB Pi, so it stays off for now.
 - name: Stop Syncthing

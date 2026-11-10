@@ -1,5 +1,3 @@
-minio:
-    password: ENC[AES256_GCM,data:TjpDccLR0MiDB6TTBTC3pxdf3hyFiBu+hVR2UOk5FQk=,iv:e3nyxRbNcMaY5h9DpYd2MTydB7b1d/NfdRBnqVEIRho=,tag:4aES8ahLuGXB7MEg1qBDIg==,type:str]
 pihole:
     password: ENC[AES256_GCM,data:62Yhfskwv+paXoMLpYJu8yr9+o6LLqi5ziotX7yYQ80=,iv:fqJaelLTxKHsv9LQZSLaxvM4ShT/d+B1brc7/bEwFhc=,tag:onlLAzxKnR8PFhXTp0eT6Q==,type:str]
 prusa:
@@ -21,7 +19,7 @@ sops:
             s+CwWUC66oPVs/co2e5gHUqMbDa9pCHh9uQhws3XQCVNjQlZBoMrxQ==
             -----END AGE ENCRYPTED FILE-----
           recipient: age15ars55ulrp9hz6r0utvluayrglt40wv0t997njez0y9l3e43cersn6kgh7
-    lastmodified: "2026-08-23T15:26:22Z"
-    mac: ENC[AES256_GCM,data:gcVSmftUTBLqOFh60axzEW28188vMrlU598UazqY7s3pJfUxoZXsaF14FWz37qUBwYlgB2EBrDBKzgvq/SKDEpMaHZslhgBYgne9VyLVoHQhhLSEFqUdZC/8TVGuv25Ke4pAPYIAOqjfhEweghOsnclzncsom8EGTuJ4cCjuj3c=,iv:/S2YSRdawAy4DQGsLFEs0HHuv52lL+x4iUSIVrKEHU8=,tag:rpiJyPlBnP24QA9wQ7Hbvg==,type:str]
+    lastmodified: "2026-11-10T03:39:33Z"
+    mac: ENC[AES256_GCM,data:WX9HUEo7LxHrji1lllgXzedFN8S2RS+lJ9Q979E1NwMk9TvZ79GDD3OTuymJNIlrW4UFydKsvgEpl6sT8QMUfvF+V274B17U7M6M3Bh1F1XLukFWZYrzqb2mTnpYfUG+mqMEu08U5fi946JAknH3M1LDpB3yqc45goc0bQsvtEg=,iv:KAtGA7y6Q7ZFkTLZYU0r0hrRQqN1INpy7yyAmMbhC6M=,tag:pzBrdsIZ1+OFli+zkfmNfg==,type:str]
     unencrypted_suffix: _unencrypted
     version: 3.13.3

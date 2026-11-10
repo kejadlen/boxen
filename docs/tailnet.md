@@ -48,7 +48,7 @@ flowchart LR
   subgraph servers [tag:server]
     linodes["Linodes<br>lotus-land-story, imperishable-night"]
     lolk["lolk<br>NAS, backups"]
-    mof["mountain-of-faith<br>pi-hole, MinIO, probes"]
+    mof["mountain-of-faith<br>pi-hole, probes"]
   end
 
   sites["Private sites<br>tag:site"]
@@ -84,7 +84,7 @@ it can reach today, and what it could reach under the target policy:
 | Phone, Apple TV, or Lydia's device | Lost, stolen, or compromised | Every port on every node | Private sites, Home Assistant, DNS, and exit nodes | Addressable |
 | Linode | A public site or a container image | Every port on every node, and deleting every backup | Server ports on every server, and deleting every backup | Addressable |
 | lolk | A container or Syncthing | Every port on every node, plus the restic repository it holds | Server ports on every server, plus the restic repository | Addressable |
-| mountain-of-faith | A service such as pi-hole or MinIO | Every port on every node | Server ports on every server | Addressable |
+| mountain-of-faith | A service such as pi-hole | Every port on every node | Server ports on every server | Addressable |
 | Your Mac | Compromise of the admin machine | Everything | Everything | Open |
 | tofu OAuth client | Leaked credentials | Rewriting the policy | Same | Mitigated |
 
@@ -130,7 +130,7 @@ The model holds only while these do:
 The tailnet policy doesn't cover the following:
 
 - Anything on the home LAN. A compromised device there reaches whatever
-  home services listen on the LAN, such as pi-hole and MinIO, without
+  home services listen on the LAN, such as pi-hole, without
   touching the tailnet.
 - Vulnerabilities in the public services themselves. Patching handles
   those, not the policy.
@@ -165,7 +165,6 @@ Servers reach each other on the following ports:
 | 2019 | Caddy metrics |
 | 8080 | cadvisor |
 | 8384 | Syncthing metrics |
-| 9000 | MinIO |
 | 9100 | node-exporter |
 | 9115 | blackbox-exporter on mountain-of-faith |
 | 9428 | VictoriaLogs ingestion |

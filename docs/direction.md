@@ -84,7 +84,7 @@ The following table lists each host and where it's headed:
 | lotus-land-story | Linode, Debian bullseye, Docker, Ansible | Retires once its services [move to imperishable-night](imperishable-night/2026-10-16-migrating-from-lotus-land-story.md) |
 | imperishable-night | Linode, NixOS | Takes over lotus-land-story's services, including observability |
 | legacy-of-lunatic-kingdom | Home NAS, Debian trixie, Quadlet, Ansible | [Reinstalls with NixOS](legacy-of-lunatic-kingdom/2026-11-01-migrating-to-nixos.md), then runs immich and jellyfin |
-| mountain-of-faith | Raspberry Pi running pihole, probes, exporters, minio, and NUT, Docker, Ansible | Drops minio and stays on Ansible |
+| mountain-of-faith | Raspberry Pi running pihole, probes, exporters, and NUT, Docker, Ansible | Stays on Ansible |
 | hopeless-masquerade | Raspberry Pi running BirdNET-Pi, Ansible | Stays on Ansible |
 | double-dealing-character | Brume 2 exit node, configured by hand | Stays hand-configured |
 

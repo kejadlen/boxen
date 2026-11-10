@@ -164,20 +164,6 @@ scrape_configs:
     static_configs:
       - targets: ['miniflux:8080']
 
-  - job_name: minio-job
-    bearer_token: {{ minio.cluster_token }}
-    metrics_path: /minio/v2/metrics/cluster
-    scheme: http
-    static_configs:
-    - targets: ['mountain-of-faith:9000']
-
-  - job_name: minio-job-bucket
-    bearer_token: {{ minio.bucket_token }}
-    metrics_path: /minio/v2/metrics/bucket
-    scheme: http
-    static_configs:
-    - targets: ['mountain-of-faith:9000']
-
   - job_name: node-exporter
     static_configs:
       - targets:
