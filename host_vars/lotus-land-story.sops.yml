@@ -39,7 +39,7 @@ quire:
     ci:
         secret: ENC[AES256_GCM,data:dNn0HapXk5Jyig49/ZM8UkC43syAs66wpq3oq/MObJrdr04pkgxG0/ZK8Hfk6YjEbbPOp+SFQLQ7xn5y5/w=,iv:oB1SIKUqpSrT+0i5KDic+3ccpO/AOHDF0Ih3RxOcqF4=,tag:YeIrSUZlSJ4mLsytIsV4kw==,type:str]
 restic:
-    password: ENC[AES256_GCM,data:wHTGWVk3/l5YMaqtnj4PEAZQp9RJHpNY8x/TokKWdK8=,iv:tRGTTl3HOT90i5BQHiNNjBWAExicmvAv+/l6qsit4f4=,tag:KqPS3YoEPmjER5T/w9E1pw==,type:str]
+    password: ENC[AES256_GCM,data:csd55S886NVA/yQW2NMb44qpMdsN7nAUJtXsvGJLbDY=,iv:5fM86asOvSHeNkGuV1zRyV/8QjLwMM//JLe5pOWKlz8=,tag:tL+0ALYVx0QX+miJ4QlTNQ==,type:str]
 syncthing:
     mountain_of_faith:
         api_key: ENC[AES256_GCM,data:qPx4i3AmzxwDkb+ecpoqvR2wxGeiO7x0gKdLUl+aaVE=,iv:GST++PXZsoHUhZjdKDrvEOGLaUok4R9i4jdHlVXnJgU=,tag:Qo+aqHLt6qyZaFW1Upr+rg==,type:str]
@@ -59,7 +59,7 @@ sops:
             LEedZQPpxvyODlXv/10aLZhO2DZBOtjw9W2ctfg9WoyX7OxZvdbFnA==
             -----END AGE ENCRYPTED FILE-----
           recipient: age15ars55ulrp9hz6r0utvluayrglt40wv0t997njez0y9l3e43cersn6kgh7
-    lastmodified: "2026-11-10T03:39:43Z"
-    mac: ENC[AES256_GCM,data:3liACyaf12YWsFd53BLlfb4xQD6RsNuxsfRxpd+qKzeL5yrhbRnHIiBeoA0M4Bg5F3ruSIvIO1UCFKMmvShQhOsk4KbclLPhV3qEhWU1AY1ykz93N25E99cVcKHhRhx7adpDekQdKudfGduJbzP/Bnt/paEvuk1v2TEHf647sHA=,iv:CDMRrEOrZ50XHYdOB6r+GadUOw00g0wyJL9aQMW/Qas=,tag:GNFKHsK3zsgy9VKWrIGNzg==,type:str]
+    lastmodified: "2026-11-11T04:22:00Z"
+    mac: ENC[AES256_GCM,data:BF+ZahEUjvro6Lg2J1xYC4MdjSqEQ4H+hxB/rLNCoAtQPxQp6c3dj7cGt2OJvlik4lOVKQsCUW3eN9LpYR6yD1IXXuOkT4Z9Bi2GKVQCY/fq4RI5WifRMMGNTpbphFl6p1Ub5GNHjLCDERs2CzgbsyxZc2H2TMgHV2KKURwM4Us=,iv:kPITxojN9U7mupTjA22TH/PhlvwfbwQBjK5BDlkS670=,tag:j/T/mquYVuXhuoelXyYkJA==,type:str]
     unencrypted_suffix: _unencrypted
     version: 3.13.3
