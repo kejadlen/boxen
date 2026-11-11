@@ -124,6 +124,9 @@ The model holds only while these do:
   logs kept working.
 - Your Mac is trusted. It's the one device with full access.
 - The tofu OAuth client's credentials stay in 1Password.
+- Authelia, the tailnet's sign-in provider, isn't compromised. Every
+  identity the policy names comes from it; see risk 14 in the
+  [threat model](threat-model.md#14-authelia-decides-who-joins-the-tailnet).
 
 ## Not addressed
 
