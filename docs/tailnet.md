@@ -189,7 +189,10 @@ Each step can be rolled back, and access only narrows in the last one:
    a time, and check scrapes, backups, and logs after each.
 4. Mint the Caddy auth key with `tag:site`, and retag the site nodes.
    lotus-land-story's site nodes are user-owned, so they need retagging
-   or replacing when their services move.
+   or replacing when their services move. The
+   [Tailscale Services plan](imperishable-night/2026-11-11-tailscale-services.md)
+   replaces this step: sites become `svc:` names with their own grants,
+   and the key goes away.
 5. Replace the members' allow-all rule with the owner grant and the
    narrower member grants.
 
