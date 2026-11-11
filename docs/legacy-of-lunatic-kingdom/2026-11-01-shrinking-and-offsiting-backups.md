@@ -121,7 +121,10 @@ There are two ways to fill it. `restic copy` copies snapshots into a
 second repository and verifies them as it goes. If that repository is
 initialized with `--copy-chunker-params`, dedup carries over. Replicating
 the repository directory with rclone is simpler, but it copies any
-corruption along with everything else. lolk's own data is a second
+corruption along with everything else. It also copies lolk's master key,
+which predates the 2026-11-10 password rotation and may have leaked (risk
+3 in the [threat model](../threat-model.md)); `restic init` gives the new
+repository its own. lolk's own data is a second
 restic source that backs up straight to the offsite target.
 
 The following targets are candidates:
