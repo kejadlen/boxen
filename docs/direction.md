@@ -63,10 +63,10 @@ lotus-land-story retires.
 
 Access goes through the tailnet. SSH is tailnet-only on NixOS hosts,
 private sites are their own Tailscale nodes through caddy-tailscale, and
-one Caddy root CA signs every host's internal certificates. The sites
-are heading for [Tailscale Services](imperishable-night/2026-11-11-tailscale-services.md),
-where the host's tailscaled fronts them with Tailscale's own
-certificates and Caddy holds no tailnet identity. Only public
+one Caddy root CA signs every host's internal certificates. That keeps
+short names like `https://ketchup`, which
+[Tailscale Services](imperishable-night/2026-11-11-tailscale-services.md)
+can't serve over HTTPS. Only public
 sites open ports to the internet. The exception is SSH on
 imperishable-night, which lets only the `quire` user in from the
 internet so that the work laptop can push. The exception is temporary:

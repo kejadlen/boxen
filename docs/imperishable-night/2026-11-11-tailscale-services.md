@@ -1,5 +1,41 @@
 # Fronting private sites with Tailscale Services
 
+## Outcome
+
+Dropped before any deploy, to keep short names like `https://ketchup`.
+Serve terminates HTTPS only for a service's `ts.net` name, with a
+certificate from Let's Encrypt, and "You cannot obtain an HTTPS URL to
+go to a bare hostname" ([enabling HTTPS][https]). A tailnet can't use a
+domain we own either: Serve's DNS names "are restricted to your
+tailnet's domain name" ([Serve][serve]), and that name is either the
+default `tail<hex>.ts.net` or a randomized `ts.net` name.
+
+Any other certificate, from the shared root or for a domain we own,
+means Caddy terminates TLS and Serve forwards raw TCP. Serve adds the
+identity headers only to HTTP it terminates, so they would never reach
+Caddy. Private sites stay on caddy-tailscale, which keeps Caddy's auth
+key (risk 4), the shared root (risk 5), and grants per tag rather than
+per site. Minting the key with `tag:site`, step 4 of the
+[tailnet rollout](../tailnet.md#rollout), is the remaining fix for
+risk 4.
+
+Preparing the first experiment turned up two facts that matter to any
+later attempt:
+
+- A service must be defined in the admin console before a host can
+  advertise it. The tofu Tailscale provider (0.29.3) has no resource for
+  services.
+- `tailscale serve set-config` takes a target's scheme as the front
+  end's too, so `"tcp:443": "http://…"` serves plain HTTP on 443
+  (`serveTypeFromConfString` in `cmd/tailscale/cli/serve_v2.go`,
+  1.104.5). A unit per service that runs
+  `tailscale serve --service=svc:<name> --https=443 http://…`, like
+  Rex's, avoids that.
+
+The plan as written follows.
+
+## Plan
+
 Every private site today is its own Tailscale node, registered by the
 caddy-tailscale plugin inside the Caddy container with a reusable auth
 key, and served with a certificate from the shared Caddy root. This plan
@@ -131,5 +167,7 @@ same shape as each one moves.
    plans.
 
 [services]: https://tailscale.com/docs/features/tailscale-services
+[https]: https://tailscale.com/kb/1153/enabling-https
+[serve]: https://tailscale.com/kb/1312/serve
 [ct-117]: https://github.com/tailscale/caddy-tailscale/issues/117
 [ct-136]: https://github.com/tailscale/caddy-tailscale/pull/136
