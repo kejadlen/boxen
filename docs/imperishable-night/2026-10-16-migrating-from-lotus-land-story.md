@@ -180,6 +180,15 @@ it, so its site and playbook retire with lotus-land-story, and its data
 survives only in restic. When development resumes, docket deploys on
 imperishable-night with a fresh database.
 
+## Move pro-tacts
+
+pro-tacts serves CardDAV at `contacts.chislan.family`, the one site that
+gets its certificate over DNS-01 ([risk 4](../threat-model.md#4-a-linodes-secrets-reach-past-it)).
+imperishable-night already holds the account-wide DNSimple token as
+`caddy/dnsimple_token`, so the site's `tls` block moves unchanged. The
+`contacts` A record in `dns.tf` follows the tailnet address of
+imperishable-night's `contacts` node.
+
 ## Move gotosocial
 
 gotosocial federates as `hey.kejadlen.dev`, and other servers know the
