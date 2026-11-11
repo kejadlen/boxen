@@ -292,9 +292,8 @@ in
             exec ${config.virtualisation.podman.package}/bin/podman --remote --url unix:///run/podman/podman.sock \
               exec --interactive quire quire exec "$SSH_ORIGINAL_COMMAND"
           ''}
-          AllowTcpForwarding no
-          AllowAgentForwarding no
-          X11Forwarding no
+          # Unlike AllowTcpForwarding, also blocks forwarding to the podman socket.
+          DisableForwarding yes
           PermitTTY no
     '';
   };
