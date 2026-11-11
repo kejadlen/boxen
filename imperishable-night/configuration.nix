@@ -10,8 +10,20 @@ let
   caddyRoot = ../modules/nixos/caddy-root.crt;
 
   # Fixed so the Caddyfile can trust it; podman assigns subnets on creation otherwise.
-  podmanNetwork = "caddy";
-  podmanSubnet = "10.89.0.0/24";
+  caddySubnet = "10.89.0.0/24";
+
+  # Each app shares a network only with Caddy, so no other container can
+  # reach it and forge the headers that header-trust apps take as a login.
+  podmanNetworks = {
+    caddy = "--subnet ${caddySubnet}";
+    docs = "";
+    homebox = "";
+    irc = "";
+    ketchup = "";
+    quire = "";
+    # paperless-ngx's other network is its way out, so redis gets none.
+    paperless = "--internal";
+  };
 
   versions = {
     caddy = "2.11.9-2026.11.06";
@@ -63,17 +75,31 @@ in
   };
 
   # Containers reach each other by name only on a user-defined network.
-  systemd.services."podman-network-${podmanNetwork}" = {
-    path = [ config.virtualisation.podman.package ];
-    serviceConfig = {
-      Type = "oneshot";
-      RemainAfterExit = true;
-    };
-    script = ''
-      podman network exists ${podmanNetwork} ||
-        podman network create --subnet ${podmanSubnet} ${podmanNetwork}
-    '';
-  };
+  systemd.services =
+    lib.mapAttrs' (
+      name: args:
+      lib.nameValuePair "podman-network-${name}" {
+        path = [ config.virtualisation.podman.package ];
+        serviceConfig = {
+          Type = "oneshot";
+          RemainAfterExit = true;
+        };
+        script = ''
+          podman network exists ${name} ||
+            podman network create ${args} ${name}
+        '';
+      }
+    ) podmanNetworks
+    // lib.mapAttrs' (
+      name: container:
+      let
+        units = map (network: "podman-network-${network}.service") container.networks;
+      in
+      lib.nameValuePair "podman-${name}" {
+        requires = units;
+        after = units;
+      }
+    ) config.virtualisation.oci-containers.containers;
 
   # sops-nix decrypts with the age key derived from the SSH host key.
   sops.defaultSopsFile = ./secrets.sops.yml;
@@ -113,7 +139,7 @@ in
     ];
     volumes = [
       "${
-        pkgs.replaceVars ./Caddyfile { trusted_proxies = podmanSubnet; }
+        pkgs.replaceVars ./Caddyfile { trusted_proxies = caddySubnet; }
       }:/etc/caddy/Caddyfile:ro"
       "${caddyRoot}:/etc/caddy/pki/root.crt:ro"
       "${config.sops.secrets."caddy/ca_root_key".path}:/etc/caddy/pki/root.key:ro"
@@ -121,16 +147,19 @@ in
       "/var/lib/caddy/config:/config"
       "${gamja}:/srv/gamja:ro"
     ];
-    networks = [ podmanNetwork ];
+    networks = [
+      "caddy"
+      "docs"
+      "homebox"
+      "irc"
+      "ketchup"
+      "quire"
+    ];
     # Unbounded, caddy takes the host down with it. Equal memory-swap denies swap.
     extraOptions = [
       "--memory=1g"
       "--memory-swap=1g"
     ];
-  };
-  systemd.services.podman-caddy = {
-    requires = [ "podman-network-${podmanNetwork}.service" ];
-    after = [ "podman-network-${podmanNetwork}.service" ];
   };
 
   sops.secrets."homebox/mailer/username" = { };
@@ -157,11 +186,7 @@ in
     };
     environmentFiles = [ config.sops.templates."homebox.env".path ];
     volumes = [ "/var/lib/homebox:/data" ];
-    networks = [ podmanNetwork ];
-  };
-  systemd.services.podman-homebox = {
-    requires = [ "podman-network-${podmanNetwork}.service" ];
-    after = [ "podman-network-${podmanNetwork}.service" ];
+    networks = [ "homebox" ];
   };
 
   sops.secrets."ketchup/session_secret" = { };
@@ -185,21 +210,13 @@ in
     };
     environmentFiles = [ config.sops.templates."ketchup.env".path ];
     volumes = [ "/var/lib/ketchup:/data" ];
-    networks = [ podmanNetwork ];
-  };
-  systemd.services.podman-ketchup = {
-    requires = [ "podman-network-${podmanNetwork}.service" ];
-    after = [ "podman-network-${podmanNetwork}.service" ];
+    networks = [ "ketchup" ];
   };
 
   # paperless-ngx's Celery broker; nothing in it is worth persisting.
   virtualisation.oci-containers.containers.redis = {
     image = "docker.io/library/redis:${versions.redis}";
-    networks = [ podmanNetwork ];
-  };
-  systemd.services.podman-redis = {
-    requires = [ "podman-network-${podmanNetwork}.service" ];
-    after = [ "podman-network-${podmanNetwork}.service" ];
+    networks = [ "paperless" ];
   };
 
   sops.secrets."paperless_ngx/secret" = { };
@@ -237,11 +254,10 @@ in
         url_prefix = "/flower/"
       ''}:/usr/src/paperless/src/paperless/flowerconfig.py:ro"
     ];
-    networks = [ podmanNetwork ];
-  };
-  systemd.services.podman-paperless-ngx = {
-    requires = [ "podman-network-${podmanNetwork}.service" ];
-    after = [ "podman-network-${podmanNetwork}.service" ];
+    networks = [
+      "docs"
+      "paperless"
+    ];
   };
 
   # gamja reaches soju through Caddy's /socket, so neither listener is published.
@@ -257,11 +273,7 @@ in
         db sqlite3 /soju/soju.db
       ''}:/soju/soju.conf:ro"
     ];
-    networks = [ podmanNetwork ];
-  };
-  systemd.services.podman-soju = {
-    requires = [ "podman-network-${podmanNetwork}.service" ];
-    after = [ "podman-network-${podmanNetwork}.service" ];
+    networks = [ "irc" ];
   };
 
   # The container runs as quire's uid so the repositories' ownership matches
@@ -329,11 +341,7 @@ in
       "${config.sops.secrets."quire/github_mirror".path}:/var/quire/secrets/github_mirror:ro"
       "${config.sops.secrets."quire/github_auth_header".path}:/var/quire/secrets/github_auth_header:ro"
     ];
-    networks = [ podmanNetwork ];
-  };
-  systemd.services.podman-quire = {
-    requires = [ "podman-network-${podmanNetwork}.service" ];
-    after = [ "podman-network-${podmanNetwork}.service" ];
+    networks = [ "quire" ];
   };
 
   sops.secrets."restic/password" = { };

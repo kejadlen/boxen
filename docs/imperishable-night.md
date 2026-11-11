@@ -93,11 +93,17 @@ host; read them with `journalctl`.
 
 ## Containers and Caddy
 
-Services run as podman containers through `virtualisation.oci-containers`,
-on a podman network named `caddy` so that Caddy and the services reach
-each other by name. A oneshot unit creates the network with a fixed subnet,
-`10.89.0.0/24`, which the Caddyfile lists in `trusted_proxies`. Container
-data lives under `/var/lib/<service>`.
+Services run as podman containers through `virtualisation.oci-containers`.
+Containers reach each other by name over podman networks, and each app
+gets a network that it shares only with Caddy: `docs` for paperless-ngx,
+`homebox`, `irc` for soju, `ketchup`, and `quire`. No app can reach
+another app, so none can forge the login headers that paperless-ngx,
+ketchup, and quire trust. paperless-ngx and redis also share
+`paperless`, an internal network with no route out. Caddy alone is on
+`caddy`, whose fixed subnet, `10.89.0.0/24`, the Caddyfile lists in
+`trusted_proxies`. A oneshot unit creates each network, and each
+container's unit requires the units for its networks. Container data
+lives under `/var/lib/<service>`.
 
 Caddy runs the same `ghcr.io/kejadlen/caddy-kejadlen` image as
 lotus-land-story, with the [Caddyfile][caddyfile] mounted from the Nix

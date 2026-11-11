@@ -122,7 +122,9 @@ registering each new site doesn't take a new key.
 Follow these steps for each service:
 
 1. Define the container and its Caddy site in the flake, with the image
-   tag and environment from its playbook in `lotus-land-story/`.
+   tag and environment from its playbook in `lotus-land-story/`. Give the
+   container its own entry in `podmanNetworks`, and add that network to
+   Caddy's.
 2. Deploy imperishable-night with the container stopped and the site
    left out.
 3. Stop the container on lotus-land-story, and remove its site from
