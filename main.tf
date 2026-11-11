@@ -133,28 +133,30 @@ data "tailscale_device" "hopeless_masquerade" {
 
 locals {
   lotus_land_story = data.linode_instances.lotus_land_story.instances.0
+
+  linode_inbound = [
+    { label = "web", protocol = "TCP", ports = "80,443" },
+    { label = "http3", protocol = "UDP", ports = "443" },
+    # Lets peers reach tailscaled directly instead of through a relay.
+    { label = "tailscale", protocol = "UDP", ports = "41641" },
+    { label = "icmp", protocol = "ICMP", ports = null },
+  ]
 }
 
 # Docker-published ports skip ufw, so the host's own firewall can't close them.
 resource "linode_firewall" "lotus_land_story" {
   label = "lotus-land-story"
 
-  inbound {
-    label    = "web"
-    action   = "ACCEPT"
-    protocol = "TCP"
-    ports    = "80,443"
-    ipv4     = ["0.0.0.0/0"]
-    ipv6     = ["::/0"]
-  }
-
-  inbound {
-    label    = "http3"
-    action   = "ACCEPT"
-    protocol = "UDP"
-    ports    = "443"
-    ipv4     = ["0.0.0.0/0"]
-    ipv6     = ["::/0"]
+  dynamic "inbound" {
+    for_each = local.linode_inbound
+    content {
+      label    = inbound.value.label
+      action   = "ACCEPT"
+      protocol = inbound.value.protocol
+      ports    = inbound.value.ports
+      ipv4     = ["0.0.0.0/0"]
+      ipv6     = ["::/0"]
+    }
   }
 
   # quire pushes from the work laptop.
@@ -167,20 +169,35 @@ resource "linode_firewall" "lotus_land_story" {
     ipv6     = ["::/0"]
   }
 
-  # Lets peers reach tailscaled directly instead of through a relay.
-  inbound {
-    label    = "tailscale"
-    action   = "ACCEPT"
-    protocol = "UDP"
-    ports    = "41641"
-    ipv4     = ["0.0.0.0/0"]
-    ipv6     = ["::/0"]
+  inbound_policy  = "DROP"
+  outbound_policy = "ACCEPT"
+
+  linodes = [local.lotus_land_story.id]
+}
+
+# Nobody has checked whether podman-published ports skip the NixOS firewall,
+# the way Docker's skip ufw.
+resource "linode_firewall" "imperishable_night" {
+  label = "imperishable-night"
+
+  dynamic "inbound" {
+    for_each = local.linode_inbound
+    content {
+      label    = inbound.value.label
+      action   = "ACCEPT"
+      protocol = inbound.value.protocol
+      ports    = inbound.value.ports
+      ipv4     = ["0.0.0.0/0"]
+      ipv6     = ["::/0"]
+    }
   }
 
+  # quire pushes from the work laptop.
   inbound {
-    label    = "icmp"
+    label    = "ssh"
     action   = "ACCEPT"
-    protocol = "ICMP"
+    protocol = "TCP"
+    ports    = "22"
     ipv4     = ["0.0.0.0/0"]
     ipv6     = ["::/0"]
   }
@@ -188,7 +205,7 @@ resource "linode_firewall" "lotus_land_story" {
   inbound_policy  = "DROP"
   outbound_policy = "ACCEPT"
 
-  linodes = [local.lotus_land_story.id]
+  linodes = [linode_instance.imperishable_night.id]
 }
 
 data "http" "github_keys" {

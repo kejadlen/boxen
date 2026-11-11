@@ -49,7 +49,9 @@ The firewall trusts `tailscale0` completely. Publicly, it opens only
 TCP 80 and 443 and UDP 443 for web traffic, TCP 22 for quire, and UDP
 41641, so peers reach the host directly instead of through a relay.
 sshd's `AllowUsers` admits only `quire` from the internet, and `alpha`
-only from tailnet addresses. If Tailscale
+only from tailnet addresses. The `linode_firewall.imperishable_night`
+Cloud Firewall in `main.tf` admits the same ports in front of the host,
+in case podman's published ports skip the NixOS firewall. If Tailscale
 breaks, the way back in is Linode's rescue mode, since `alpha` has no
 password for Lish.
 
