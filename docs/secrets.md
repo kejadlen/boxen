@@ -107,3 +107,13 @@ The `host_vars` files have one recipient. If the 1Password item is lost,
 every one of them is unrecoverable. imperishable-night's file survives only
 as long as the host's SSH key does. A second recipient, such as a recovery
 key stored offline, would remove that single point of failure.
+
+## Why sops-nix stays
+
+A foothold on imperishable-night yields every secret on the host, and
+no tool changes that, since the host boots unattended. The
+[evaluation](research/2026-11-11-secrets-management.md) of agenix,
+systemd credentials, a 1Password service account, a secrets server, and
+disk encryption concluded that shrinking the inventory matters more
+than the tool, and that a 1Password service account is the one to
+revisit once it has shrunk.

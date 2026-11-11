@@ -9,7 +9,10 @@
 - Keep evergreen documentation, meaning how things work now, in `docs/`.
   Update it in the same change that makes it stale. Prefer living documents
   over dated write-ups; `docs/<host>/YYYY-MM-DD-slug.md` is for when the
-  history itself matters, like a one-time migration record.
+  history itself matters, like a one-time migration record, and
+  `docs/research/YYYY-MM-DD-slug.md` for an evaluation of options that
+  isn't tied to one host. The living document that the evaluation
+  informed links to it and carries the outcome.
 - ranger's `boxen` backlog is the near-term work queue, not a record of
   every TODO. Add a task when the work is ready to implement. When work
   lands or a plan changes, update the affected tasks' state, order, and
