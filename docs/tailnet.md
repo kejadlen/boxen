@@ -82,7 +82,7 @@ it can reach today, and what it could reach under the target policy:
 |---|---|---|---|---|
 | BirdNET-Pi | Its third-party installer or web UI | VictoriaLogs ingestion and pi-hole DNS | Same | Mitigated |
 | Phone, Apple TV, or Lydia's device | Lost, stolen, or compromised | Every port on every node | Private sites, Home Assistant, DNS, and exit nodes | Addressable |
-| Linode | A public site or a container image | Every port on every node, and deleting every backup | Server ports on every server, and deleting every backup | Addressable |
+| Linode | A public site or a container image | Every port on every node, deleting every backup, and enrolling new nodes with Caddy's auth key | Server ports on every server, deleting every backup, and enrolling `tag:site` nodes | Addressable |
 | lolk | A container or Syncthing | Every port on every node, plus the restic repository it holds | Server ports on every server, plus the restic repository | Addressable |
 | mountain-of-faith | A service such as pi-hole | Every port on every node | Server ports on every server | Addressable |
 | Your Mac | Compromise of the admin machine | Everything | Everything | Open |
