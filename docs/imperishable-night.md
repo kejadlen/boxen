@@ -101,8 +101,12 @@ another app, so none can forge the login headers that paperless-ngx,
 ketchup, and quire trust. paperless-ngx and redis also share
 `paperless`, an internal network with no route out. Caddy alone is on
 `caddy`, whose fixed subnet, `10.89.0.0/24`, the Caddyfile lists in
-`trusted_proxies`. A oneshot unit creates each network, and each
-container's unit requires the units for its networks. Container data
+`trusted_proxies`. Caddy gets a default route from every network it
+joins, so `caddy` sets a lower route metric to carry its outbound
+traffic, including replies on its published ports. A oneshot unit
+creates each network, and each container's unit requires the units for
+its networks. The unit skips a network that already exists, so changing
+a network's options means removing it by hand first. Container data
 lives under `/var/lib/<service>`.
 
 Caddy runs the same `ghcr.io/kejadlen/caddy-kejadlen` image as

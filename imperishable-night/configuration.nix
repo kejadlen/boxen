@@ -15,7 +15,9 @@ let
   # Each app shares a network only with Caddy, so no other container can
   # reach it and forge the headers that header-trust apps take as a login.
   podmanNetworks = {
-    caddy = "--subnet ${caddySubnet}";
+    # Caddy gets a default route from every network it joins, all at metric 100,
+    # and replies to published ports dropped when one left by another bridge.
+    caddy = "--subnet ${caddySubnet} --opt metric=50";
     docs = "";
     homebox = "";
     irc = "";
