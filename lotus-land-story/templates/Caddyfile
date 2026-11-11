@@ -189,21 +189,6 @@ files.chislan.family {
 	file_server
 }
 
-# Moved to imperishable-night; serves clients still resolving the old A
-# records until their TTL passes.
-(imperishable_night) {
-	reverse_proxy https://imperishable-night {
-		header_up Host {host}
-		transport http {
-			tls_server_name {host}
-		}
-	}
-}
-
-git.kejadlen.dev {
-	import imperishable_night
-}
-
 hey.kejadlen.dev {
 	log
 
@@ -212,10 +197,6 @@ hey.kejadlen.dev {
 	handle /metrics {
 		respond 404
 	}
-}
-
-quire.kejadlen.dev {
-	import imperishable_night
 }
 
 # vim: ts=4

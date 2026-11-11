@@ -159,16 +159,6 @@ resource "linode_firewall" "lotus_land_story" {
     }
   }
 
-  # quire pushes from the work laptop.
-  inbound {
-    label    = "ssh"
-    action   = "ACCEPT"
-    protocol = "TCP"
-    ports    = "22"
-    ipv4     = ["0.0.0.0/0"]
-    ipv6     = ["::/0"]
-  }
-
   inbound_policy  = "DROP"
   outbound_policy = "ACCEPT"
 

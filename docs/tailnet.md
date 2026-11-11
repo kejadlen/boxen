@@ -157,8 +157,6 @@ Devices that report no OS fail `posture:mac` rather than pass it.
 Public visitors reach the cloud servers on 80 and 443.
 imperishable-night also opens SSH publicly so the work laptop can push
 to quire, and only the `quire` user can log in from the internet.
-lotus-land-story still opens SSH publicly, which it did for quire before
-quire moved.
 
 Servers reach each other on the following ports:
 

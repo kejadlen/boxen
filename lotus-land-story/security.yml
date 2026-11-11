@@ -24,11 +24,12 @@
         from_ip: "{{ docker_network.network.IPAM.Config[0].Subnet }}"
       notify: Reload ufw
 
-    # for quire from work laptop
-    - name: Allow SSH access
+    # SSH arrives over tailscale0, which the rule above allows.
+    - name: Close public SSH
       community.general.ufw:
         rule: allow
         name: OpenSSH
+        delete: true
       notify: Reload ufw
 
     - name: Disable password auth via SSH
