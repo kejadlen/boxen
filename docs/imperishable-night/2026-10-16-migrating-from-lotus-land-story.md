@@ -252,23 +252,31 @@ lotus-land-story's tailnet address, which
 `GTS_ADVANCED_RATE_LIMIT_EXCEPTIONS` exempts, so federation isn't rate
 limited through the bridge.
 
+gotosocial's metrics go unscraped until VictoriaMetrics moves, since
+lotus-land-story's VictoriaMetrics reaches `gotosocial:9464` only over
+its docker network.
+
 To keep the outage short, follow these steps:
 
-1. Copy `hey.kejadlen.dev`'s certificate from lotus-land-story's Caddy
-   data directory to imperishable-night's. ACME challenges land on
+1. Deploy imperishable-night with gotosocial stopped.
+2. Copy `hey.kejadlen.dev`'s certificate from
+   `/mnt/lotus-land-story/caddy/data/caddy/certificates/` to the same
+   path under `/var/lib/caddy/data/`. ACME challenges land on
    lotus-land-story until the record moves, so the new Caddy can't get
    its own certificate through the bridge.
-2. Copy `/mnt/lotus-land-story/gotosocial/` to imperishable-night while
-   gotosocial is still running, so the final copy only transfers what
-   changed.
-3. Stop gotosocial, then back up the database with
+3. Rsync `/mnt/lotus-land-story/gotosocial/` to `/var/lib/gotosocial/`
+   with `--delete` while gotosocial is still running, so the final copy
+   only transfers what changed.
+4. Stop gotosocial, then back up the database with
    `sqlite3 ... '.backup ...'` as a rollback point, as
    `lotus-land-story/gotosocial.yml` already does before upgrades.
-4. Rsync the data directory again, then start gotosocial on
-   imperishable-night.
-5. Switch the old site to the Caddy-to-Caddy bridge, then point the A
-   record at imperishable-night.
-6. Remove the bridge an hour after the record changes, once DNSimple's
+5. Rsync again, then deploy imperishable-night with gotosocial and its
+   site.
+6. Deploy lotus-land-story's Caddy with the Caddy-to-Caddy bridge in
+   place of the old site, then apply tofu to point the A record at
+   imperishable-night. Until the bridge is up, starting gotosocial on
+   lotus-land-story is the rollback.
+7. Remove the bridge an hour after the record changes, once DNSimple's
    default TTL has passed.
 
 Logging in to gotosocial goes through authelia over
