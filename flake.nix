@@ -35,6 +35,7 @@
               nixos-rebuild
               opentofu
               python
+              rumdl
               sops
               ssh-to-age
             ];

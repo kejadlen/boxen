@@ -1,0 +1,7 @@
+[global]
+# CLAUDE.md is a bare @AGENTS.md include, not a document.
+disable = ["MD041"]
+
+[MD013]
+line-length = 72
+reflow = true
