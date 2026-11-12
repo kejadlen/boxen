@@ -1,46 +1,48 @@
 # Upgrading lotus-land-story to bookworm
 
-This plan was abandoned. lotus-land-story stays on bullseye and retires as
-its services move to imperishable-night; see the
+This plan was abandoned. lotus-land-story stays on bullseye and retires
+as its services move to imperishable-night; see the
 [migration plan](../imperishable-night/2026-10-16-migrating-from-lotus-land-story.md).
 
 lotus-land-story runs Debian 11 (bullseye), whose LTS window closed on
-2026-08-31. The `bullseye-security` mirror went stale soon after, and every
-`apt update` on the host has failed since — unattended-upgrades included,
-so the box has taken no security patches since LTS ended. This plan moves
-it to Debian 12 (bookworm) in one hop. A later hop to trixie (13) is out
-of scope; bookworm's own LTS window runs to mid-2028.
+2026-08-31. The `bullseye-security` mirror went stale soon after, and
+every `apt update` on the host has failed since — unattended-upgrades
+included, so the box has taken no security patches since LTS ended. This
+plan moves it to Debian 12 (bookworm) in one hop. A later hop to trixie
+(13) is out of scope; bookworm's own LTS window runs to mid-2028.
 
-These are two changes, and the repository changes land first: the postgres
-tasks currently hardcode `/etc/postgresql/13`, and the replacements point
-at 15, which only exists after the upgrade. Commit before, deploy after.
+These are two changes, and the repository changes land first: the
+postgres tasks currently hardcode `/etc/postgresql/13`, and the
+replacements point at 15, which only exists after the upgrade. Commit
+before, deploy after.
 
 What rides along without changes: Grafana, VictoriaMetrics, Caddy,
 Authelia, and the rest run as containers, and Vector runs as a
 `timberio/vector:*-debian` image. After the upgrade, the main playbook
 (`ansible-playbook -l lotus-land-story lotus-land-story/main.yml`)
-re-targets the facts-based deb822 repositories (docker, tailscale, redis)
-to bookworm on its own.
+re-targets the facts-based deb822 repositories (docker, tailscale,
+redis) to bookworm on its own.
 
 ## What bookworm breaks for this setup
 
-- `docker-compose` (Compose v1) was removed from bookworm. Nothing on the
-  host uses it — the playbooks drive Docker through `community.docker`,
-  and `playbooks/docker.yml` installs `docker-compose-plugin` — so the
-  package comes off `main.yml`'s "Install ansible requirements" list.
+- `docker-compose` (Compose v1) was removed from bookworm. Nothing on
+  the host uses it — the playbooks drive Docker through
+  `community.docker`, and `playbooks/docker.yml` installs
+  `docker-compose-plugin` — so the package comes off `main.yml`'s
+  "Install ansible requirements" list.
 - Four tasks hardcode `/etc/postgresql/13`: the `listen.conf` path in
-  `main.yml`, `data_directory` and the tuning loop in `postgres.yml`, and
-  `pg_hba.conf` in `miniflux.yml`. After the migration the cluster lives
-  under `/etc/postgresql/15`, so those paths become 15.
+  `main.yml`, `data_directory` and the tuning loop in `postgres.yml`,
+  and `pg_hba.conf` in `miniflux.yml`. After the migration the cluster
+  lives under `/etc/postgresql/15`, so those paths become 15.
 - The 13 cluster's data already sits on the Linode volume at
   `/mnt/lotus-land-story/postgresql`, and stays there through the
   migration.
 
 ## Before the upgrade
 
-1. Run `backup.sh` by hand and check it reports success: restic snapshots
-   of the volume plus a fresh `pg_dumpall`, mirrored to the secondary
-   repository.
+1. Run `backup.sh` by hand and check it reports success: restic
+   snapshots of the volume plus a fresh `pg_dumpall`, mirrored to the
+   secondary repository.
 2. Take a Linode snapshot of the disk. That snapshot is the whole-box
    rollback.
 3. Check space: `df -h /` and `du -sh /mnt/lotus-land-story/postgresql`.
@@ -91,8 +93,8 @@ it to the volume.
 - `apt update` completes clean; `systemctl status apt-daily-upgrade`
   shows unattended-upgrades running again.
 - `pg_lsclusters` shows 15 `main` online, and the postgres-backed
-  containers connect — miniflux first, since its `pg_hba.conf` rules were
-  just re-applied.
+  containers connect — miniflux first, since its `pg_hba.conf` rules
+  were just re-applied.
 - `docker ps` shows the containers back up after the reboot;
   the Grafana network panels render cadvisor data.
 - `backup.sh` succeeds against the 15 cluster.

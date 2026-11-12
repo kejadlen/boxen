@@ -12,9 +12,10 @@ On 2026-11-01, the repository held 180 GiB, or 371 GiB before
 compression, for about 10.5 GiB of live data: 9.3 GiB from
 lotus-land-story's files, 84 MiB from its `pg_dumpall`, and 1.2 GiB from
 imperishable-night. Dedup only helps with data that stays put. Between
-two consecutive daily snapshots, restic added 1.8 GiB and removed
-2.0 GiB, so about a fifth of the live set turns over every day. The
-retention policy keeps monthly snapshots forever, so every version stays.
+two consecutive daily snapshots, restic added 1.8 GiB and removed 2.0
+GiB, so about a fifth of the live set turns over every day. The
+retention policy keeps monthly snapshots forever, so every version
+stays.
 
 The following directories account for the churn:
 
@@ -26,10 +27,11 @@ The following directories account for the churn:
 | `victoria-metrics` | 810 MiB | 492 |
 
 A directory can't add more in a day than its live size, so most of the
-1.8 GiB comes from gotosocial and VictoriaMetrics. gotosocial keeps media
-under `data/<account ID>/`, with one directory per account, remote
-accounts included. Apart from the 2.1 GiB `sqlite.db`, its data is mostly
-cached media from other servers, which gotosocial fetches again on demand.
+1.8 GiB comes from gotosocial and VictoriaMetrics. gotosocial keeps
+media under `data/<account ID>/`, with one directory per account, remote
+accounts included. Apart from the 2.1 GiB `sqlite.db`, its data is
+mostly cached media from other servers, which gotosocial fetches again
+on demand.
 
 ## Shrink the backup
 
@@ -44,20 +46,20 @@ Back up VictoriaMetrics with `vmbackup` instead of copying its live data
 directory, which isn't guaranteed to be consistent. A new phase runs the
 `vmbackup` image at the same version as VictoriaMetrics, with
 `-snapshot.createURL=http://victoria-metrics:8428/snapshot/create`,
-`-storageDataPath` mounted from `/mnt/lotus-land-story/victoria-metrics/data`,
-and `-dst=fs:///backup` mounted from `/mnt/lotus-land-story/victoria-metrics/backup`.
-`vmbackup` mirrors VictoriaMetrics' parts, so this fixes consistency but
-not churn. To keep the churn from piling up, the files phase excludes
-all of `victoria-metrics/`, and a separate restic snapshot of `backup/`,
-tagged `victoria-metrics`, keeps 7 days with `--keep-within-daily 7d`.
-Metrics history only needs the latest consistent copy to survive a
-rebuild.
+`-storageDataPath` mounted from
+`/mnt/lotus-land-story/victoria-metrics/data`, and `-dst=fs:///backup`
+mounted from `/mnt/lotus-land-story/victoria-metrics/backup`. `vmbackup`
+mirrors VictoriaMetrics' parts, so this fixes consistency but not churn.
+To keep the churn from piling up, the files phase excludes all of
+`victoria-metrics/`, and a separate restic snapshot of `backup/`, tagged
+`victoria-metrics`, keeps 7 days with `--keep-within-daily 7d`. Metrics
+history only needs the latest consistent copy to survive a rebuild.
 
 restic's `forget` applies one policy to every snapshot it considers, so
 each policy needs its own `forget` run, filtered by tag. Every other
-snapshot gets the tag `long-term`, and the existing snapshots get it with
-`restic tag --add long-term` before the new policies first run. When
-VictoriaMetrics moves to imperishable-night, it becomes a second
+snapshot gets the tag `long-term`, and the existing snapshots get it
+with `restic tag --add long-term` before the new policies first run.
+When VictoriaMetrics moves to imperishable-night, it becomes a second
 `services.restic.backups` job with its own `pruneOpts`.
 
 Back up gotosocial's database with `sqlite3 sqlite.db '.backup ...'`
@@ -99,11 +101,12 @@ runs, and on 180 GiB that may be hours. Run `restic check` afterward.
 The offsite copy needs to hold the repository after pruning, plus
 whatever of lolk's own data needs a backup. After the rewrite and prune
 on 2026-11-02, the repository held 25 GiB across 82 snapshots, down from
-180 GiB. Apart from the repository, lolk's `/mnt/data` holds 75 GiB, nearly
-all of it in `syncthing/sync`. About 65 GiB of that is build output under
-`src/`, which can be rebuilt, so the syncthing backup excludes directories
-named `target`, `node_modules`, `.venv`, `_build`, and `.direnv`. That
-leaves about 10 GiB, so the offsite copy totals about 35 GiB.
+180 GiB. Apart from the repository, lolk's `/mnt/data` holds 75 GiB,
+nearly all of it in `syncthing/sync`. About 65 GiB of that is build
+output under `src/`, which can be rebuilt, so the syncthing backup
+excludes directories named `target`, `node_modules`, `.venv`, `_build`,
+and `.direnv`. That leaves about 10 GiB, so the offsite copy totals
+about 35 GiB.
 
 syncthing replicates to its peers, but deletions replicate too, so
 syncthing isn't a backup.
@@ -119,13 +122,13 @@ Whatever the target, the copy should meet the following requirements:
 
 There are two ways to fill it. `restic copy` copies snapshots into a
 second repository and verifies them as it goes. If that repository is
-initialized with `--copy-chunker-params`, dedup carries over. Replicating
-the repository directory with rclone is simpler, but it copies any
-corruption along with everything else. It also copies lolk's master key,
-which predates the 2026-11-10 password rotation and may have leaked (risk
-3 in the [threat model](../threat-model.md)); `restic init` gives the new
-repository its own. lolk's own data is a second
-restic source that backs up straight to the offsite target.
+initialized with `--copy-chunker-params`, dedup carries over.
+Replicating the repository directory with rclone is simpler, but it
+copies any corruption along with everything else. It also copies lolk's
+master key, which predates the 2026-11-10 password rotation and may have
+leaked (risk 3 in the [threat model](../threat-model.md)); `restic init`
+gives the new repository its own. lolk's own data is a second restic
+source that backs up straight to the offsite target.
 
 The following targets are candidates:
 

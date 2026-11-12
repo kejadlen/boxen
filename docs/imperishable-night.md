@@ -1,8 +1,8 @@
 # imperishable-night
 
 A shared Linode 8 GB (4 vCPU, 8 GB RAM, 160 GB disk) in `us-west`,
-running NixOS from the flake in `imperishable-night/`. Services are moving
-here from lotus-land-story one at a time; the
+running NixOS from the flake in `imperishable-night/`. Services are
+moving here from lotus-land-story one at a time; the
 [migration plan](imperishable-night/2026-10-16-migrating-from-lotus-land-story.md)
 tracks the order. Today it runs the base system, Tailscale,
 node-exporter, cadvisor, restic, PostgreSQL, Caddy, Vector, calibre-web,
@@ -38,17 +38,17 @@ serial port at 19200 baud, through both GRUB and the kernel console.
 
 ## Tailscale
 
-The host joins the tailnet as `imperishable-night`, tagged
-`tag:server`. A tagged node belongs to the tag rather than to a user, and
-its node key doesn't expire. The tailnet keeps Tailscale's default
-allow-all policy, so the tag doesn't change what the host can reach. The
-policy only needs the tag in `tagOwners`. On first boot, NixOS's
-`tailscaled-autoconnect` service logs in with a single-use auth key that
-the root tofu configuration mints as `tailscale_tailnet_key`.
-nixos-anywhere writes the key to `/var/lib/tailscale-auth-key`. The node's
-state then persists in `/var/lib/tailscale`, and the service reads the
-key only when the node needs a login, so the key never enters the
-repository or the Nix store.
+The host joins the tailnet as `imperishable-night`, tagged `tag:server`.
+A tagged node belongs to the tag rather than to a user, and its node key
+doesn't expire. The tailnet keeps Tailscale's default allow-all policy,
+so the tag doesn't change what the host can reach. The policy only needs
+the tag in `tagOwners`. On first boot, NixOS's `tailscaled-autoconnect`
+service logs in with a single-use auth key that the root tofu
+configuration mints as `tailscale_tailnet_key`. nixos-anywhere writes
+the key to `/var/lib/tailscale-auth-key`. The node's state then persists
+in `/var/lib/tailscale`, and the service reads the key only when the
+node needs a login, so the key never enters the repository or the Nix
+store.
 
 The firewall trusts `tailscale0` completely. Publicly, it opens only
 TCP 80 and 443 and UDP 443 for web traffic, TCP 22 for quire, and UDP
@@ -68,23 +68,23 @@ discovers every running Linode instance and scrapes `<label>:9100` over
 the tailnet, so adding the host needed no scrape config change. The
 firewall keeps the port closed publicly.
 
-An hourly `update-metrics` timer, from `modules/nixos/update-metrics.nix`
-and shared with every NixOS host, feeds node-exporter's textfile collector
-for the personal dashboard's update tiles. It writes `node_reboot_required`
-when the booted kernel, modules, or initrd differ from the current
-system's, and asks GitHub how far the deployed nixpkgs revision trails the
-`nixos-26.05` head, as `nixpkgs_branch_lag_seconds` and
-`nixpkgs_branch_commits_behind`. When GitHub is unreachable, the branch
-metrics keep their last values, and `node_textfile_mtime_seconds` shows
-their age.
+An hourly `update-metrics` timer, from
+`modules/nixos/update-metrics.nix` and shared with every NixOS host,
+feeds node-exporter's textfile collector for the personal dashboard's
+update tiles. It writes `node_reboot_required` when the booted kernel,
+modules, or initrd differ from the current system's, and asks GitHub how
+far the deployed nixpkgs revision trails the `nixos-26.05` head, as
+`nixpkgs_branch_lag_seconds` and `nixpkgs_branch_commits_behind`. When
+GitHub is unreachable, the branch metrics keep their last values, and
+`node_textfile_mtime_seconds` shows their age.
 
 cadvisor runs from NixOS's `services.cadvisor` module rather than as a
-container, so it needs no host mounts, and its version comes from nixpkgs
-instead of lotus-land-story's pin. It listens on `:8080`, also closed
-publicly, and finds containers through podman's socket. The `cadvisor` job
-in the same scrape.yml lists `imperishable-night:8080` as a target. That
-address is already the instance label, so only lotus-land-story's
-in-network target needs relabeling.
+container, so it needs no host mounts, and its version comes from
+nixpkgs instead of lotus-land-story's pin. It listens on `:8080`, also
+closed publicly, and finds containers through podman's socket. The
+`cadvisor` job in the same scrape.yml lists `imperishable-night:8080` as
+a target. That address is already the instance label, so only
+lotus-land-story's in-network target needs relabeling.
 
 Vector runs from NixOS's `services.vector` module and reads container
 logs from journald, where podman writes them. It ships them to
@@ -101,33 +101,34 @@ serves `/metrics` outside `tailscale_auth`, which rejects tagged nodes
 such as lotus-land-story, so any tailnet node can read the metrics.
 
 gotosocial still exports metrics on `gotosocial:9464`, but nothing
-scrapes them until VictoriaMetrics moves here, since the port is reachable
-only on the `gotosocial` network.
+scrapes them until VictoriaMetrics moves here, since the port is
+reachable only on the `gotosocial` network.
 
 [scrape]: ../lotus-land-story/templates/scrape.yml
 
 ## Containers and Caddy
 
-Services run as podman containers through `virtualisation.oci-containers`.
-Containers reach each other by name over podman networks, and each app
-gets a network that it shares only with Caddy: `books` for calibre-web,
-`docs` for paperless-ngx, `gotosocial`, `homebox`, `irc` for soju,
-`ketchup`, `pro-tacts`, `quire`, and `rss` for miniflux.
-No app can reach another app, so none can forge the login headers that
-paperless-ngx, ketchup, quire, and miniflux trust. paperless-ngx and
-redis also share `paperless`, an internal network with no route out.
-Caddy alone is on `caddy`, whose fixed subnet, `10.89.0.0/24`, the
-Caddyfile lists in `trusted_proxies`. `rss` also has a fixed subnet,
-`10.89.255.0/24`, which miniflux trusts for its login header and its
-metrics endpoint, and `gotosocial` has `10.89.254.0/24`, which gotosocial
-trusts for `X-Forwarded-For`. Netavark publishes Caddy's ports on every network it
-joins and DNATs them to whichever network's rule comes first, while the
-reply leaves by whichever default route Caddy picks. The host's
-reverse-path filter is loose so those replies aren't dropped. A oneshot
-unit creates each network, and each container's unit requires the units
-for its networks. The unit skips a network that already exists, so
-changing a network's options means removing it by hand first. Container
-data lives under `/var/lib/<service>`.
+Services run as podman containers through
+`virtualisation.oci-containers`. Containers reach each other by name
+over podman networks, and each app gets a network that it shares only
+with Caddy: `books` for calibre-web, `docs` for paperless-ngx,
+`gotosocial`, `homebox`, `irc` for soju, `ketchup`, `pro-tacts`,
+`quire`, and `rss` for miniflux. No app can reach another app, so none
+can forge the login headers that paperless-ngx, ketchup, quire, and
+miniflux trust. paperless-ngx and redis also share `paperless`, an
+internal network with no route out. Caddy alone is on `caddy`, whose
+fixed subnet, `10.89.0.0/24`, the Caddyfile lists in `trusted_proxies`.
+`rss` also has a fixed subnet, `10.89.255.0/24`, which miniflux trusts
+for its login header and its metrics endpoint, and `gotosocial` has
+`10.89.254.0/24`, which gotosocial trusts for `X-Forwarded-For`.
+Netavark publishes Caddy's ports on every network it joins and DNATs
+them to whichever network's rule comes first, while the reply leaves by
+whichever default route Caddy picks. The host's reverse-path filter is
+loose so those replies aren't dropped. A oneshot unit creates each
+network, and each container's unit requires the units for its networks.
+The unit skips a network that already exists, so changing a network's
+options means removing it by hand first. Container data lives under
+`/var/lib/<service>`.
 
 Caddy runs the same `ghcr.io/kejadlen/caddy-kejadlen` image as
 lotus-land-story, with the [Caddyfile][caddyfile] mounted from the Nix
@@ -135,8 +136,8 @@ store, so changing it restarts the container on the next deploy. Each
 tailnet site registers as its own Tailscale node, using a reusable
 `tag:server` auth key that the root tofu configuration mints as
 `tailscale_tailnet_key.imperishable_night_caddy`. The key expires after
-90 days, Tailscale's maximum. It's only needed when a site registers, and
-`tofu apply` mints a new one once it expires.
+90 days, Tailscale's maximum. It's only needed when a site registers,
+and `tofu apply` mints a new one once it expires.
 
 Tailnet sites use `tls internal`, and Caddy's local CA uses
 lotus-land-story's root, so devices that already trust that root also
@@ -146,17 +147,17 @@ signs and renews its own intermediate from them.
 
 ## PostgreSQL
 
-PostgreSQL 17 runs from NixOS's `services.postgresql` module, the default
-version for the host's `stateVersion`. It listens on localhost, but
-`pg_hba.conf` admits no TCP logins. Clients connect through the socket in
-`/run/postgresql` and authenticate with peer auth, which maps the
-connecting process's OS user to the role of the same name, so no role has
-a password. Each role reaches only the database named after it; only the
-`postgres` superuser reaches every database. miniflux, its only client, runs
-as the host's `miniflux` user (uid 399) with `/run/postgresql` mounted
-in. postgresql recreates that directory when it restarts, so the
-miniflux container's unit is part of `postgresql.service` and restarts
-with it. The cluster lives in
+PostgreSQL 17 runs from NixOS's `services.postgresql` module, the
+default version for the host's `stateVersion`. It listens on localhost,
+but `pg_hba.conf` admits no TCP logins. Clients connect through the
+socket in `/run/postgresql` and authenticate with peer auth, which maps
+the connecting process's OS user to the role of the same name, so no
+role has a password. Each role reaches only the database named after it;
+only the `postgres` superuser reaches every database. miniflux, its only
+client, runs as the host's `miniflux` user (uid 399) with
+`/run/postgresql` mounted in. postgresql recreates that directory when
+it restarts, so the miniflux container's unit is part of
+`postgresql.service` and restarts with it. The cluster lives in
 `/var/lib/postgresql`, and [backups](backup.md) take a dump of it rather
 than copying its files.
 
@@ -199,12 +200,12 @@ deploying.
 Root login is disabled. `alpha` logs in with the keys from
 `github.com/kejadlen.keys`, has passwordless sudo, and is a trusted Nix
 user, so nixos-rebuild can copy closures in. The workstation evaluates
-the flake and the host builds it; the [root README](../README.md) has the
-deploy command.
+the flake and the host builds it; the [root README](../README.md) has
+the deploy command.
 
-`alpha`'s packages come from the `profile` package in the dotfiles flake,
-an input that `imperishable-night/flake.lock` pins. The dotfiles flake
-locks its own nixpkgs, so every machine that uses it gets the same
+`alpha`'s packages come from the `profile` package in the dotfiles
+flake, an input that `imperishable-night/flake.lock` pins. The dotfiles
+flake locks its own nixpkgs, so every machine that uses it gets the same
 versions. Tools that have DotSlash files in the dotfiles' `bin/` stay
 out of the profile. To pick up a dotfiles change, push it, run
 `nix flake update dotfiles --flake ./imperishable-night`, and deploy.

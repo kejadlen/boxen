@@ -3,16 +3,17 @@
 quire hosts the source for most repositories, and GitHub mirrors them
 from quire. For those, gitea is only a second mirror. The rest needed a
 new home first (see
-[Repositories that were only on gitea](#repositories-that-were-only-on-gitea)). This plan
-retires gitea, along with anubis and the Actions runner, instead of
-moving them to imperishable-night with the rest of lotus-land-story's
-services. quire moves to imperishable-night as planned in the
+[Repositories that were only on gitea](#repositories-that-were-only-on-gitea)).
+This plan retires gitea, along with anubis and the Actions runner,
+instead of moving them to imperishable-night with the rest of
+lotus-land-story's services. quire moves to imperishable-night as
+planned in the
 [migration plan](../imperishable-night/2026-10-16-migrating-from-lotus-land-story.md).
 
 Nothing on gitea needs to survive except the source. Issues, wikis, and
-releases are not exported. restic's snapshots of `/mnt/lotus-land-story/`
-include gitea's data directory, so a copy remains until those snapshots
-age out.
+releases are not exported. restic's snapshots of
+`/mnt/lotus-land-story/` include gitea's data directory, so a copy
+remains until those snapshots age out.
 
 ## Confirm that quire has everything
 
@@ -121,8 +122,8 @@ stays, because its commented-out resources may come back.
 ## Tearing down the host
 
 Removing a playbook doesn't stop what it started. On 2026-11-08, after
-the configuration changes were deployed, the following was removed by hand
-from lotus-land-story:
+the configuration changes were deployed, the following was removed by
+hand from lotus-land-story:
 
 1. The `gitea`, `anubis`, and `gitea-runner` containers.
 2. `/etc/fail2ban/filter.d/gitea.local`,
@@ -151,13 +152,14 @@ the following differences:
 - quire-gitweb moves with quire, since it reads quire's repositories.
 - `quire.github_mirror`, `quire.github_auth_header`, and
   `quire.sentry_dsn` move to `imperishable-night/secrets.sops.yml`.
-- lotus-land-story allows public SSH so that the work laptop, which isn't
-  on the tailnet, can push to quire. imperishable-night opens SSH
+- lotus-land-story allows public SSH so that the work laptop, which
+  isn't on the tailnet, can push to quire. imperishable-night opens SSH
   publicly for the same reason, overriding `openFirewall = false` from
-  `modules/nixos/common.nix`. `AllowUsers quire alpha@100.64.0.0/10
-  alpha@fd7a:115c:a1e0::/48` lets only `quire` log in from the internet,
-  and its `ForceCommand` limits it to quire's git commands. alpha stays
-  tailnet-only. fail2ban waits until the logs show it's needed.
+  `modules/nixos/common.nix`.
+  `AllowUsers quire alpha@100.64.0.0/10 alpha@fd7a:115c:a1e0::/48` lets
+  only `quire` log in from the internet, and its `ForceCommand` limits
+  it to quire's git commands. alpha stays tailnet-only. fail2ban waits
+  until the logs show it's needed.
 - If work blocks outbound SSH, the work laptop can push over HTTPS to
   `quire.kejadlen.dev` instead, once quire authenticates pushes on its
   public site.

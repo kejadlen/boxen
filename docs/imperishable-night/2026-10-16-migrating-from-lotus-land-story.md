@@ -13,18 +13,18 @@ problems that an in-place fix handles badly:
 
 imperishable-night replaces it: a shared Linode 8 GB (4 vCPU, 8 GB RAM,
 160 GB disk) running NixOS, with every service as a podman container
-through `virtualisation.oci-containers`. Services move over one at a time
-while lotus-land-story keeps serving the rest. There is no single
+through `virtualisation.oci-containers`. Services move over one at a
+time while lotus-land-story keeps serving the rest. There is no single
 cutover.
 
 The 8 GB size comes from lotus-land-story's usage with every service
 running, paperless-ngx included. Containers average 2.8 GB according to
-cadvisor, and PostgreSQL, Docker, and the OS bring the host to about
-3.6 GB. gotosocial, gitea, and pro-tacts each spike to two or three times
+cadvisor, and PostgreSQL, Docker, and the OS bring the host to about 3.6
+GB. gotosocial, gitea, and pro-tacts each spike to two or three times
 their average, and each Gitea Actions job adds up to 530 MB. NixOS also
 builds on the host, which takes an estimated 1 to 2 GB more during a
-deploy. That leaves about 2 GB of headroom at worst. CPU hit 93% of
-2 vCPU at the 99th percentile, so the extra cores matter too. The 44 GB of
+deploy. That leaves about 2 GB of headroom at worst. CPU hit 93% of 2
+vCPU at the 99th percentile, so the extra cores matter too. The 44 GB of
 data fits on the local disk.
 
 The move is lift-and-shift. Each container keeps its image, tag, and
@@ -42,8 +42,8 @@ sops-nix decrypts secrets with an age key that `ssh-to-age` derives from
 the host's SSH key. The host's secrets live in their own file,
 `imperishable-night/secrets.sops.yml`, encrypted to that key and the
 workstation's. Each secret is copied there from
-`host_vars/lotus-land-story.sops.yml` when its service moves, so the host
-never holds secrets for services it doesn't run.
+`host_vars/lotus-land-story.sops.yml` when its service moves, so the
+host never holds secrets for services it doesn't run.
 
 The Nix tooling runs on the workstation, which has Nix installed, though
 not NixOS. The [deploy tooling](2026-10-20-deploy-tooling.md) comparison
@@ -61,12 +61,13 @@ The base configuration covers the following:
 - Tailscale, joined as `imperishable-night`
 - node-exporter, which the `linode` job in
   `lotus-land-story/templates/scrape.yml` already discovers
-- cadvisor against podman's socket, scraped with its `instance` relabeled
-  to `imperishable-night:8080` like lotus-land-story's
+- cadvisor against podman's socket, scraped with its `instance`
+  relabeled to `imperishable-night:8080` like lotus-land-story's
 - PostgreSQL and the restic backup job (see
   [Back up both hosts](#back-up-both-hosts))
 - Caddy, running the same `ghcr.io/kejadlen/caddy-kejadlen` image with
-  no sites yet (see [Move ingress with each service](#move-ingress-with-each-service))
+  no sites yet (see
+  [Move ingress with each service](#move-ingress-with-each-service))
 - A firewall that trusts `tailscale0` and opens 80 and 443 publicly
 
 ## Move ingress with each service
@@ -122,16 +123,17 @@ registering each new site doesn't take a new key.
 Follow these steps for each service:
 
 1. Define the container and its Caddy site in the flake, with the image
-   tag and environment from its playbook in `lotus-land-story/`. Give the
-   container its own entry in `podmanNetworks`, and add that network to
-   Caddy's.
+   tag and environment from its playbook in `lotus-land-story/`. Give
+   the container its own entry in `podmanNetworks`, and add that network
+   to Caddy's.
 2. Deploy imperishable-night with the container stopped and the site
    left out.
 3. Stop the container on lotus-land-story, and remove its site from
    lotus-land-story's Caddyfile.
 4. Copy the service's data:
-   - For files, rsync `/mnt/lotus-land-story/<service>/` with `--delete`,
-     so that nothing already in the target directory survives.
+   - For files, rsync `/mnt/lotus-land-story/<service>/` with
+     `--delete`, so that nothing already in the target directory
+     survives.
    - For a database, `pg_dump` that one database and restore it on
      imperishable-night.
 5. Start the container on imperishable-night.
@@ -147,7 +149,8 @@ tests the backups along the way.
 
 miniflux is the only user of lotus-land-story's PostgreSQL 13 cluster,
 so its database is the only one to move. Restoring it on
-imperishable-night also jumps it from 13 to the newer nixpkgs PostgreSQL.
+imperishable-night also jumps it from 13 to the newer nixpkgs
+PostgreSQL.
 
 paperless-ngx is the only redis user, so redis moves with it.
 
@@ -161,10 +164,11 @@ breakage costs least:
 3. Family-facing services: calibre-web, paperless-ngx with redis, and
    pro-tacts.
 4. Public services: gotosocial. gitea and anubis retire instead of
-   moving (see [Retiring gitea](../lotus-land-story/2026-11-01-retiring-gitea.md)).
+   moving (see
+   [Retiring gitea](../lotus-land-story/2026-11-01-retiring-gitea.md)).
 5. authelia.
-6. Observability: VictoriaMetrics, VictoriaLogs, VictoriaTraces, Grafana,
-   Vector, and the OpenTelemetry collector.
+6. Observability: VictoriaMetrics, VictoriaLogs, VictoriaTraces,
+   Grafana, Vector, and the OpenTelemetry collector.
 7. Sites that only Caddy serves: `setup`, `gists`, `files`, `birbs`,
    `pihole`, and the `home-assistant-5119` proxy. The file-serving sites
    need their directories under `/mnt/lotus-land-story/caddy/data`
@@ -183,7 +187,8 @@ imperishable-night with a fresh database.
 ## Move pro-tacts
 
 pro-tacts serves CardDAV at `contacts.chislan.family`, the one site that
-gets its certificate over DNS-01 ([risk 4](../threat-model.md#4-a-linodes-secrets-reach-past-it)).
+gets its certificate over DNS-01
+([risk 4](../threat-model.md#4-a-linodes-secrets-reach-past-it)).
 imperishable-night already holds the account-wide DNSimple token as
 `caddy/dnsimple_token`, so the site's `tls` block moves unchanged. The
 `contacts` A record in `dns.tf` follows the tailnet address of
@@ -207,8 +212,8 @@ docker network.
 
 Follow these steps for the move:
 
-1. An hour ahead, apply the `contacts` record's 60-second TTL, and deploy
-   imperishable-night with pro-tacts stopped.
+1. An hour ahead, apply the `contacts` record's 60-second TTL, and
+   deploy imperishable-night with pro-tacts stopped.
 2. Copy the site's certificate from
    `/mnt/lotus-land-story/caddy/data/caddy/certificates/` to the same
    path under `/var/lib/caddy/data/`, so the new Caddy doesn't have to
@@ -323,7 +328,7 @@ quiet period, take a final restic snapshot of it. Then remove it from
 The live tofu configuration doesn't manage lotus-land-story. The root
 `main.tf` only looks it up with data sources, and the separate
 configuration in `lotus-land-story/` has had no state changes since
-April 2023, so it still describes a Nanode with a 10 GB volume. Delete the
-instance and its volume in Linode directly. Then remove the
-`lotus-land-story/` tofu files and the `lotus_land_story` data sources and
-local from the root `main.tf`.
+April 2023, so it still describes a Nanode with a 10 GB volume. Delete
+the instance and its volume in Linode directly. Then remove the
+`lotus-land-story/` tofu files and the `lotus_land_story` data sources
+and local from the root `main.tf`.

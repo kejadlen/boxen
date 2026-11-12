@@ -39,9 +39,10 @@ offsite copy is important but not urgent.
 A failure that matters alerts someone instead of only showing up on a
 dashboard. Today only healthchecks.io notifies. Grafana's one alert
 rule, "Disk space", has failed to evaluate since July 2025 because its
-datasource no longer exists. On 2026-10-18, mountain-of-faith's USB drive
-dropped off the bus, and minio ran without it for two weeks before anyone
-noticed. How alerts are defined and where they're sent is still open.
+datasource no longer exists. On 2026-10-18, mountain-of-faith's USB
+drive dropped off the bus, and minio ran without it for two weeks before
+anyone noticed. How alerts are defined and where they're sent is still
+open.
 
 Most services that aren't about the home stay up when home is down, so
 they run on a Linode. That includes monitoring, which needs to keep

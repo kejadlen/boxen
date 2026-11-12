@@ -47,7 +47,8 @@ The move pays off in four places:
 
 - Caddy stops holding a Tailscale auth key. Today's key is reusable,
   preauthorized, and tagged `tag:server`, so a foothold on the host can
-  enroll its own node (risk 4 in the [threat model](../threat-model.md)).
+  enroll its own node (risk 4 in the
+  [threat model](../threat-model.md)).
 - Tailscale Serve terminates HTTPS with a certificate it provisions for
   the service's name, so the sites stop depending on the shared root CA
   (risk 5). Phones never need to trust the root for them.
@@ -68,9 +69,9 @@ out of scope; Caddy is where routing and header mapping already live.
 ## Prove the headers first
 
 Three apps on imperishable-night, quire, paperless-ngx, and ketchup, log
-users in from a header that Caddy sets from the Tailscale identity. Serve
-adds `Tailscale-User-Login` and `Tailscale-User-Name` to requests it
-proxies, and strips any a client sends. The [Services page][services]
+users in from a header that Caddy sets from the Tailscale identity.
+Serve adds `Tailscale-User-Login` and `Tailscale-User-Name` to requests
+it proxies, and strips any a client sends. The [Services page][services]
 says only that layer 7 endpoints "work well when you need Tailscale to
 inject authentication headers"; nothing states it for `svc:` endpoints
 outright. So the first step is one service, `svc:ketchup`, in front of
@@ -102,12 +103,13 @@ loopback listener.
 Caddy gains one plain-HTTP listener for the services, published on the
 host's loopback only (`127.0.0.1:8080:8080`), with the site blocks
 matching on the names Serve passes. `tls internal`, `bind tailscale/`,
-and `tailscale_auth` go; `header_up Remote-User {header.Tailscale-User-Login}`
-replaces the identity mapping. The listener must trust those headers
-only from Serve. Inside the container, the host's connections arrive
-from the `caddy` network's gateway, `10.89.0.1`, while the apps arrive
-from their own networks, so a `remote_ip` matcher on the gateway gates
-the identity sites and Caddy strips the headers from anything else.
+and `tailscale_auth` go;
+`header_up Remote-User {header.Tailscale-User-Login}` replaces the
+identity mapping. The listener must trust those headers only from Serve.
+Inside the container, the host's connections arrive from the `caddy`
+network's gateway, `10.89.0.1`, while the apps arrive from their own
+networks, so a `remote_ip` matcher on the gateway gates the identity
+sites and Caddy strips the headers from anything else.
 
 The policy replaces the `tag:site` plan with grants whose destinations
 are service names, and adds `autoApprovers.services` so a deploy that
@@ -146,7 +148,8 @@ same shape as each one moves.
 ## Order of work
 
 1. Confirm HTTPS certificates are enabled on the tailnet, and add
-   `autoApprovers.services` for `svc:ketchup` to the policy in `main.tf`.
+   `autoApprovers.services` for `svc:ketchup` to the policy in
+   `main.tf`.
 2. Add Caddy's loopback listener and the `svc:ketchup` service to
    imperishable-night, deploy, and record the findings above in this
    document.

@@ -6,7 +6,8 @@ As of 2025Q4, it's running 3 2TB NVMe drives in a RAID5 configuration.
 
 ## bootstrapping
 
-- Assumes the base OS has been installed and the system is accessible via SSH.
+- Assumes the base OS has been installed and the system is accessible
+  via SSH.
 
 ### Adding SSH keys
 
@@ -23,8 +24,8 @@ SSH_AUTH_SOCK=~/Library/Group\ Containers/2BUA8C4S2C.com.1password/t/agent.sock 
 
 ### Ansible
 
-This needs to be done until we have Tailscale up and running, since otherwise
-we can't get the IP for the hostname.
+This needs to be done until we have Tailscale up and running, since
+otherwise we can't get the IP for the hostname.
 
 ```sh
 # Using ssh_config
@@ -38,8 +39,8 @@ all:
       ansible_host: 192.168.1.xyz
 ```
 
-Now Ansible can be run, needing `--ask-become-pass` since `/etc/sudoers` needs
-to be updated:
+Now Ansible can be run, needing `--ask-become-pass` since `/etc/sudoers`
+needs to be updated:
 
 ```sh
 ansible-playbook --ask-become-pass --limit=legacy-of-lunatic-kingdom legacy-of-lunatic-kingdom/main.yml
@@ -55,8 +56,8 @@ sudo tailscale login
 
 Disable key expiry in Tailscale.
 
-And now the IP override can be removed since we should get DNS resolution
-through Tailscale.
+And now the IP override can be removed since we should get DNS
+resolution through Tailscale.
 
 ## TODO
 

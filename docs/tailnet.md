@@ -30,7 +30,8 @@ from the side that opens the connection. Two kinds of traffic are left
 out to keep it readable: your Mac, which reaches everything, and
 monitoring and DNS. For monitoring, the Linodes scrape every node, every
 node ships logs to the Linodes, and mountain-of-faith probes the private
-sites. For DNS, everything resolves through pi-hole on mountain-of-faith.
+sites. For DNS, everything resolves through pi-hole on
+mountain-of-faith.
 
 ```mermaid
 flowchart LR
@@ -90,8 +91,8 @@ it can reach today, and what it could reach under the target policy:
 
 Mitigated means the attack fails unless an assumption below breaks.
 Addressable means a fix exists but hasn't landed. The rollout below
-narrows the device and server rows, and an append-only repository on lolk
-removes backup deletion. Open means the risk is accepted.
+narrows the device and server rows, and an append-only repository on
+lolk removes backup deletion. Open means the risk is accepted.
 
 Two findings make the Linode row the worst one:
 
@@ -174,8 +175,8 @@ Servers reach each other on the following ports:
 | 9428 | VictoriaLogs ingestion |
 | 10009 | Prusa exporter |
 
-A future grant would let your phone reach Rex on your Mac, from the owner
-with an iOS posture.
+A future grant would let your phone reach Rex on your Mac, from the
+owner with an iOS posture.
 
 ## Rollout
 
@@ -185,8 +186,8 @@ Each step can be rolled back, and access only narrows in the last one:
    caddytest-proxy, home-assistant, and homeassistant-509.
 2. Add the target grants and `tests` alongside the current allow-all
    rule.
-3. Tag the servers `tag:server` with `tailscale_device_tags`, one host at
-   a time, and check scrapes, backups, and logs after each.
+3. Tag the servers `tag:server` with `tailscale_device_tags`, one host
+   at a time, and check scrapes, backups, and logs after each.
 4. Mint the Caddy auth key with `tag:site`, and retag the site nodes.
    lotus-land-story's site nodes are user-owned, so they need retagging
    or replacing when their services move. Replacing the key with

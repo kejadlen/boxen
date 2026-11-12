@@ -10,7 +10,8 @@ from the repository root's `nix develop` shell.
 The host joins the tailnet tagged `tag:server`. In the Tailscale admin
 console, set up the following once:
 
-- The policy file has `"tagOwners": {"tag:server": ["autogroup:admin"]}`.
+- The policy file has
+  `"tagOwners": {"tag:server": ["autogroup:admin"]}`.
 - The `boxen-tailscale` OAuth client has write access on the `auth_keys`
   scope and `tag:server` among its tags.
 
@@ -71,8 +72,10 @@ For later deploys, see the [root README](../README.md).
 
 ## Rex
 
-The [Rex login server](https://www.superlogical.com/rex/docs/linux/login-server)
-runs a Rex server as `alpha` for the Tailscale login in `rex/tailscale_login`
-in `secrets.sops.yml`. Tailscale Serve exposes it on port 7297, since Caddy
-holds 443. In Rex for Mac, choose **Add Remote Host…** and enter
+The
+[Rex login server](https://www.superlogical.com/rex/docs/linux/login-server)
+runs a Rex server as `alpha` for the Tailscale login in
+`rex/tailscale_login` in `secrets.sops.yml`. Tailscale Serve exposes it
+on port 7297, since Caddy holds 443. In Rex for Mac, choose
+**Add Remote Host…** and enter
 `https://imperishable-night.<tailnet>.ts.net:7297`.

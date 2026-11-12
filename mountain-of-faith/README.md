@@ -7,6 +7,7 @@ ansible-playbook -l mountain-of-faith mountain-of-faith/main.yml
 ```
 
 - Log into Tailscale: `sudo tailscale up`
-- Disable the key expiry in the [Tailscale console](https://login.tailscale.com/admin/machines)
+- Disable the key expiry in the
+  [Tailscale console](https://login.tailscale.com/admin/machines)
 - Remove the manual IP now that the host is on the tailnet
 - Reboot so the kernel picks up `cmdline.txt` changes

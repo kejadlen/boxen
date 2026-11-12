@@ -1,9 +1,9 @@
 # legacy-of-lunatic-kingdom
 
-The NAS — "lolk" for short. A Beelink ME mini with three 2 TB NVMe drives
-in RAID5, running Debian trixie on the tailnet. It hosts the servers'
-restic repository and syncthing data, and is growing into running
-services: caddy today, immich and jellyfin planned.
+The NAS — "lolk" for short. A Beelink ME mini with three 2 TB NVMe
+drives in RAID5, running Debian trixie on the tailnet. It hosts the
+servers' restic repository and syncthing data, and is growing into
+running services: caddy today, immich and jellyfin planned.
 
 For first-time setup, see the [bootstrap README][readme]. lolk is
 [moving to NixOS](legacy-of-lunatic-kingdom/2026-11-01-migrating-to-nixos.md)
@@ -18,15 +18,15 @@ each service gets a subdirectory there.
 
 Containers run under Podman, managed by Quadlet: systemd generates a
 service from each `.container` file in `/etc/containers/systemd/`, named
-after the file (`caddy.container` becomes `caddy.service`). lotus-land-story
-runs Docker until it [retires][migration], so container conventions
-differ between the two hosts for now.
+after the file (`caddy.container` becomes `caddy.service`).
+lotus-land-story runs Docker until it [retires][migration], so container
+conventions differ between the two hosts for now.
 
 [migration]: imperishable-night/2026-10-16-migrating-from-lotus-land-story.md
 
 Containers that talk to each other join the `legacy_of_lunatic_kingdom`
-podman network, so they address each other by container name — caddy will
-proxy `immich:2283`, not a published host port.
+podman network, so they address each other by container name — caddy
+will proxy `immich:2283`, not a published host port.
 
 ## Caddy
 
@@ -37,15 +37,15 @@ Each site gets a dedicated ts.net hostname through the `ts` snippet in
 logging. Adding a site is a three-line site block.
 
 The tailscale auth key is a podman secret (`caddy_tsauthkey`), injected
-env-type as `TS_AUTHKEY`. The plugin reads the key only when registering a
-new node; state persists under `caddy/data/tailscale`, so an expired key
-does not disturb a running container. Rotating the key in sops recreates
-the secret and restarts the service.
+env-type as `TS_AUTHKEY`. The plugin reads the key only when registering
+a new node; state persists under `caddy/data/tailscale`, so an expired
+key does not disturb a running container. Rotating the key in sops
+recreates the secret and restarts the service.
 
-Secret conventions going forward: env-type secrets for consumers that read
-environment variables, and the default mount-type (`/run/secrets/<name>`)
-for consumers that read files, such as `POSTGRES_PASSWORD_FILE` in immich's
-postgres.
+Secret conventions going forward: env-type secrets for consumers that
+read environment variables, and the default mount-type
+(`/run/secrets/<name>`) for consumers that read files, such as
+`POSTGRES_PASSWORD_FILE` in immich's postgres.
 
 The unit also caps memory at 1 GB — an unbounded caddy once took
 lotus-land-story down with it — and publishes `:2019` so VictoriaMetrics
@@ -73,8 +73,8 @@ can scrape caddy's metrics endpoint.
 ## Observability
 
 VictoriaMetrics on lotus-land-story scrapes lolk over the tailnet:
-node-exporter on `:9100`, syncthing on `:8384`, and caddy on `:2019` (see
-[scrape.yml][scrape]). journald ships to VictoriaLogs through
+node-exporter on `:9100`, syncthing on `:8384`, and caddy on `:2019`
+(see [scrape.yml][scrape]). journald ships to VictoriaLogs through
 journal-upload, which carries caddy's JSON access logs.
 
 [scrape]: ../lotus-land-story/templates/scrape.yml
@@ -82,8 +82,8 @@ journal-upload, which carries caddy's JSON access logs.
 ## Backup role
 
 lotus-land-story and imperishable-night back up daily into one shared
-restic repository on lolk, over SFTP as the `restic` user, and each prunes
-its own snapshots. It's the only long-term copy of their backups. The full
-flow lives in [backup.md][backup].
+restic repository on lolk, over SFTP as the `restic` user, and each
+prunes its own snapshots. It's the only long-term copy of their backups.
+The full flow lives in [backup.md][backup].
 
 [backup]: backup.md

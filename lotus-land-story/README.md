@@ -1,6 +1,6 @@
 # Lotus Land Story
 
-```
+```text
 # setup
 echo 'domain = "kejadlen.dev"' > terraform.tfvars
 
