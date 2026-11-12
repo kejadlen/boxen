@@ -28,6 +28,11 @@ profile's "GRUB 2" kernel option reads GRUB's configuration off
 writes a boot sector. Linode's Filesystem/Boot Helpers are off because
 they don't work with NixOS.
 
+Swap is encrypted with a random key that NixOS generates at each boot,
+so memory paged out to `/dev/sdb`, secrets included, can't be read from
+the disk afterward. Hibernation can't work with it, and nothing here
+uses hibernation.
+
 Lish, Linode's out-of-band console, reaches the host over the first
 serial port at 19200 baud, through both GRUB and the kernel console.
 

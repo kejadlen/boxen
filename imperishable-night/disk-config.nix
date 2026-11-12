@@ -12,6 +12,12 @@
     };
   };
 
-  # Linode creates the swap disk alongside the image disk.
-  swapDevices = [ { device = "/dev/disk/by-id/scsi-0QEMU_QEMU_HARDDISK_drive-scsi-disk-1"; } ];
+  # Linode creates the swap disk alongside the image disk. A fresh key each
+  # boot keeps paged-out secrets unreadable at rest.
+  swapDevices = [
+    {
+      device = "/dev/disk/by-id/scsi-0QEMU_QEMU_HARDDISK_drive-scsi-disk-1";
+      randomEncryption.enable = true;
+    }
+  ];
 }
