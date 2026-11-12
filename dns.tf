@@ -17,7 +17,7 @@ resource "dnsimple_zone_record" "chislan_family_subdomains" {
   for_each = {
     auth     = { zone = dnsimple_zone.zones["chislan_family"], ip = local.lotus_land_story.ip_address }
     birbs    = { zone = dnsimple_zone.zones["chislan_family"], ip = local.lotus_land_story.ip_address }
-    contacts = { zone = dnsimple_zone.zones["chislan_family"], ip = data.tailscale_device.pro_tacts.addresses.0, ttl = 60 }
+    contacts = { zone = dnsimple_zone.zones["chislan_family"], ip = data.tailscale_device.pro_tacts.addresses.0 }
     docs     = { zone = dnsimple_zone.zones["chislan_family"], ip = local.lotus_land_story.ip_address }
     files    = { zone = dnsimple_zone.zones["chislan_family"], ip = local.lotus_land_story.ip_address }
   }
@@ -26,8 +26,7 @@ resource "dnsimple_zone_record" "chislan_family_subdomains" {
   name      = each.key
   value     = each.value.ip
   type      = "A"
-  # contacts is short while pro-tacts moves to imperishable-night and its node's IP changes.
-  ttl = try(each.value.ttl, null)
+  ttl       = 3600
 }
 
 # TODO
