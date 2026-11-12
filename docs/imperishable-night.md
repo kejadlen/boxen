@@ -5,9 +5,9 @@ running NixOS from the flake in `imperishable-night/`. Services are moving
 here from lotus-land-story one at a time; the
 [migration plan](imperishable-night/2026-10-16-migrating-from-lotus-land-story.md)
 tracks the order. Today it runs the base system, Tailscale,
-node-exporter, cadvisor, restic, Caddy, Vector, homebox, ketchup,
-paperless-ngx with redis, irc (soju, with gamja served by Caddy), and
-quire.
+node-exporter, cadvisor, restic, PostgreSQL, Caddy, Vector, homebox,
+ketchup, paperless-ngx with redis, irc (soju, with gamja served by
+Caddy), and quire.
 
 For first-time setup, see the [bootstrap README][readme].
 
@@ -123,6 +123,16 @@ lotus-land-story's root, so devices that already trust that root also
 trust imperishable-night's sites. The root certificate is
 `modules/nixos/caddy-root.crt`, and its key is a sops secret. Caddy
 signs and renews its own intermediate from them.
+
+## PostgreSQL
+
+PostgreSQL 17 runs from NixOS's `services.postgresql` module, the default
+version for the host's `stateVersion`. It listens on TCP only on localhost. Clients
+connect through the socket in `/run/postgresql` and authenticate with
+peer auth, which maps the connecting process's OS user to the role of the
+same name, so no role has a password. The cluster lives in
+`/var/lib/postgresql`, and [backups](backup.md) take a dump of it rather
+than copying its files.
 
 ## Secrets
 

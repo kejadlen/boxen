@@ -127,6 +127,7 @@ in
     "d /var/lib/paperless-ngx/data 0700 1000 1000 -"
     "d /var/lib/paperless-ngx/export 0700 1000 1000 -"
     "d /var/lib/paperless-ngx/media 0700 1000 1000 -"
+    "d /var/lib/postgresql-dump 0700 root root -"
     "d /var/lib/soju 0755 root root -"
     "d /var/lib/quire 0755 quire quire -"
   ];
@@ -346,6 +347,9 @@ in
     networks = [ "quire" ];
   };
 
+  # Socket logins authenticate as their OS user; TCP listens only on localhost.
+  services.postgresql.enable = true;
+
   sops.secrets."restic/password" = { };
   sops.secrets."restic/healthcheck" = { };
   sops.templates."restic.env".content = ''
@@ -372,7 +376,11 @@ in
         "sftp.command='ssh restic@legacy-of-lunatic-kingdom -i /etc/ssh/ssh_host_ed25519_key -s sftp'"
       ];
       paths = [ "/var/lib" ];
-      exclude = [ "/var/lib/containers" ];
+      # A file-level copy of the running cluster isn't restorable; the dump is.
+      exclude = [
+        "/var/lib/containers"
+        "/var/lib/postgresql"
+      ];
       # Waits out the other host's prune, which locks the shared repository.
       extraBackupArgs = [
         "--retry-lock=30m"
@@ -391,9 +399,13 @@ in
         OnCalendar = "03:00";
         Persistent = true;
       };
+      # Last, so a failed dump fails the run. The rename keeps the previous dump if it does.
       backupPrepareCommand = ''
         date +%s > /run/restic-backups-daily/start
         ${ping "/start"}
+        ${pkgs.util-linux}/bin/runuser -u postgres -- ${config.services.postgresql.package}/bin/pg_dumpall \
+          > /var/lib/postgresql-dump/pg_dumpall.sql.tmp &&
+          mv /var/lib/postgresql-dump/pg_dumpall.sql.tmp /var/lib/postgresql-dump/pg_dumpall.sql
       '';
       # Pushes the same backup_* series as lotus-land-story's backup.sh.
       backupCleanupCommand = ''

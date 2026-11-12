@@ -57,8 +57,11 @@ status.
 
 NixOS's `services.restic.backups.daily` runs as the
 `restic-backups-daily` service at 03:00 UTC, and catches up on boot if the
-host was down then. It backs up `/var/lib`, excluding podman's
-`/var/lib/containers`, tagged `long-term`. Then it runs `unlock` and
+host was down then. It first writes `pg_dumpall` output to
+`/var/lib/postgresql-dump/pg_dumpall.sql`, so a failed dump fails the run
+and leaves the previous dump in place. It then backs up `/var/lib`,
+tagged `long-term`, excluding podman's `/var/lib/containers` and the live
+PostgreSQL cluster in `/var/lib/postgresql`. Then it runs `unlock` and
 `forget --prune` with the same `long-term` retention as lotus-land-story,
 limited to `--host=imperishable-night` so the policy never touches
 lotus-land-story's snapshots. Backup and prune
