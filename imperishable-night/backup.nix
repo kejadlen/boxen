@@ -60,6 +60,8 @@
       backupPrepareCommand = ''
         date +%s > /run/restic-backups-daily/start
         ${ping "/start"}
+        # Writes under /var/lib/pro-tacts, so the file backup picks it up.
+        ${config.virtualisation.podman.package}/bin/podman exec pro-tacts rake db:dump || exit
         ${pkgs.util-linux}/bin/runuser -u postgres -- ${config.services.postgresql.package}/bin/pg_dumpall \
           > /var/lib/postgresql-dump/pg_dumpall.sql.tmp &&
           mv /var/lib/postgresql-dump/pg_dumpall.sql.tmp /var/lib/postgresql-dump/pg_dumpall.sql

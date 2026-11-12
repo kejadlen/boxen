@@ -110,6 +110,19 @@ rss {
 	}
 }
 
+# Tailnet-only; DNS-01 gets the publicly trusted certificate CardDAV clients need.
+contacts.chislan.family {
+	bind tailscale/pro-tacts
+	log
+	tls {
+		dns dnsimple {env.DNSIMPLE_API_ACCESS_TOKEN}
+	}
+	tailscale_auth
+	reverse_proxy pro-tacts:9292 {
+		header_up Remote-User {http.auth.user.tailscale_user}
+	}
+}
+
 ### Public
 
 quire.kejadlen.dev {

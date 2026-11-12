@@ -212,14 +212,12 @@ in
   virtualisation.oci-containers.containers.pro-tacts = {
     image = "ghcr.io/kejadlen/pro-tacts:${versions.pro-tacts}";
     pull = "always";
-    # Stays stopped until its data is copied from lotus-land-story.
-    autoStart = false;
     environment = {
       PRO_TACTS_DATA_DIR = "/data";
       PRO_TACTS_DEBUG = "true";
     };
     volumes = [ "/var/lib/pro-tacts:/data" ];
-    networks = [ "contacts" ];
+    networks = [ "pro-tacts" ];
   };
 
   # gamja reaches soju through Caddy's /socket, so neither listener is published.

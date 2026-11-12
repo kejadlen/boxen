@@ -7,8 +7,7 @@ here from lotus-land-story one at a time; the
 tracks the order. Today it runs the base system, Tailscale,
 node-exporter, cadvisor, restic, PostgreSQL, Caddy, Vector, calibre-web,
 homebox, ketchup, miniflux, paperless-ngx with redis, irc (soju, with
-gamja served by Caddy), and quire. pro-tacts is defined but not started
-until its data moves.
+gamja served by Caddy), pro-tacts, and quire.
 
 For first-time setup, see the [bootstrap README][readme].
 

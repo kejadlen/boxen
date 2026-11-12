@@ -187,7 +187,7 @@ gets its certificate over DNS-01 ([risk 4](../threat-model.md#4-a-linodes-secret
 imperishable-night already holds the account-wide DNSimple token as
 `caddy/dnsimple_token`, so the site's `tls` block moves unchanged. The
 `contacts` A record in `dns.tf` follows the tailnet address of
-imperishable-night's `contacts` node.
+imperishable-night's `pro-tacts` node.
 
 The macOS and iOS Contacts apps sync with it, so the move must look like
 the same server to them. pro-tacts builds its sync tokens, ETags, and
@@ -198,27 +198,32 @@ stopped, and `Remote-User` is still `tailscale_user`. pro-tacts doesn't
 read the `X-User-Slug` header that lotus-land-story's `tsident` adds, so
 the `tailscale.slugs` map stays behind.
 
-The `contacts` node's tailnet IP changes, because imperishable-night's
-Caddy registers a new one. pro-tacts' traces go nowhere until
-VictoriaTraces moves, since `victoria-traces` resolves only on
-lotus-land-story's docker network.
+The site's tailnet node is `pro-tacts` on imperishable-night, replacing
+lotus-land-story's `contacts`, so the record's IP changes. The new name
+doesn't collide with the old node, so the old one can stay up until the
+move checks out. pro-tacts' traces go nowhere until VictoriaTraces
+moves, since `victoria-traces` resolves only on lotus-land-story's
+docker network.
 
 Follow these steps for the move:
 
-1. A day ahead, apply the `contacts` record's 60-second TTL, and deploy
+1. An hour ahead, apply the `contacts` record's 60-second TTL, and deploy
    imperishable-night with pro-tacts stopped.
 2. Copy the site's certificate from
    `/mnt/lotus-land-story/caddy/data/caddy/certificates/` to the same
    path under `/var/lib/caddy/data/`, so the new Caddy doesn't have to
    get a certificate while clients connect.
-3. Remove the site from lotus-land-story's Caddyfile, and stop
-   pro-tacts there.
-4. Rsync `/mnt/lotus-land-story/pro-tacts/` with `--delete`.
-5. Delete the old `contacts` machine in the Tailscale console, and
-   deploy imperishable-night with pro-tacts and its site.
-6. Apply tofu so the A record follows the new node.
+3. Rsync `/mnt/lotus-land-story/pro-tacts/` with `--delete` while
+   pro-tacts still runs, so the final copy is short.
+4. Stop pro-tacts on lotus-land-story, and rsync again.
+5. Deploy imperishable-night with pro-tacts and its site.
+6. Apply tofu so the A record follows the `pro-tacts` node.
 7. Check that the Contacts apps on macOS and iOS sync without
-   re-downloading, then restore the record's default TTL.
+   re-downloading. Until they do, starting pro-tacts on lotus-land-story
+   and pointing the record back is the rollback.
+8. Remove the site from lotus-land-story, delete the old `contacts`
+   machine in the Tailscale console, and restore the record's default
+   TTL.
 
 Avoid editing contacts during the move, so no client queues a change
 against the old server.

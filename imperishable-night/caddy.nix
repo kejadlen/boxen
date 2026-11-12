@@ -13,7 +13,6 @@ let
   podmanNetworks = {
     caddy = "--subnet ${subnets.caddy}";
     books = "";
-    contacts = "";
     docs = "";
     homebox = "";
     irc = "";
@@ -22,6 +21,7 @@ let
     rss = "--subnet ${subnets.rss}";
     # paperless-ngx's other network is its way out, so redis gets none.
     paperless = "--internal";
+    pro-tacts = "";
   };
 
   versions = {
@@ -99,11 +99,11 @@ in
     networks = [
       "caddy"
       "books"
-      "contacts"
       "docs"
       "homebox"
       "irc"
       "ketchup"
+      "pro-tacts"
       "quire"
       "rss"
     ];
