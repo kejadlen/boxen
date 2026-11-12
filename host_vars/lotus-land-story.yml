@@ -6,7 +6,6 @@ versions:
   docket:           latest # TODO Pin the version once we're not in active development anymore
   gotosocial:       0.22.3
   grafana:          12.4.3
-  miniflux:         2.3.5
   pro_tacts:        ruby-head-zjit # TODO Pin the version once we're not in active development anymore
   vector:           0.61.0
   victoria_logs:    v1.44.0
