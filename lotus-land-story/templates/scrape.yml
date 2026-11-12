@@ -162,8 +162,11 @@ scrape_configs:
         replacement: node-exporter
 
   - job_name: miniflux
+    scheme: https
+    tls_config:
+      ca_file: /caddy-root.crt
     static_configs:
-      - targets: ['miniflux:8080']
+      - targets: ['rss']
 
   - job_name: node-exporter
     static_configs:
