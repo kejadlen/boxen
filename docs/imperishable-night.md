@@ -159,7 +159,7 @@ restic. The file holds the following values:
 | Key | Source |
 |---|---|
 | `caddy.ts_authkey` | `tofu output -raw imperishable_night_caddy_auth_key` |
-| `caddy.dnsimple_token` | `dnsimple.caddy_token` in `host_vars/lotus-land-story.sops.yml` |
+| `caddy.dnsimple_token` | An account access token minted in DNSimple |
 | `caddy.ca_root_key` | `caddy/pki/authorities/local/root.key` in lotus-land-story's Caddy data directory |
 | `docket.fastmail_tokens.<name>` | `docket.fastmail_tokens.<name>` in `host_vars/lotus-land-story.sops.yml`; unused until docket deploys |
 | `docket.sentry_dsn` | `docket.sentry_dsn` in `host_vars/lotus-land-story.sops.yml`; unused until docket deploys |
