@@ -30,6 +30,7 @@
               age
               ansible-lint
               just
+              nixfmt
               nixos-anywhere
               nixos-rebuild
               opentofu
