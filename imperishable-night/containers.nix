@@ -37,8 +37,6 @@ in
   # https://github.com/linuxserver/docker-calibre-web
   virtualisation.oci-containers.containers.calibre-web = {
     image = "lscr.io/linuxserver/calibre-web:${versions.calibre-web}";
-    # Stays stopped until its data is copied from lotus-land-story.
-    autoStart = false;
     environment = {
       PUID = "0";
       PGID = "0";

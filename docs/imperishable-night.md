@@ -5,10 +5,9 @@ running NixOS from the flake in `imperishable-night/`. Services are moving
 here from lotus-land-story one at a time; the
 [migration plan](imperishable-night/2026-10-16-migrating-from-lotus-land-story.md)
 tracks the order. Today it runs the base system, Tailscale,
-node-exporter, cadvisor, restic, PostgreSQL, Caddy, Vector, homebox,
-ketchup, miniflux, paperless-ngx with redis, irc (soju, with gamja
-served by Caddy), and quire. calibre-web is defined but not started
-until its data moves.
+node-exporter, cadvisor, restic, PostgreSQL, Caddy, Vector, calibre-web,
+homebox, ketchup, miniflux, paperless-ngx with redis, irc (soju, with
+gamja served by Caddy), and quire.
 
 For first-time setup, see the [bootstrap README][readme].
 
