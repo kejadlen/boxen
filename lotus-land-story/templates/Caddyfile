@@ -160,13 +160,16 @@ files.chislan.family {
 	file_server
 }
 
+# Carries clients still resolving the old address to gotosocial on
+# imperishable-night, until the A record's TTL has passed.
 hey.kejadlen.dev {
 	log
 
-	reverse_proxy gotosocial:8080
-
-	handle /metrics {
-		respond 404
+	reverse_proxy https://imperishable-night {
+		header_up Host {host}
+		transport http {
+			tls_server_name {host}
+		}
 	}
 }
 
