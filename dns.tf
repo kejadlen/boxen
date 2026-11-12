@@ -37,7 +37,7 @@ resource "dnsimple_zone_record" "kejadlen_dev_subdomains" {
     gists   = local.lotus_land_story.ip_address
     git     = one(linode_instance.imperishable_night.ipv4)
     grafana = local.lotus_land_story.ip_address
-    hey     = local.lotus_land_story.ip_address
+    hey     = one(linode_instance.imperishable_night.ipv4)
     quire   = one(linode_instance.imperishable_night.ipv4)
   }
 
