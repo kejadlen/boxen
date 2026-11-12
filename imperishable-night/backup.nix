@@ -66,9 +66,14 @@
         ${ping "/start"}
         # Writes under /var/lib/pro-tacts, so the file backup picks it up.
         ${config.virtualisation.podman.package}/bin/podman exec pro-tacts rake db:dump || exit
-        # A file copy of a database in WAL mode can miss committed transactions; .backup can't.
+        # gotosocial's writes restart .backup's copy; see docs/research/2026-11-12-sqlite-backups.md.
+        # VACUUM INTO refuses an existing file, which a failed run can leave behind.
+        rm -f /var/lib/gotosocial/backup/sqlite.db.tmp
+        # SQLite would replay a WAL left beside the old copy over the new one.
         ${pkgs.sqlite}/bin/sqlite3 /var/lib/gotosocial/data/sqlite.db \
-          '.backup /var/lib/gotosocial/backup/sqlite.db' || exit
+          "VACUUM INTO '/var/lib/gotosocial/backup/sqlite.db.tmp'" &&
+          rm -f /var/lib/gotosocial/backup/sqlite.db-wal /var/lib/gotosocial/backup/sqlite.db-shm &&
+          mv /var/lib/gotosocial/backup/sqlite.db.tmp /var/lib/gotosocial/backup/sqlite.db || exit
         # Every other account's directory is remote media that gotosocial re-fetches.
         ids=$(${pkgs.sqlite}/bin/sqlite3 -readonly /var/lib/gotosocial/backup/sqlite.db \
           'select id from accounts where domain is null') || exit

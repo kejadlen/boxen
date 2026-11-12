@@ -52,16 +52,25 @@ exit status.
 
 NixOS's `services.restic.backups.daily` runs as the
 `restic-backups-daily` service at 03:00 UTC, and catches up on boot if
-the host was down then. It first dumps pro-tacts' database with
-`podman exec pro-tacts rake db:dump`, and gotosocial's SQLite database
-with `.backup` into `/var/lib/gotosocial/backup/`. It writes an exclude
-file that drops every directory in `/var/lib/gotosocial/data/` except
-the local accounts', since the rest is remote media that gotosocial
-re-fetches, and fails if the dump lists no local accounts. Last, it
-writes `pg_dumpall` output to `/var/lib/postgresql-dump/pg_dumpall.sql`,
-so a failed dump fails the run and leaves the previous dump in place. It
-then backs up `/var/lib`, tagged `long-term`, excluding podman's
-`/var/lib/containers`, the live PostgreSQL cluster in
+the host was down then. Before backing up, the unit runs the following
+steps, and any failure fails the run:
+
+1. Dumps pro-tacts' database with `podman exec pro-tacts rake db:dump`.
+2. Dumps gotosocial's SQLite database with `VACUUM INTO` into a
+   temporary file, then moves it over
+   `/var/lib/gotosocial/backup/sqlite.db`. The
+   [SQLite backup evaluation](research/2026-11-12-sqlite-backups.md)
+   covers why it doesn't use `.backup`.
+3. Writes an exclude file that drops every directory in
+   `/var/lib/gotosocial/data/` except the local accounts', since the
+   rest is remote media that gotosocial re-fetches. The run fails if the
+   dump lists no local accounts.
+4. Writes `pg_dumpall` output to
+   `/var/lib/postgresql-dump/pg_dumpall.sql`. A failed dump leaves the
+   previous dump in place.
+
+The unit then backs up `/var/lib`, tagged `long-term`, excluding
+podman's `/var/lib/containers`, the live PostgreSQL cluster in
 `/var/lib/postgresql`, and gotosocial's remote media. Then it runs
 `unlock` and `forget --prune` with the same `long-term` retention as
 lotus-land-story, limited to `--host=imperishable-night` so the policy
