@@ -12,6 +12,7 @@ let
   # reach it and forge the headers that header-trust apps take as a login.
   podmanNetworks = {
     caddy = "--subnet ${subnets.caddy}";
+    books = "";
     docs = "";
     homebox = "";
     irc = "";
@@ -96,6 +97,7 @@ in
     ];
     networks = [
       "caddy"
+      "books"
       "docs"
       "homebox"
       "irc"

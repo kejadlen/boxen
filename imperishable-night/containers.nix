@@ -9,6 +9,7 @@ let
   subnets = import ./subnets.nix;
 
   versions = {
+    calibre-web = "0.6.26-ls383";
     homebox = "0.27.1";
     ketchup = "20260525-e75f249";
     miniflux = "2.3.5";
@@ -19,6 +20,8 @@ let
 in
 {
   systemd.tmpfiles.rules = [
+    "d /var/lib/calibre-web/books 0755 root root -"
+    "d /var/lib/calibre-web/config 0755 root root -"
     # homebox's image runs as the distroless nonroot user.
     "d /var/lib/homebox 0755 65532 65532 -"
     "d /var/lib/ketchup 0755 root root -"
@@ -30,6 +33,24 @@ in
     "d /var/lib/soju 0755 root root -"
     "d /var/lib/quire 0755 quire quire -"
   ];
+
+  # https://github.com/linuxserver/docker-calibre-web
+  virtualisation.oci-containers.containers.calibre-web = {
+    image = "lscr.io/linuxserver/calibre-web:${versions.calibre-web}";
+    # Stays stopped until its data is copied from lotus-land-story.
+    autoStart = false;
+    environment = {
+      PUID = "0";
+      PGID = "0";
+      TZ = "Etc/UTC";
+      DOCKER_MODS = "linuxserver/mods:universal-calibre";
+    };
+    volumes = [
+      "/var/lib/calibre-web/books:/books"
+      "/var/lib/calibre-web/config:/config"
+    ];
+    networks = [ "books" ];
+  };
 
   sops.secrets."homebox/mailer/username" = { };
   sops.secrets."homebox/mailer/password" = { };
