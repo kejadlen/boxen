@@ -6,9 +6,8 @@ here from lotus-land-story one at a time; the
 [migration plan](imperishable-night/2026-10-16-migrating-from-lotus-land-story.md)
 tracks the order. Today it runs the base system, Tailscale,
 node-exporter, cadvisor, restic, PostgreSQL, Caddy, Vector, homebox,
-ketchup, paperless-ngx with redis, irc (soju, with gamja served by
-Caddy), and quire. miniflux is defined but not started until its
-database moves.
+ketchup, miniflux, paperless-ngx with redis, irc (soju, with gamja
+served by Caddy), and quire.
 
 For first-time setup, see the [bootstrap README][readme].
 
@@ -89,6 +88,12 @@ certificate against the shared Caddy root. Entries carry the same
 `container_id` and `container_name` fields as lotus-land-story's, plus
 `host` to tell the two hosts apart. Other journald entries stay on the
 host; read them with `journalctl`.
+
+The `miniflux` job in the same scrape.yml reaches miniflux at
+`https://rss/metrics` through Caddy. miniflux allows the request because
+it arrives from Caddy's address on the `rss` network. The `rss` site
+serves `/metrics` outside `tailscale_auth`, which rejects tagged nodes
+such as lotus-land-story, so any tailnet node can read the metrics.
 
 [scrape]: ../lotus-land-story/templates/scrape.yml
 

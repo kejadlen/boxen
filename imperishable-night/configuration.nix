@@ -261,8 +261,6 @@ in
   # https://miniflux.app/docs/configuration.html
   virtualisation.oci-containers.containers.miniflux = {
     image = "docker.io/miniflux/miniflux:${versions.miniflux}";
-    # Stays stopped until its database is restored from lotus-land-story.
-    autoStart = false;
     user = "${toString config.users.users.miniflux.uid}:${toString config.users.groups.miniflux.gid}";
     environment = {
       DATABASE_URL = "user=miniflux host=/run/postgresql dbname=miniflux";

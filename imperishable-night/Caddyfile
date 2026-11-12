@@ -84,6 +84,24 @@ quire {
 	}
 }
 
+rss {
+	import ts rss
+
+	# Outside tailscale_auth, which rejects tagged nodes like lotus-land-story's scraper.
+	handle /metrics {
+		reverse_proxy miniflux:8080 {
+			header_up -Remote-User
+		}
+	}
+
+	handle {
+		tailscale_auth
+		reverse_proxy miniflux:8080 {
+			header_up Remote-User {http.auth.user.tailscale_login}
+		}
+	}
+}
+
 ### Public
 
 quire.kejadlen.dev {
