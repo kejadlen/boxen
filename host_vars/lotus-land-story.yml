@@ -2,7 +2,6 @@ versions:
   authelia:         4.39.28
   cadvisor:         0.60.6
   caddy:            2.11.7-2026.10.07 # don't forget to update caddy-kejadlen first!
-  calibre_web:      0.6.26-ls383
   docket:           latest # TODO Pin the version once we're not in active development anymore
   gotosocial:       0.22.3
   grafana:          12.4.3
