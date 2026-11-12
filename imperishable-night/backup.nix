@@ -5,7 +5,10 @@
 }:
 
 {
-  systemd.tmpfiles.rules = [ "d /var/lib/postgresql-dump 0700 root root -" ];
+  systemd.tmpfiles.rules = [
+    "d /var/lib/gotosocial/backup 0700 root root -"
+    "d /var/lib/postgresql-dump 0700 root root -"
+  ];
 
   sops.secrets."restic/password" = { };
   sops.secrets."restic/healthcheck" = { };
@@ -42,6 +45,7 @@
       extraBackupArgs = [
         "--retry-lock=30m"
         "--tag=long-term"
+        "--exclude-file=/run/restic-backups-daily/gotosocial-excludes"
       ];
       pruneOpts = [
         "--retry-lock=30m"
@@ -62,6 +66,20 @@
         ${ping "/start"}
         # Writes under /var/lib/pro-tacts, so the file backup picks it up.
         ${config.virtualisation.podman.package}/bin/podman exec pro-tacts rake db:dump || exit
+        # A file copy of a database in WAL mode can miss committed transactions; .backup can't.
+        ${pkgs.sqlite}/bin/sqlite3 /var/lib/gotosocial/data/sqlite.db \
+          '.backup /var/lib/gotosocial/backup/sqlite.db' || exit
+        # Every other account's directory is remote media that gotosocial re-fetches.
+        ids=$(${pkgs.sqlite}/bin/sqlite3 -readonly /var/lib/gotosocial/backup/sqlite.db \
+          'select id from accounts where domain is null') || exit
+        if [ -z "$ids" ]; then
+          echo "no local gotosocial accounts found"
+          exit 1
+        fi
+        {
+          echo '/var/lib/gotosocial/data/*'
+          for id in $ids; do echo "!/var/lib/gotosocial/data/$id"; done
+        } > /run/restic-backups-daily/gotosocial-excludes
         ${pkgs.util-linux}/bin/runuser -u postgres -- ${config.services.postgresql.package}/bin/pg_dumpall \
           > /var/lib/postgresql-dump/pg_dumpall.sql.tmp &&
           mv /var/lib/postgresql-dump/pg_dumpall.sql.tmp /var/lib/postgresql-dump/pg_dumpall.sql

@@ -6,9 +6,8 @@ here from lotus-land-story one at a time; the
 [migration plan](imperishable-night/2026-10-16-migrating-from-lotus-land-story.md)
 tracks the order. Today it runs the base system, Tailscale,
 node-exporter, cadvisor, restic, PostgreSQL, Caddy, Vector, calibre-web,
-homebox, ketchup, miniflux, paperless-ngx with redis, irc (soju, with
-gamja served by Caddy), pro-tacts, and quire. gotosocial is defined but
-not started until its data moves.
+gotosocial, homebox, ketchup, miniflux, paperless-ngx with redis, irc
+(soju, with gamja served by Caddy), pro-tacts, and quire.
 
 For first-time setup, see the [bootstrap README][readme].
 
@@ -95,6 +94,10 @@ The `miniflux` job in the same scrape.yml reaches miniflux at
 it arrives from Caddy's address on the `rss` network. The `rss` site
 serves `/metrics` outside `tailscale_auth`, which rejects tagged nodes
 such as lotus-land-story, so any tailnet node can read the metrics.
+
+gotosocial still exports metrics on `gotosocial:9464`, but nothing
+scrapes them until VictoriaMetrics moves here, since the port is reachable
+only on the `gotosocial` network.
 
 [scrape]: ../lotus-land-story/templates/scrape.yml
 

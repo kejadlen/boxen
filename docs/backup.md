@@ -57,11 +57,17 @@ status.
 
 NixOS's `services.restic.backups.daily` runs as the
 `restic-backups-daily` service at 03:00 UTC, and catches up on boot if the
-host was down then. It first writes `pg_dumpall` output to
+host was down then. It first dumps pro-tacts' database with
+`podman exec pro-tacts rake db:dump`, and gotosocial's SQLite database
+with `.backup` into `/var/lib/gotosocial/backup/`. It writes an exclude
+file that drops every directory in `/var/lib/gotosocial/data/` except the
+local accounts', as lotus-land-story's run does, and fails if the dump
+lists no local accounts. Last, it writes `pg_dumpall` output to
 `/var/lib/postgresql-dump/pg_dumpall.sql`, so a failed dump fails the run
 and leaves the previous dump in place. It then backs up `/var/lib`,
-tagged `long-term`, excluding podman's `/var/lib/containers` and the live
-PostgreSQL cluster in `/var/lib/postgresql`. Then it runs `unlock` and
+tagged `long-term`, excluding podman's `/var/lib/containers`, the live
+PostgreSQL cluster in `/var/lib/postgresql`, and gotosocial's remote
+media. Then it runs `unlock` and
 `forget --prune` with the same `long-term` retention as lotus-land-story,
 limited to `--host=imperishable-night` so the policy never touches
 lotus-land-story's snapshots. Backup and prune

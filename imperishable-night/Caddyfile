@@ -125,6 +125,16 @@ contacts.chislan.family {
 
 ### Public
 
+hey.kejadlen.dev {
+	log
+
+	reverse_proxy gotosocial:8080
+
+	handle /metrics {
+		respond 404
+	}
+}
+
 quire.kejadlen.dev {
 	# quire trusts Remote-User as proof of login.
 	reverse_proxy quire:3000 {

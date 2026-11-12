@@ -67,8 +67,6 @@ in
   # https://docs.gotosocial.org/en/latest/getting_started/installation/container/
   virtualisation.oci-containers.containers.gotosocial = {
     image = "docker.io/superseriousbusiness/gotosocial:${versions.gotosocial}";
-    # Stays stopped until its data is copied from lotus-land-story.
-    autoStart = false;
     environment = {
       GTS_HOST = "hey.kejadlen.dev";
       GTS_TRUSTED_PROXIES = subnets.gotosocial;
