@@ -107,13 +107,6 @@ https://metrics {
 
 ### Services
 
-rss {
-	import tsauth rss
-	reverse_proxy miniflux:8080 {
-		header_up Remote-User {http.auth.user.tailscale_login}
-	}
-}
-
 docket {
 	import tsauth docket
 	reverse_proxy docket:3000
