@@ -94,28 +94,6 @@ ping_healthcheck /start
 # which blocks every later prune. unlock only removes stale locks.
 phase unlock restic unlock
 
-# A file copy of a database in WAL mode can miss committed transactions;
-# `.backup` goes through SQLite.
-phase gotosocial sqlite3 /mnt/lotus-land-story/gotosocial/data/sqlite.db \
-  '.backup /mnt/lotus-land-story/gotosocial/backup/sqlite.db'
-
-# Every other account's directory is remote media that gotosocial re-fetches.
-# Queried here rather than inside the exclude file's process substitution,
-# where a failure would silently exclude the local accounts' media too.
-gotosocial_local_ids=$(sqlite3 -readonly /mnt/lotus-land-story/gotosocial/backup/sqlite.db \
-  'select id from accounts where domain is null')
-if [[ -z ${gotosocial_local_ids} ]]; then
-  echo "no local gotosocial accounts found"
-  exit 1
-fi
-
-gotosocial_excludes() {
-  echo '/mnt/lotus-land-story/gotosocial/data/*'
-  while read -r id; do
-    echo "!/mnt/lotus-land-story/gotosocial/data/${id}"
-  done <<<"${gotosocial_local_ids}"
-}
-
 # A copy of the live data directory isn't guaranteed consistent; a snapshot is.
 phase victoria-metrics-snapshot docker run --rm \
   --network lotus_land_story \
@@ -128,16 +106,17 @@ phase victoria-metrics-snapshot docker run --rm \
 
 # A file-level copy of the running cluster isn't restorable; the postgres
 # phase's pg_dumpall is. victoria-logs and victoria-traces are telemetry
-# that churns too much to keep.
+# that churns too much to keep. gotosocial's copy here is stale and mostly
+# remote media; imperishable-night backs up the live one.
 phase files restic --verbose backup \
   --tag long-term \
   /mnt/lotus-land-story/ \
   --exclude=/mnt/lotus-land-story/docker \
+  --exclude=/mnt/lotus-land-story/gotosocial \
   --exclude='/mnt/lotus-land-story/postgresql*' \
   --exclude=/mnt/lotus-land-story/victoria-metrics \
   --exclude=/mnt/lotus-land-story/victoria-logs \
-  --exclude=/mnt/lotus-land-story/victoria-traces \
-  --exclude-file=<(gotosocial_excludes)
+  --exclude=/mnt/lotus-land-story/victoria-traces
 
 phase postgres restic --verbose backup \
   --tag long-term \

@@ -12,19 +12,11 @@
     - name: Update Restic
       ansible.builtin.command: restic self-update
 
-    - name: Install sqlite3
-      ansible.builtin.package:
-        name: sqlite3
-        state: present
-
-    - name: Make directories for database dumps
+    - name: Make a directory for VictoriaMetrics snapshots
       ansible.builtin.file:
-        path: "{{ item }}"
+        path: /mnt/lotus-land-story/victoria-metrics/backup
         state: directory
         mode: "0700"
-      loop:
-        - /mnt/lotus-land-story/gotosocial/backup
-        - /mnt/lotus-land-story/victoria-metrics/backup
 
     - name: Generate SSH key
       community.crypto.openssh_keypair:

@@ -81,7 +81,6 @@
       ansible.builtin.import_tasks: restarts.yml
 
 - import_playbook: grafana.yml     # noqa: name[play]
-- import_playbook: gotosocial.yml  # noqa: name[play]
 - import_playbook: caddy.yml       # noqa: name[play]
 - import_playbook: security.yml    # noqa: name[play]
 - import_playbook: backup.yml      # noqa: name[play]

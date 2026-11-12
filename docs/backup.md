@@ -27,26 +27,22 @@ it finishes, so the journal shows where a slow or dead run sits. Each run:
    example, by the OOM killer) doesn't block every later prune.
 3. Dumps pro-tacts' database with `docker exec pro-tacts rake db:dump`,
    which writes under `/data` ahead of the file backup.
-4. Dumps gotosocial's SQLite database with `.backup` into
-   `gotosocial/backup/`, since a file copy of a database in WAL mode can
-   miss committed transactions.
-5. Snapshots VictoriaMetrics into `victoria-metrics/backup/` with
+4. Snapshots VictoriaMetrics into `victoria-metrics/backup/` with
    `vmbackup`.
-6. Backs up `/mnt/lotus-land-story/`, tagged `long-term`. It excludes
-   `docker/`; the live `postgresql*` cluster, whose dump step 7 backs up;
+5. Backs up `/mnt/lotus-land-story/`, tagged `long-term`. It excludes
+   `docker/`; the live `postgresql*` cluster, whose dump step 6 backs up;
    all of `victoria-metrics/`, `victoria-logs/`, and `victoria-traces/`;
-   and every directory in `gotosocial/data/` except the local accounts',
-   since the rest is remote media that gotosocial re-fetches. That also
-   excludes the live `sqlite.db`, whose dump from step 4 rides along.
-7. Backs up `pg_dumpall` output via stdin as `lotus-land-story.sql`, tagged
+   and `gotosocial/`, the stale copy left behind when gotosocial moved to
+   imperishable-night.
+6. Backs up `pg_dumpall` output via stdin as `lotus-land-story.sql`, tagged
    `long-term`.
-8. Backs up `victoria-metrics/backup/`, tagged `victoria-metrics`.
-9. Forgets this host's `victoria-metrics` snapshots older than 7 days.
+7. Backs up `victoria-metrics/backup/`, tagged `victoria-metrics`.
+8. Forgets this host's `victoria-metrics` snapshots older than 7 days.
    `vmbackup` rewrites as many parts as VictoriaMetrics merges, so a longer
    retention would keep gigabytes of churn.
-10. Runs `forget --prune` on this host's `long-term` snapshots, keeping
-    daily for one month, weekly for three months, monthly for two years,
-    and yearly forever.
+9. Runs `forget --prune` on this host's `long-term` snapshots, keeping
+   daily for one month, weekly for three months, monthly for two years,
+   and yearly forever.
 
 An exit trap pings healthchecks.io with success or failure and pushes
 `backup_*` metrics — including per-phase `backup_phase_duration_seconds` —
@@ -61,8 +57,8 @@ host was down then. It first dumps pro-tacts' database with
 `podman exec pro-tacts rake db:dump`, and gotosocial's SQLite database
 with `.backup` into `/var/lib/gotosocial/backup/`. It writes an exclude
 file that drops every directory in `/var/lib/gotosocial/data/` except the
-local accounts', as lotus-land-story's run does, and fails if the dump
-lists no local accounts. Last, it writes `pg_dumpall` output to
+local accounts', since the rest is remote media that gotosocial
+re-fetches, and fails if the dump lists no local accounts. Last, it writes `pg_dumpall` output to
 `/var/lib/postgresql-dump/pg_dumpall.sql`, so a failed dump fails the run
 and leaves the previous dump in place. It then backs up `/var/lib`,
 tagged `long-term`, excluding podman's `/var/lib/containers`, the live

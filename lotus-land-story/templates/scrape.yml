@@ -122,12 +122,6 @@ scrape_configs:
     static_configs:
       - targets: ['host.docker.internal:9323']
 
-  - job_name: gotosocial
-    metrics_path: /metrics
-    scheme: http
-    static_configs:
-      - targets: ['gotosocial:9464']
-
   - job_name: grafana
     static_configs:
       - targets: ['grafana:3000']
