@@ -123,8 +123,8 @@ data "tailscale_device" "mountain_of_faith" {
 }
 
 # Caddy's tsnet node for pro-tacts.
-data "tailscale_device" "contacts" {
-  hostname = "contacts"
+data "tailscale_device" "pro_tacts" {
+  hostname = "pro-tacts"
 }
 
 data "tailscale_device" "hopeless_masquerade" {
