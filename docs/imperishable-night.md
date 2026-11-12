@@ -130,10 +130,12 @@ signs and renews its own intermediate from them.
 ## PostgreSQL
 
 PostgreSQL 17 runs from NixOS's `services.postgresql` module, the default
-version for the host's `stateVersion`. It listens on TCP only on localhost. Clients
-connect through the socket in `/run/postgresql` and authenticate with
-peer auth, which maps the connecting process's OS user to the role of the
-same name, so no role has a password. miniflux, its only client, runs
+version for the host's `stateVersion`. It listens on localhost, but
+`pg_hba.conf` admits no TCP logins. Clients connect through the socket in
+`/run/postgresql` and authenticate with peer auth, which maps the
+connecting process's OS user to the role of the same name, so no role has
+a password. Each role reaches only the database named after it; only the
+`postgres` superuser reaches every database. miniflux, its only client, runs
 as the host's `miniflux` user (uid 399) with `/run/postgresql` mounted
 in. postgresql recreates that directory when it restarts, so the
 miniflux container's unit is part of `postgresql.service` and restarts

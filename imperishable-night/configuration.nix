@@ -417,6 +417,12 @@ in
 
   # Socket logins authenticate as their OS user; TCP listens only on localhost.
   services.postgresql.enable = true;
+  # Replaces the defaults so each role reaches only its namesake database and
+  # nothing logs in over TCP.
+  services.postgresql.authentication = lib.mkForce ''
+    local all      postgres peer map=postgres
+    local sameuser all      peer
+  '';
 
   sops.secrets."restic/password" = { };
   sops.secrets."restic/healthcheck" = { };
