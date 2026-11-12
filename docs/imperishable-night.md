@@ -7,7 +7,8 @@ here from lotus-land-story one at a time; the
 tracks the order. Today it runs the base system, Tailscale,
 node-exporter, cadvisor, restic, PostgreSQL, Caddy, Vector, homebox,
 ketchup, paperless-ngx with redis, irc (soju, with gamja served by
-Caddy), and quire.
+Caddy), and quire. miniflux is defined but not started until its
+database moves.
 
 For first-time setup, see the [bootstrap README][readme].
 
@@ -96,12 +97,14 @@ host; read them with `journalctl`.
 Services run as podman containers through `virtualisation.oci-containers`.
 Containers reach each other by name over podman networks, and each app
 gets a network that it shares only with Caddy: `docs` for paperless-ngx,
-`homebox`, `irc` for soju, `ketchup`, and `quire`. No app can reach
-another app, so none can forge the login headers that paperless-ngx,
-ketchup, and quire trust. paperless-ngx and redis also share
-`paperless`, an internal network with no route out. Caddy alone is on
-`caddy`, whose fixed subnet, `10.89.0.0/24`, the Caddyfile lists in
-`trusted_proxies`. Caddy gets a default route from every network it
+`homebox`, `irc` for soju, `ketchup`, `quire`, and `rss` for miniflux.
+No app can reach another app, so none can forge the login headers that
+paperless-ngx, ketchup, quire, and miniflux trust. paperless-ngx and
+redis also share `paperless`, an internal network with no route out.
+Caddy alone is on `caddy`, whose fixed subnet, `10.89.0.0/24`, the
+Caddyfile lists in `trusted_proxies`. `rss` also has a fixed subnet,
+`10.89.255.0/24`, which miniflux trusts for its login header and its
+metrics endpoint. Caddy gets a default route from every network it
 joins, so `caddy` sets a lower route metric to carry its outbound
 traffic, including replies on its published ports. A oneshot unit
 creates each network, and each container's unit requires the units for
@@ -130,7 +133,11 @@ PostgreSQL 17 runs from NixOS's `services.postgresql` module, the default
 version for the host's `stateVersion`. It listens on TCP only on localhost. Clients
 connect through the socket in `/run/postgresql` and authenticate with
 peer auth, which maps the connecting process's OS user to the role of the
-same name, so no role has a password. The cluster lives in
+same name, so no role has a password. miniflux, its only client, runs
+as the host's `miniflux` user (uid 399) with `/run/postgresql` mounted
+in. postgresql recreates that directory when it restarts, so the
+miniflux container's unit is part of `postgresql.service` and restarts
+with it. The cluster lives in
 `/var/lib/postgresql`, and [backups](backup.md) take a dump of it rather
 than copying its files.
 
@@ -153,6 +160,7 @@ restic. The file holds the following values:
 | `homebox.mailer.password` | `homebox.mailer.password` in `host_vars/lotus-land-story.sops.yml` |
 | `ketchup.session_secret` | `ketchup.session_secret` in `host_vars/lotus-land-story.sops.yml` |
 | `ketchup.otel_exporter_otlp_headers` | `ketchup.otel_exporter_otlp_headers` in `host_vars/lotus-land-story.sops.yml` |
+| `miniflux.password` | `miniflux.password` in `host_vars/lotus-land-story.sops.yml`; `alpha`'s login, which `CREATE_ADMIN` sets only if the user doesn't exist |
 | `paperless_ngx.secret` | `paperless_ngx.secret` in `host_vars/lotus-land-story.sops.yml` |
 | `quire.github_mirror` | `quire.github_mirror` in `host_vars/lotus-land-story.sops.yml` |
 | `quire.github_auth_header` | `quire.github_auth_header` in `host_vars/lotus-land-story.sops.yml` |

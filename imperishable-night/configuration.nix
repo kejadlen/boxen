@@ -11,6 +11,9 @@ let
 
   # Fixed so the Caddyfile can trust it; podman assigns subnets on creation otherwise.
   caddySubnet = "10.89.0.0/24";
+  # Fixed so miniflux can trust Caddy's address on it. Podman assigns from the
+  # bottom of 10.89.0.0/16, so the top stays clear.
+  rssSubnet = "10.89.255.0/24";
 
   # Each app shares a network only with Caddy, so no other container can
   # reach it and forge the headers that header-trust apps take as a login.
@@ -23,6 +26,7 @@ let
     irc = "";
     ketchup = "";
     quire = "";
+    rss = "--subnet ${rssSubnet}";
     # paperless-ngx's other network is its way out, so redis gets none.
     paperless = "--internal";
   };
@@ -32,6 +36,7 @@ let
     gamja = "caf6e99";
     homebox = "0.27.1";
     ketchup = "20260525-e75f249";
+    miniflux = "2.3.5";
     paperless-ngx = "3.4.2";
     redis = "8.10.3";
     soju = "0.11.1"; # Bump the docker-soju image first.
@@ -77,8 +82,8 @@ in
   };
 
   # Containers reach each other by name only on a user-defined network.
-  systemd.services =
-    lib.mapAttrs' (
+  systemd.services = lib.mkMerge [
+    (lib.mapAttrs' (
       name: args:
       lib.nameValuePair "podman-network-${name}" {
         path = [ config.virtualisation.podman.package ];
@@ -91,8 +96,8 @@ in
             podman network create ${args} ${name}
         '';
       }
-    ) podmanNetworks
-    // lib.mapAttrs' (
+    ) podmanNetworks)
+    (lib.mapAttrs' (
       name: container:
       let
         units = map (network: "podman-network-${network}.service") container.networks;
@@ -101,7 +106,17 @@ in
         requires = units;
         after = units;
       }
-    ) config.virtualisation.oci-containers.containers;
+    ) config.virtualisation.oci-containers.containers)
+    {
+      # postgresql recreates /run/postgresql when it restarts, which strands
+      # the container's bind mount of the old directory.
+      podman-miniflux = {
+        requires = [ "postgresql.target" ];
+        after = [ "postgresql.target" ];
+        partOf = [ "postgresql.service" ];
+      };
+    }
+  ];
 
   # sops-nix decrypts with the age key derived from the SSH host key.
   sops.defaultSopsFile = ./secrets.sops.yml;
@@ -157,6 +172,7 @@ in
       "irc"
       "ketchup"
       "quire"
+      "rss"
     ];
     # Unbounded, caddy takes the host down with it. Equal memory-swap denies swap.
     extraOptions = [
@@ -214,6 +230,58 @@ in
     environmentFiles = [ config.sops.templates."ketchup.env".path ];
     volumes = [ "/var/lib/ketchup:/data" ];
     networks = [ "ketchup" ];
+  };
+
+  # Peer auth maps the container's uid to the miniflux role, so the role has no password.
+  users.groups.miniflux.gid = 399;
+  users.users.miniflux = {
+    isSystemUser = true;
+    uid = 399;
+    group = "miniflux";
+  };
+
+  services.postgresql = {
+    ensureDatabases = [ "miniflux" ];
+    ensureUsers = [
+      {
+        name = "miniflux";
+        ensureDBOwnership = true;
+      }
+    ];
+  };
+
+  sops.secrets."miniflux/password" = { };
+  sops.templates."miniflux.env" = {
+    content = ''
+      ADMIN_PASSWORD=${config.sops.placeholder."miniflux/password"}
+    '';
+    restartUnits = [ "podman-miniflux.service" ];
+  };
+
+  # https://miniflux.app/docs/configuration.html
+  virtualisation.oci-containers.containers.miniflux = {
+    image = "docker.io/miniflux/miniflux:${versions.miniflux}";
+    # Stays stopped until its database is restored from lotus-land-story.
+    autoStart = false;
+    user = "${toString config.users.users.miniflux.uid}:${toString config.users.groups.miniflux.gid}";
+    environment = {
+      DATABASE_URL = "user=miniflux host=/run/postgresql dbname=miniflux";
+      RUN_MIGRATIONS = "1";
+      CREATE_ADMIN = "1";
+      ADMIN_USERNAME = "alpha";
+      AUTH_PROXY_HEADER = "Remote-User";
+      AUTH_PROXY_USER_CREATION = "0";
+      TRUSTED_REVERSE_PROXY_NETWORKS = rssSubnet;
+      BASE_URL = "https://rss/";
+      DISABLE_LOCAL_AUTH = "0";
+      METRICS_COLLECTOR = "1";
+      METRICS_ALLOWED_NETWORKS = rssSubnet;
+      LOG_FORMAT = "json";
+      LOG_LEVEL = "info";
+    };
+    environmentFiles = [ config.sops.templates."miniflux.env".path ];
+    volumes = [ "/run/postgresql:/run/postgresql" ];
+    networks = [ "rss" ];
   };
 
   # paperless-ngx's Celery broker; nothing in it is worth persisting.
@@ -469,12 +537,14 @@ in
             "container_name": .CONTAINER_NAME,
           }
 
-          if event.container_name == "caddy" {
+          if includes(["caddy", "miniflux"], event.container_name) {
             # Startup errors and panics go to stderr as plain text.
             parsed, err = parse_json(message)
             if err == null && is_object(parsed) {
               event = merge(event, object!(parsed))
-              event._time = del(event.ts)
+              if event.container_name == "caddy" {
+                event._time = del(event.ts)
+              }
               event._msg = del(event.msg)
             }
           }
