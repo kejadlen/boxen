@@ -240,9 +240,19 @@ The open question is what federation traffic does during the outage:
   lost when it stops, if its queue lives only in memory. Whether it does
   is unverified, so avoid posting right before the move.
 
+The Caddy-to-Caddy bridge carries clients and servers that still resolve
+the old address, so the record's TTL doesn't lengthen the outage and
+doesn't need lowering. Bridged requests reach gotosocial from
+lotus-land-story's tailnet address, which
+`GTS_ADVANCED_RATE_LIMIT_EXCEPTIONS` exempts, so federation isn't rate
+limited through the bridge.
+
 To keep the outage short, follow these steps:
 
-1. Lower the TTL on `hey.kejadlen.dev` a day ahead.
+1. Copy `hey.kejadlen.dev`'s certificate from lotus-land-story's Caddy
+   data directory to imperishable-night's. ACME challenges land on
+   lotus-land-story until the record moves, so the new Caddy can't get
+   its own certificate through the bridge.
 2. Copy `/mnt/lotus-land-story/gotosocial/` to imperishable-night while
    gotosocial is still running, so the final copy only transfers what
    changed.
@@ -253,6 +263,8 @@ To keep the outage short, follow these steps:
    imperishable-night.
 5. Switch the old site to the Caddy-to-Caddy bridge, then point the A
    record at imperishable-night.
+6. Remove the bridge an hour after the record changes, once DNSimple's
+   default TTL has passed.
 
 Logging in to gotosocial goes through authelia over
 `https://auth.kejadlen.dev`, which is public, so gotosocial can move
