@@ -7,7 +7,8 @@ here from lotus-land-story one at a time; the
 tracks the order. Today it runs the base system, Tailscale,
 node-exporter, cadvisor, restic, PostgreSQL, Caddy, Vector, calibre-web,
 homebox, ketchup, miniflux, paperless-ngx with redis, irc (soju, with
-gamja served by Caddy), pro-tacts, and quire.
+gamja served by Caddy), pro-tacts, and quire. gotosocial is defined but
+not started until its data moves.
 
 For first-time setup, see the [bootstrap README][readme].
 
@@ -101,15 +102,17 @@ such as lotus-land-story, so any tailnet node can read the metrics.
 
 Services run as podman containers through `virtualisation.oci-containers`.
 Containers reach each other by name over podman networks, and each app
-gets a network that it shares only with Caddy: `docs` for paperless-ngx,
-`homebox`, `irc` for soju, `ketchup`, `quire`, and `rss` for miniflux.
+gets a network that it shares only with Caddy: `books` for calibre-web,
+`docs` for paperless-ngx, `gotosocial`, `homebox`, `irc` for soju,
+`ketchup`, `pro-tacts`, `quire`, and `rss` for miniflux.
 No app can reach another app, so none can forge the login headers that
 paperless-ngx, ketchup, quire, and miniflux trust. paperless-ngx and
 redis also share `paperless`, an internal network with no route out.
 Caddy alone is on `caddy`, whose fixed subnet, `10.89.0.0/24`, the
 Caddyfile lists in `trusted_proxies`. `rss` also has a fixed subnet,
 `10.89.255.0/24`, which miniflux trusts for its login header and its
-metrics endpoint. Netavark publishes Caddy's ports on every network it
+metrics endpoint, and `gotosocial` has `10.89.254.0/24`, which gotosocial
+trusts for `X-Forwarded-For`. Netavark publishes Caddy's ports on every network it
 joins and DNATs them to whichever network's rule comes first, while the
 reply leaves by whichever default route Caddy picks. The host's
 reverse-path filter is loose so those replies aren't dropped. A oneshot
@@ -163,6 +166,7 @@ restic. The file holds the following values:
 | `caddy.ca_root_key` | `caddy/pki/authorities/local/root.key` in lotus-land-story's Caddy data directory |
 | `docket.fastmail_tokens.<name>` | `docket.fastmail_tokens.<name>` in `host_vars/lotus-land-story.sops.yml`; unused until docket deploys |
 | `docket.sentry_dsn` | `docket.sentry_dsn` in `host_vars/lotus-land-story.sops.yml`; unused until docket deploys |
+| `gotosocial.oidc_client_secret` | `gotosocial.oidc_client_secret` in `host_vars/lotus-land-story.sops.yml` |
 | `homebox.api_key_pepper` | `openssl rand -base64 48`; rotating it invalidates homebox's API keys |
 | `homebox.mailer.username` | `homebox.mailer.username` in `host_vars/lotus-land-story.sops.yml` |
 | `homebox.mailer.password` | `homebox.mailer.password` in `host_vars/lotus-land-story.sops.yml` |

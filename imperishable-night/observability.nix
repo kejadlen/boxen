@@ -47,6 +47,14 @@
               }
               event._msg = del(event.msg)
             }
+          } else if event.container_name == "gotosocial" {
+            # Panics are plain text, which parse_key_value would split into junk fields.
+            parsed, err = parse_key_value(message)
+            if err == null && exists(parsed.timestamp) {
+              event = merge(event, parsed)
+              event._time = parse_timestamp(del(event.timestamp), format: "%d/%m/%Y %H:%M:%S%.3f", timezone: "UTC") ?? event._time
+              event._msg = string(del(event.msg)) ?? message
+            }
           }
 
           . = event

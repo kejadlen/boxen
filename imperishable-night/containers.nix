@@ -10,6 +10,7 @@ let
 
   versions = {
     calibre-web = "0.6.26-ls383";
+    gotosocial = "0.22.3";
     homebox = "0.27.1";
     ketchup = "20260525-e75f249";
     miniflux = "2.3.5";
@@ -23,6 +24,9 @@ in
   systemd.tmpfiles.rules = [
     "d /var/lib/calibre-web/books 0755 root root -"
     "d /var/lib/calibre-web/config 0755 root root -"
+    "d /var/lib/gotosocial 0755 root root -"
+    # gotosocial's image runs as 1000:1000.
+    "d /var/lib/gotosocial/data 0755 1000 1000 -"
     # homebox's image runs as the distroless nonroot user.
     "d /var/lib/homebox 0755 65532 65532 -"
     "d /var/lib/ketchup 0755 root root -"
@@ -50,6 +54,44 @@ in
       "/var/lib/calibre-web/config:/config"
     ];
     networks = [ "books" ];
+  };
+
+  sops.secrets."gotosocial/oidc_client_secret" = { };
+  sops.templates."gotosocial.env" = {
+    content = ''
+      GTS_OIDC_CLIENT_SECRET=${config.sops.placeholder."gotosocial/oidc_client_secret"}
+    '';
+    restartUnits = [ "podman-gotosocial.service" ];
+  };
+
+  # https://docs.gotosocial.org/en/latest/getting_started/installation/container/
+  virtualisation.oci-containers.containers.gotosocial = {
+    image = "docker.io/superseriousbusiness/gotosocial:${versions.gotosocial}";
+    # Stays stopped until its data is copied from lotus-land-story.
+    autoStart = false;
+    environment = {
+      GTS_HOST = "hey.kejadlen.dev";
+      GTS_TRUSTED_PROXIES = subnets.gotosocial;
+      GTS_LANDING_PAGE_USER = "alpha";
+      GTS_DB_TYPE = "sqlite";
+      GTS_DB_ADDRESS = "/gotosocial/storage/sqlite.db";
+      GTS_OIDC_ENABLED = "true";
+      GTS_OIDC_IDP_NAME = "Authelia";
+      GTS_OIDC_ISSUER = "https://auth.kejadlen.dev";
+      GTS_OIDC_CLIENT_ID = "gotosocial";
+      GTS_OIDC_ADMIN_GROUPS = "admin";
+      GTS_METRICS_ENABLED = "true";
+      # Tailscale's default CGNAT range, exempted from rate limiting.
+      GTS_ADVANCED_RATE_LIMIT_EXCEPTIONS = "100.64.0.0/10";
+      GTS_STATUSES_CLEANUP_REMOTE_OLDER_THAN = "1 year";
+      OTEL_METRICS_PRODUCERS = "prometheus";
+      OTEL_METRICS_EXPORTER = "prometheus";
+      OTEL_EXPORTER_PROMETHEUS_HOST = "gotosocial";
+      TZ = "UTC";
+    };
+    environmentFiles = [ config.sops.templates."gotosocial.env".path ];
+    volumes = [ "/var/lib/gotosocial/data:/gotosocial/storage" ];
+    networks = [ "gotosocial" ];
   };
 
   sops.secrets."homebox/mailer/username" = { };

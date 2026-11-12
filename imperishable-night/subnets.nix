@@ -4,4 +4,6 @@
   # Fixed so miniflux can trust Caddy's address on it. Podman assigns from the
   # bottom of 10.89.0.0/16, so the top stays clear.
   rss = "10.89.255.0/24";
+  # Fixed so gotosocial can trust Caddy's address on it.
+  gotosocial = "10.89.254.0/24";
 }

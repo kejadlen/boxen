@@ -14,6 +14,7 @@ let
     caddy = "--subnet ${subnets.caddy}";
     books = "";
     docs = "";
+    gotosocial = "--subnet ${subnets.gotosocial}";
     homebox = "";
     irc = "";
     ketchup = "";
@@ -100,6 +101,7 @@ in
       "caddy"
       "books"
       "docs"
+      "gotosocial"
       "homebox"
       "irc"
       "ketchup"
