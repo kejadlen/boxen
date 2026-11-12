@@ -18,9 +18,7 @@ let
   # Each app shares a network only with Caddy, so no other container can
   # reach it and forge the headers that header-trust apps take as a login.
   podmanNetworks = {
-    # Caddy gets a default route from every network it joins, all at metric 100,
-    # and replies to published ports dropped when one left by another bridge.
-    caddy = "--subnet ${caddySubnet} --opt metric=50";
+    caddy = "--subnet ${caddySubnet}";
     docs = "";
     homebox = "";
     irc = "";
@@ -79,6 +77,9 @@ in
     ];
     # HTTP/3.
     allowedUDPPorts = [ 443 ];
+    # Netavark DNATs Caddy's published ports to its address on any of its
+    # networks, and the reply can leave by another bridge, which strict drops.
+    checkReversePath = "loose";
   };
 
   # Containers reach each other by name only on a user-defined network.

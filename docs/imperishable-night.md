@@ -109,13 +109,14 @@ redis also share `paperless`, an internal network with no route out.
 Caddy alone is on `caddy`, whose fixed subnet, `10.89.0.0/24`, the
 Caddyfile lists in `trusted_proxies`. `rss` also has a fixed subnet,
 `10.89.255.0/24`, which miniflux trusts for its login header and its
-metrics endpoint. Caddy gets a default route from every network it
-joins, so `caddy` sets a lower route metric to carry its outbound
-traffic, including replies on its published ports. A oneshot unit
-creates each network, and each container's unit requires the units for
-its networks. The unit skips a network that already exists, so changing
-a network's options means removing it by hand first. Container data
-lives under `/var/lib/<service>`.
+metrics endpoint. Netavark publishes Caddy's ports on every network it
+joins and DNATs them to whichever network's rule comes first, while the
+reply leaves by whichever default route Caddy picks. The host's
+reverse-path filter is loose so those replies aren't dropped. A oneshot
+unit creates each network, and each container's unit requires the units
+for its networks. The unit skips a network that already exists, so
+changing a network's options means removing it by hand first. Container
+data lives under `/var/lib/<service>`.
 
 Caddy runs the same `ghcr.io/kejadlen/caddy-kejadlen` image as
 lotus-land-story, with the [Caddyfile][caddyfile] mounted from the Nix
