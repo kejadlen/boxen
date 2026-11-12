@@ -13,6 +13,7 @@ let
   podmanNetworks = {
     caddy = "--subnet ${subnets.caddy}";
     books = "";
+    contacts = "";
     docs = "";
     homebox = "";
     irc = "";
@@ -98,6 +99,7 @@ in
     networks = [
       "caddy"
       "books"
+      "contacts"
       "docs"
       "homebox"
       "irc"

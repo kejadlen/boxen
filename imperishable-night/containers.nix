@@ -14,6 +14,7 @@ let
     ketchup = "20260525-e75f249";
     miniflux = "2.3.5";
     paperless-ngx = "3.4.2";
+    pro-tacts = "ruby-head-zjit"; # Pin once it's out of active development.
     redis = "8.10.3";
     soju = "0.11.1"; # Bump the docker-soju image first.
   };
@@ -30,6 +31,7 @@ in
     "d /var/lib/paperless-ngx/data 0700 1000 1000 -"
     "d /var/lib/paperless-ngx/export 0700 1000 1000 -"
     "d /var/lib/paperless-ngx/media 0700 1000 1000 -"
+    "d /var/lib/pro-tacts 0755 root root -"
     "d /var/lib/soju 0755 root root -"
     "d /var/lib/quire 0755 quire quire -"
   ];
@@ -204,6 +206,20 @@ in
       "docs"
       "paperless"
     ];
+  };
+
+  # https://quire.kejadlen.dev/pro-tacts
+  virtualisation.oci-containers.containers.pro-tacts = {
+    image = "ghcr.io/kejadlen/pro-tacts:${versions.pro-tacts}";
+    pull = "always";
+    # Stays stopped until its data is copied from lotus-land-story.
+    autoStart = false;
+    environment = {
+      PRO_TACTS_DATA_DIR = "/data";
+      PRO_TACTS_DEBUG = "true";
+    };
+    volumes = [ "/var/lib/pro-tacts:/data" ];
+    networks = [ "contacts" ];
   };
 
   # gamja reaches soju through Caddy's /socket, so neither listener is published.
