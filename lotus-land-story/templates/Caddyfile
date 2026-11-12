@@ -112,21 +112,6 @@ docket {
 	reverse_proxy docket:3000
 }
 
-### Family
-
-contacts.chislan.family {
-	bind tailscale/contacts
-	log
-	tls {
-		dns dnsimple {env.DNSIMPLE_API_ACCESS_TOKEN}
-	}
-	import tsident
-
-	reverse_proxy pro-tacts:9292 {
-		header_up Remote-User {http.auth.user.tailscale_user}
-	}
-}
-
 ### Internal
 
 home-assistant-5119 {

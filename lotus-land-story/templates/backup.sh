@@ -94,10 +94,6 @@ ping_healthcheck /start
 # which blocks every later prune. unlock only removes stale locks.
 phase unlock restic unlock
 
-# Runs before the files phase so the dump it writes under /data is included
-# in the file backup.
-phase pro-tacts docker exec pro-tacts rake db:dump
-
 # A file copy of a database in WAL mode can miss committed transactions;
 # `.backup` goes through SQLite.
 phase gotosocial sqlite3 /mnt/lotus-land-story/gotosocial/data/sqlite.db \
