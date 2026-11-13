@@ -37,7 +37,7 @@
             "container_name": .CONTAINER_NAME,
           }
 
-          if includes(["caddy", "miniflux"], event.container_name) {
+          if includes(["authelia", "caddy", "miniflux"], event.container_name) {
             # Startup errors and panics go to stderr as plain text.
             parsed, err = parse_json(message)
             if err == null && is_object(parsed) {

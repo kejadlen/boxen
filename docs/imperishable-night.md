@@ -7,7 +7,8 @@ moving here from lotus-land-story one at a time; the
 tracks the order. Today it runs the base system, Tailscale,
 node-exporter, cadvisor, restic, PostgreSQL, Caddy, Vector, calibre-web,
 gotosocial, homebox, ketchup, miniflux, paperless-ngx with redis, irc
-(soju, with gamja served by Caddy), pro-tacts, and quire.
+(soju, with gamja served by Caddy), pro-tacts, and quire. authelia is
+defined but not started until its data moves.
 
 For first-time setup, see the [bootstrap README][readme].
 
@@ -111,11 +112,12 @@ reachable only on the `gotosocial` network.
 Services run as podman containers through
 `virtualisation.oci-containers`. Containers reach each other by name
 over podman networks, and each app gets a network that it shares only
-with Caddy: `books` for calibre-web, `docs` for paperless-ngx,
-`gotosocial`, `homebox`, `irc` for soju, `ketchup`, `pro-tacts`,
-`quire`, and `rss` for miniflux. No app can reach another app, so none
-can forge the login headers that paperless-ngx, ketchup, quire, and
-miniflux trust. paperless-ngx and redis also share `paperless`, an
+with Caddy: `authelia`, `books` for calibre-web, `docs` for
+paperless-ngx, `gotosocial`, `homebox`, `irc` for soju, `ketchup`,
+`pro-tacts`, `quire`, and `rss` for miniflux. No app can reach another
+app, so none can forge the login headers that paperless-ngx, ketchup,
+quire, and miniflux trust, and none can reach authelia except through
+Caddy. paperless-ngx and redis also share `paperless`, an
 internal network with no route out. Caddy alone is on `caddy`, whose
 fixed subnet, `10.89.0.0/24`, the Caddyfile lists in `trusted_proxies`.
 `rss` also has a fixed subnet, `10.89.255.0/24`, which miniflux trusts
@@ -161,6 +163,17 @@ it restarts, so the miniflux container's unit is part of
 `/var/lib/postgresql`, and [backups](backup.md) take a dump of it rather
 than copying its files.
 
+## Authelia
+
+authelia's configuration comes from the flake, but its users don't.
+`users_database.yml` lives in `/var/lib/authelia` beside its SQLite
+database, so that password resets can write to it, and the repository
+doesn't track it. To add a user, change a group, or disable an account,
+edit the file on the host and restart `podman-authelia`. Generate a
+password hash with
+`podman exec -it authelia authelia crypto hash generate argon2`.
+[Backups](backup.md) cover the file with the rest of `/var/lib`.
+
 ## Secrets
 
 sops-nix decrypts `imperishable-night/secrets.sops.yml` at activation,
@@ -171,7 +184,10 @@ covers restic.
 Containers get secrets as mounted files where the app can read them,
 because podman copies a container's environment, `environmentFiles`
 included, into its runtime spec and database under
-`/var/lib/containers/storage`. miniflux reads `ADMIN_PASSWORD_FILE`.
+`/var/lib/containers/storage`. authelia reads four secrets through its
+`_FILE` variables, and the template filter fills in the SMTP username
+and OIDC signing key, which have no such variable, from a second config
+file. miniflux reads `ADMIN_PASSWORD_FILE`.
 gotosocial reads all of its settings, the OIDC client secret included,
 from a config file that sops-nix renders, at `GTS_CONFIG_PATH`. Only
 OpenTelemetry's variables and `TZ` stay in its environment. Caddy,
@@ -184,6 +200,7 @@ The file holds the following values:
 
 | Key | Source |
 |---|---|
+| `authelia.<name>` | `authelia.<name>` in `host_vars/lotus-land-story.sops.yml`, for `jwt_secret`, `session_secret`, `storage_encryption_key`, `smtp_username`, `smtp_password`, and `oidc_private_key` |
 | `caddy.ts_authkey` | `tofu output -raw imperishable_night_caddy_auth_key` |
 | `caddy.dnsimple_token` | An account access token minted in DNSimple |
 | `caddy.ca_root_key` | `caddy/pki/authorities/local/root.key` in lotus-land-story's Caddy data directory |

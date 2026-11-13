@@ -9,6 +9,7 @@ let
   subnets = import ./subnets.nix;
 
   versions = {
+    authelia = "4.39.28";
     calibre-web = "0.6.26-ls383";
     gotosocial = "0.22.3";
     homebox = "0.27.1";
@@ -19,9 +20,81 @@ let
     redis = "8.10.3";
     soju = "0.11.1"; # Bump the docker-soju image first.
   };
+
+  # Secrets come from secrets.yml and the _FILE variables, so none reach the store.
+  autheliaConfig = (pkgs.formats.yaml { }).generate "configuration.yml" {
+    theme = "auto";
+    log = {
+      level = "debug";
+      format = "json";
+    };
+    telemetry.metrics.enabled = true;
+    authentication_backend = {
+      file.path = "/config/users_database.yml";
+      password_change.disable = true;
+    };
+    access_control = {
+      default_policy = "deny";
+      rules = [
+        {
+          domain = "*.chislan.family";
+          policy = "two_factor";
+          subject = [ "group:family" ];
+        }
+        {
+          domain = "*.kejadlen.dev";
+          policy = "two_factor";
+          subject = [ "user:alpha" ];
+        }
+      ];
+    };
+    session.cookies = [
+      {
+        domain = "kejadlen.dev";
+        authelia_url = "https://auth.kejadlen.dev";
+      }
+      {
+        domain = "chislan.family";
+        authelia_url = "https://auth.chislan.family";
+      }
+    ];
+    storage.local.path = "/config/db.sqlite3";
+    notifier.smtp = {
+      address = "smtp://mail.smtp2go.com:2525";
+      sender = "authelia@kejadlen.dev";
+    };
+    # https://www.authelia.com/integration/openid-connect/frequently-asked-questions/#how-do-i-generate-client-secrets
+    identity_providers.oidc.clients = [
+      {
+        client_id = "tailscale";
+        client_name = "Tailscale";
+        client_secret = "$argon2id$v=19$m=65536,t=3,p=4$RivlSdV1WE/NLfd3Pzrubw$ljSvHj9sb0byolv7fk5G3nL415nS7Ze2RMASwPgfBX0";
+        redirect_uris = [ "https://login.tailscale.com/a/oauth_response" ];
+        scopes = [
+          "openid"
+          "email"
+          "profile"
+        ];
+      }
+      {
+        client_id = "gotosocial";
+        client_name = "GoToSocial";
+        client_secret = "$argon2id$v=19$m=65536,t=3,p=4$Z3CabXEI+jrC/dfuvvPFsw$fL0qc12TwCi+k65Lt9NXr0bURH6vgEHAPnnWaEv20aU";
+        public = false;
+        redirect_uris = [ "https://hey.kejadlen.dev/auth/callback" ];
+        scopes = [
+          "openid"
+          "email"
+          "profile"
+          "groups"
+        ];
+      }
+    ];
+  };
 in
 {
   systemd.tmpfiles.rules = [
+    "d /var/lib/authelia 0700 root root -"
     "d /var/lib/calibre-web/books 0755 root root -"
     "d /var/lib/calibre-web/config 0755 root root -"
     "d /var/lib/gotosocial 0755 root root -"
@@ -39,6 +112,50 @@ in
     "d /var/lib/soju 0755 root root -"
     "d /var/lib/quire 0755 quire quire -"
   ];
+
+  sops.secrets."authelia/jwt_secret".restartUnits = [ "podman-authelia.service" ];
+  sops.secrets."authelia/session_secret".restartUnits = [ "podman-authelia.service" ];
+  sops.secrets."authelia/storage_encryption_key".restartUnits = [ "podman-authelia.service" ];
+  sops.secrets."authelia/smtp_username".restartUnits = [ "podman-authelia.service" ];
+  sops.secrets."authelia/smtp_password".restartUnits = [ "podman-authelia.service" ];
+  sops.secrets."authelia/oidc_private_key".restartUnits = [ "podman-authelia.service" ];
+
+  # https://www.authelia.com/configuration/prologue/introduction/
+  virtualisation.oci-containers.containers.authelia = {
+    image = "docker.io/authelia/authelia:${versions.authelia}";
+    # Stays stopped until its data is copied from lotus-land-story.
+    autoStart = false;
+    environment = {
+      AUTHENTICATION_GUARD = "remote_user_guard";
+      X_AUTHELIA_CONFIG = "/config/configuration.yml,/config/secrets.yml";
+      # Lets secrets.yml read the values that have no _FILE variable.
+      X_AUTHELIA_CONFIG_FILTERS = "template";
+      AUTHELIA_IDENTITY_VALIDATION_RESET_PASSWORD_JWT_SECRET_FILE = "/secrets/jwt_secret";
+      AUTHELIA_SESSION_SECRET_FILE = "/secrets/session_secret";
+      AUTHELIA_STORAGE_ENCRYPTION_KEY_FILE = "/secrets/storage_encryption_key";
+      AUTHELIA_NOTIFIER_SMTP_PASSWORD_FILE = "/secrets/smtp_password";
+    };
+    volumes = [
+      "/var/lib/authelia:/config"
+      "${autheliaConfig}:/config/configuration.yml:ro"
+      "${pkgs.writeText "authelia-secrets.yml" ''
+        notifier:
+          smtp:
+            username: {{ secret "/secrets/smtp_username" | msquote }}
+        identity_providers:
+          oidc:
+            jwks:
+              - key: {{ secret "/secrets/oidc_private_key" | mindent 10 "|" | msquote }}
+      ''}:/config/secrets.yml:ro"
+      "${config.sops.secrets."authelia/jwt_secret".path}:/secrets/jwt_secret:ro"
+      "${config.sops.secrets."authelia/session_secret".path}:/secrets/session_secret:ro"
+      "${config.sops.secrets."authelia/storage_encryption_key".path}:/secrets/storage_encryption_key:ro"
+      "${config.sops.secrets."authelia/smtp_username".path}:/secrets/smtp_username:ro"
+      "${config.sops.secrets."authelia/smtp_password".path}:/secrets/smtp_password:ro"
+      "${config.sops.secrets."authelia/oidc_private_key".path}:/secrets/oidc_private_key:ro"
+    ];
+    networks = [ "authelia" ];
+  };
 
   # https://github.com/linuxserver/docker-calibre-web
   virtualisation.oci-containers.containers.calibre-web = {
