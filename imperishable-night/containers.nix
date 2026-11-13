@@ -331,13 +331,7 @@ in
     networks = [ "paperless" ];
   };
 
-  sops.secrets."paperless_ngx/secret" = { };
-  sops.templates."paperless-ngx.env" = {
-    content = ''
-      PAPERLESS_SECRET_KEY=${config.sops.placeholder."paperless_ngx/secret"}
-    '';
-    restartUnits = [ "podman-paperless-ngx.service" ];
-  };
+  sops.secrets."paperless_ngx/secret".restartUnits = [ "podman-paperless-ngx.service" ];
 
   # https://github.com/paperless-ngx/paperless-ngx/blob/main/docker/compose/docker-compose.sqlite.yml
   virtualisation.oci-containers.containers.paperless-ngx = {
@@ -348,6 +342,7 @@ in
       PAPERLESS_ENABLE_HTTP_REMOTE_USER = "true";
       PAPERLESS_OCR_USER_ARGS = ''{"continue_on_soft_render_error": true}'';
       PAPERLESS_REDIS = "redis://redis:6379";
+      PAPERLESS_SECRET_KEY_FILE = "/etc/paperless/secret_key";
       PAPERLESS_TASK_WORKERS = "1";
       PAPERLESS_THREADS_PER_WORKER = "1";
       PAPERLESS_TIME_ZONE = "America/Los_Angeles";
@@ -356,8 +351,8 @@ in
       PAPERLESS_URL = "https://docs";
       PAPERLESS_WEBSERVER_WORKERS = "1";
     };
-    environmentFiles = [ config.sops.templates."paperless-ngx.env".path ];
     volumes = [
+      "${config.sops.secrets."paperless_ngx/secret".path}:/etc/paperless/secret_key:ro"
       "/var/lib/paperless-ngx/data:/usr/src/paperless/data"
       "/var/lib/paperless-ngx/media:/usr/src/paperless/media"
       "/var/lib/paperless-ngx/export:/usr/src/paperless/export"
@@ -370,6 +365,8 @@ in
       "docs"
       "paperless"
     ];
+    # s6 copies the environment into /run and runs services from it.
+    extraOptions = [ "--tmpfs=/run:rw,exec,nosuid,nodev" ];
   };
 
   # https://quire.kejadlen.dev/pro-tacts

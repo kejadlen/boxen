@@ -189,11 +189,13 @@ and OIDC signing key, which have no such variable, from a second config
 file. miniflux reads `ADMIN_PASSWORD_FILE`.
 gotosocial reads all of its settings, the OIDC client secret included,
 from a config file that sops-nix renders, at `GTS_CONFIG_PATH`. Only
-OpenTelemetry's variables and `TZ` stay in its environment. Caddy,
-homebox, ketchup, and paperless-ngx still take environment files, so
-their secrets are on disk while they run. paperless-ngx's s6 init also
-copies its environment into `/run/s6/container_environment` in the
-container's writable layer.
+OpenTelemetry's variables and `TZ` stay in its environment.
+paperless-ngx reads `PAPERLESS_SECRET_KEY_FILE`, but its s6 init copies
+the value and the rest of the environment into
+`/run/s6/container_environment`. Podman doesn't mount a tmpfs on `/run`,
+so the container gets one explicitly, with `exec` because s6 runs its
+services from there. Caddy, homebox, and ketchup still take environment
+files, so their secrets are on disk while they run.
 
 The file holds the following values:
 
