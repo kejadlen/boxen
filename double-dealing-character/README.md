@@ -6,8 +6,28 @@ manage it over the tailnet. The hostname previously belonged to a Mango,
 whose setup lives in
 [`mango/`](mango/README.md).
 
-This was set up by hand with Claude's help, not from a script. The steps
-below are what worked.
+[`setup.sh`](setup.sh) does the on-box setup and is safe to rerun. It
+runs on the Brume over SSH, so nothing needs copying over:
+
+```sh
+ssh root@double-dealing-character sh -s < double-dealing-character/setup.sh
+```
+
+The script does the following:
+
+- Syncs the clock if it's behind the firmware build date. A fresh Brume
+  came up 16 months behind with NTP never run, which breaks TLS to
+  Tailscale's control plane.
+- Enables Tailscale in UCI and starts `tailscaled`. Toggling Tailscale
+  in the UI didn't save `enabled`, so the init script exited without
+  starting it.
+- Patches GL's `/usr/bin/gl_tailscale` to pass `--advertise-exit-node`.
+  Interface hotplug scripts in `/etc/hotplug.d/iface/` and
+  `/etc/hotplug.d/net/` call its `restart` action, which ends with
+  `tailscale up --reset`. That resets every flag it doesn't pass, so
+  unpatched, a network event silently withdraws the exit node.
+- Advertises the exit node, logging in first on a fresh box, and fails
+  unless `AdvertiseRoutes` includes `0.0.0.0/0`.
 
 ## Set up from scratch
 
@@ -27,38 +47,30 @@ for access.
    anything else, so it stops fighting the home router for leases. If
    the browser can't load the page but `curl` can, grant the browser
    access in System Settings → Privacy & Security → Local Network.
-4. SSH in as root and sync the clock. A fresh Brume came up 16 months
-   behind with NTP never run, which breaks TLS to Tailscale's control
-   plane.
+4. Run the setup script over the LAN. It prints a login URL and waits.
 
    ```sh
-   /etc/init.d/sysntpd restart
-   date
+   ssh root@192.168.8.1 sh -s < double-dealing-character/setup.sh
    ```
 
-5. Enable Tailscale. Toggling it in the UI didn't save `enabled`, so the
-   init script exited without starting `tailscaled`, and the UI failed
-   to get a bind link.
-
-   ```sh
-   uci set tailscale.settings.enabled='1'
-   uci commit tailscale
-   /etc/init.d/tailscale start
-   tailscale up --advertise-exit-node
-   ```
-
-6. Open the login URL that `tailscale up` prints. In the
+5. Open the login URL. In the
    [Tailscale console](https://login.tailscale.com/admin/machines),
    approve the exit node, disable key expiry, and rename the machine to
    `double-dealing-character`.
-7. Reboot and confirm `tailscale status` still shows it offering an exit
-   node.
-8. Unplug LAN and drop the alias with
+6. On the Brume, run `gl_tailscale restart`, then reboot. After each,
+   confirm `tailscale status` still shows it offering an exit node.
+7. Unplug LAN and drop the alias with
    `sudo ifconfig en0 -alias 192.168.8.2`.
 
 To test the exit node, select it from a peer off the home network, such
 as a phone on cellular, and check that its public IP becomes the home
 IP. A peer on the home network gets the same IP either way.
+
+## Troubleshoot
+
+If peers stop seeing it as an exit node, rerun `setup.sh`. A firmware
+upgrade restores the stock `gl_tailscale`, which drops the exit node on
+the next network event.
 
 If replies stop coming back, for example after a firmware upgrade,
 suspect mwan3. It hijacked the Mango's exit-node return path; see
