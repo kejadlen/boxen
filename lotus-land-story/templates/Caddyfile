@@ -20,11 +20,6 @@
 
 ### Auth
 
-# https://www.authelia.com/integration/proxies/caddy/#forwarded-header-trust#trusted-proxies
-(trusted_proxy_list) {
-	trusted_proxies {{ trusted_proxies }}
-}
-
 # Tailnet-bound sites: internal TLS, a dedicated tailscale node, and access
 # logging routed to the default logger (shipped to VictoriaLogs via Vector).
 # tsauth additionally gates on tailscale identity.
@@ -53,15 +48,18 @@
 	import tsident
 }
 
-{% for domain in ("kejadlen.dev", "chislan.family") %}
-auth.{{ domain }} {
+# Carries clients still resolving the old address to authelia on
+# imperishable-night, until the A records' TTL has passed.
+auth.kejadlen.dev, auth.chislan.family {
 	log
 
-	reverse_proxy authelia:9091 {
-		import trusted_proxy_list
+	reverse_proxy https://imperishable-night {
+		header_up Host {host}
+		transport http {
+			tls_server_name {host}
+		}
 	}
 }
-{% endfor %}
 
 http://setup {
 	bind tailscale/setup
