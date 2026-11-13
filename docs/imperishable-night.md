@@ -164,9 +164,23 @@ than copying its files.
 ## Secrets
 
 sops-nix decrypts `imperishable-night/secrets.sops.yml` at activation,
-with the age key derived from the host's SSH key, and renders Caddy's
-and restic's environment files from it. [Backups](backup.md) covers
-restic. The file holds the following values:
+with the age key derived from the host's SSH key, into `/run/secrets`,
+a ramfs that never reaches the disk or swap. [Backups](backup.md)
+covers restic.
+
+Containers get secrets as mounted files where the app can read them,
+because podman copies a container's environment, `environmentFiles`
+included, into its runtime spec and database under
+`/var/lib/containers/storage`. miniflux reads `ADMIN_PASSWORD_FILE`.
+gotosocial reads all of its settings, the OIDC client secret included,
+from a config file that sops-nix renders, at `GTS_CONFIG_PATH`. Only
+OpenTelemetry's variables and `TZ` stay in its environment. Caddy,
+homebox, ketchup, and paperless-ngx still take environment files, so
+their secrets are on disk while they run. paperless-ngx's s6 init also
+copies its environment into `/run/s6/container_environment` in the
+container's writable layer.
+
+The file holds the following values:
 
 | Key | Source |
 |---|---|

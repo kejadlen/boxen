@@ -56,39 +56,48 @@ in
     networks = [ "books" ];
   };
 
+  # Podman writes container env to disk, and gotosocial has no _FILE variables.
   sops.secrets."gotosocial/oidc_client_secret" = { };
-  sops.templates."gotosocial.env" = {
-    content = ''
-      GTS_OIDC_CLIENT_SECRET=${config.sops.placeholder."gotosocial/oidc_client_secret"}
-    '';
+  # https://codeberg.org/superseriousbusiness/gotosocial/src/tag/v0.22.3/example/config.yaml
+  sops.templates."gotosocial.yaml" = {
+    # gotosocial's image runs as 1000:1000.
+    uid = 1000;
+    gid = 1000;
+    file = (pkgs.formats.yaml { }).generate "gotosocial.yaml" {
+      host = "hey.kejadlen.dev";
+      trusted-proxies = [ subnets.gotosocial ];
+      landing-page-user = "alpha";
+      db-type = "sqlite";
+      db-address = "/gotosocial/storage/sqlite.db";
+      oidc-enabled = true;
+      oidc-idp-name = "Authelia";
+      oidc-issuer = "https://auth.kejadlen.dev";
+      oidc-client-id = "gotosocial";
+      oidc-client-secret = config.sops.placeholder."gotosocial/oidc_client_secret";
+      oidc-admin-groups = [ "admin" ];
+      metrics-enabled = true;
+      # Tailscale's default CGNAT range, exempted from rate limiting.
+      advanced-rate-limit-exceptions = [ "100.64.0.0/10" ];
+      statuses-cleanup-remote-older-than = "1 year";
+    };
     restartUnits = [ "podman-gotosocial.service" ];
   };
 
   # https://docs.gotosocial.org/en/latest/getting_started/installation/container/
   virtualisation.oci-containers.containers.gotosocial = {
     image = "docker.io/superseriousbusiness/gotosocial:${versions.gotosocial}";
+    # OpenTelemetry reads only its own env vars, not gotosocial's config.
     environment = {
-      GTS_HOST = "hey.kejadlen.dev";
-      GTS_TRUSTED_PROXIES = subnets.gotosocial;
-      GTS_LANDING_PAGE_USER = "alpha";
-      GTS_DB_TYPE = "sqlite";
-      GTS_DB_ADDRESS = "/gotosocial/storage/sqlite.db";
-      GTS_OIDC_ENABLED = "true";
-      GTS_OIDC_IDP_NAME = "Authelia";
-      GTS_OIDC_ISSUER = "https://auth.kejadlen.dev";
-      GTS_OIDC_CLIENT_ID = "gotosocial";
-      GTS_OIDC_ADMIN_GROUPS = "admin";
-      GTS_METRICS_ENABLED = "true";
-      # Tailscale's default CGNAT range, exempted from rate limiting.
-      GTS_ADVANCED_RATE_LIMIT_EXCEPTIONS = "100.64.0.0/10";
-      GTS_STATUSES_CLEANUP_REMOTE_OLDER_THAN = "1 year";
+      GTS_CONFIG_PATH = "/gotosocial/config.yaml";
       OTEL_METRICS_PRODUCERS = "prometheus";
       OTEL_METRICS_EXPORTER = "prometheus";
       OTEL_EXPORTER_PROMETHEUS_HOST = "gotosocial";
       TZ = "UTC";
     };
-    environmentFiles = [ config.sops.templates."gotosocial.env".path ];
-    volumes = [ "/var/lib/gotosocial/data:/gotosocial/storage" ];
+    volumes = [
+      "/var/lib/gotosocial/data:/gotosocial/storage"
+      "${config.sops.templates."gotosocial.yaml".path}:/gotosocial/config.yaml:ro"
+    ];
     networks = [ "gotosocial" ];
   };
 
@@ -161,11 +170,8 @@ in
     ];
   };
 
-  sops.secrets."miniflux/password" = { };
-  sops.templates."miniflux.env" = {
-    content = ''
-      ADMIN_PASSWORD=${config.sops.placeholder."miniflux/password"}
-    '';
+  sops.secrets."miniflux/password" = {
+    owner = "miniflux";
     restartUnits = [ "podman-miniflux.service" ];
   };
 
@@ -178,6 +184,7 @@ in
       RUN_MIGRATIONS = "1";
       CREATE_ADMIN = "1";
       ADMIN_USERNAME = "alpha";
+      ADMIN_PASSWORD_FILE = "/etc/miniflux/admin_password";
       AUTH_PROXY_HEADER = "Remote-User";
       AUTH_PROXY_USER_CREATION = "0";
       TRUSTED_REVERSE_PROXY_NETWORKS = subnets.rss;
@@ -188,8 +195,10 @@ in
       LOG_FORMAT = "json";
       LOG_LEVEL = "info";
     };
-    environmentFiles = [ config.sops.templates."miniflux.env".path ];
-    volumes = [ "/run/postgresql:/run/postgresql" ];
+    volumes = [
+      "/run/postgresql:/run/postgresql"
+      "${config.sops.secrets."miniflux/password".path}:/etc/miniflux/admin_password:ro"
+    ];
     networks = [ "rss" ];
   };
 
