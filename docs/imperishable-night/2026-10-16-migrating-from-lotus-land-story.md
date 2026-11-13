@@ -300,7 +300,39 @@ constraints:
   copied while the container is stopped.
 
 Moving `auth.kejadlen.dev` and `auth.chislan.family` takes an A record
-change, so lower their TTLs a day ahead to keep the login outage short.
+change. As with gotosocial, the Caddy-to-Caddy bridge carries clients
+that still resolve the old address, so the TTLs don't need lowering.
+
+`db.sqlite3` and `users_database.yml` are data, and the rsync carries
+both. From then on the host owns the users database, so password resets
+stick instead of reverting on the next playbook run, and
+`lotus-land-story/templates/authelia_users_database.yml` retires with
+the rest of lotus-land-story. `configuration.yml` comes from the flake.
+Nothing in the configuration reads lotus-land-story's `secrets`
+directory, so it stays behind. Sessions live in memory, so
+everyone signs in to authelia again after the move, but devices already
+on the tailnet stay on it. authelia's metrics go unscraped until
+VictoriaMetrics moves, like gotosocial's.
+
+Follow these steps for the move:
+
+1. Copy the six `authelia` secrets into
+   `imperishable-night/secrets.sops.yml`, then deploy
+   imperishable-night with authelia stopped.
+2. Copy both sites' certificates from
+   `/mnt/lotus-land-story/caddy/data/caddy/certificates/` to the same
+   path under `/var/lib/caddy/data/`.
+3. Stop authelia on lotus-land-story, and rsync
+   `/mnt/lotus-land-story/authelia/config/` to `/var/lib/authelia/` with
+   `--delete`. Sign-ins to the tailnet fail from here until step 5.
+4. Deploy imperishable-night with authelia started and its sites.
+5. Deploy lotus-land-story's Caddy with the bridge in place of both
+   sites, then apply tofu to point the A records at imperishable-night.
+   Until the bridge is up, starting authelia on lotus-land-story is the
+   rollback.
+6. Sign in to Tailscale and to gotosocial through authelia.
+7. Remove the bridge an hour after the records change, once their TTL
+   has passed, and remove authelia from lotus-land-story.
 
 ## Back up both hosts
 
