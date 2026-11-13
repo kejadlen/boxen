@@ -125,6 +125,12 @@ contacts.chislan.family {
 
 ### Public
 
+auth.kejadlen.dev, auth.chislan.family {
+	log
+
+	reverse_proxy authelia:9091
+}
+
 hey.kejadlen.dev {
 	log
 

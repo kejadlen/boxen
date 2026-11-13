@@ -123,8 +123,6 @@ in
   # https://www.authelia.com/configuration/prologue/introduction/
   virtualisation.oci-containers.containers.authelia = {
     image = "docker.io/authelia/authelia:${versions.authelia}";
-    # Stays stopped until its data is copied from lotus-land-story.
-    autoStart = false;
     environment = {
       AUTHENTICATION_GUARD = "remote_user_guard";
       X_AUTHELIA_CONFIG = "/config/configuration.yml,/config/secrets.yml";
