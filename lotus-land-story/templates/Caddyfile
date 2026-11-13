@@ -48,19 +48,6 @@
 	import tsident
 }
 
-# Carries clients still resolving the old address to authelia on
-# imperishable-night, until the A records' TTL has passed.
-auth.kejadlen.dev, auth.chislan.family {
-	log
-
-	reverse_proxy https://imperishable-night {
-		header_up Host {host}
-		transport http {
-			tls_server_name {host}
-		}
-	}
-}
-
 http://setup {
 	bind tailscale/setup
 	log
