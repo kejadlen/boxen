@@ -115,6 +115,13 @@
         state: present
         update_cache: true
 
+    - name: Trust the Caddy root
+      ansible.builtin.copy:
+        src: ../modules/nixos/caddy-root.crt
+        dest: /etc/vector/caddy-root.crt
+        mode: '0644'
+      notify: Restart Vector
+
     - name: Configure Vector
       ansible.builtin.copy:
         src: templates/vector.yml
