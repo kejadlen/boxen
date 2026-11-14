@@ -15,6 +15,7 @@
       ansible.builtin.copy:
         src: templates/vector.yml
         dest: /mnt/lotus-land-story/vector/vector.yml
+        mode: "0644"
 
     - name: Run Vector
       community.docker.docker_container:
