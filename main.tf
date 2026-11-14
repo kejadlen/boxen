@@ -127,6 +127,11 @@ data "tailscale_device" "pro_tacts" {
   hostname = "pro-tacts"
 }
 
+# Caddy's tsnet node in front of VictoriaLogs.
+data "tailscale_device" "logs" {
+  hostname = "logs"
+}
+
 data "tailscale_device" "hopeless_masquerade" {
   hostname = "hopeless-masquerade"
 }
@@ -261,6 +266,7 @@ resource "tailscale_acl" "policy" {
       },
 
       "hosts": {
+        "logs":              "${data.tailscale_device.logs.addresses[0]}",
         "lotus-land-story":  "${data.tailscale_device.lotus_land_story.addresses[0]}",
         "mountain-of-faith": "${data.tailscale_device.mountain_of_faith.addresses[0]}",
       },
@@ -276,7 +282,7 @@ resource "tailscale_acl" "policy" {
         {
           "action": "accept",
           "src":    ["tag:birdnet"],
-          "dst":    ["lotus-land-story:9428", "mountain-of-faith:53"],
+          "dst":    ["logs:443", "lotus-land-story:9428", "mountain-of-faith:53"],
         },
       ],
 
@@ -292,7 +298,7 @@ resource "tailscale_acl" "policy" {
       "tests": [
         {
           "src":    "tag:birdnet",
-          "accept": ["lotus-land-story:9428", "mountain-of-faith:53"],
+          "accept": ["logs:443", "lotus-land-story:9428", "mountain-of-faith:53"],
           "deny":   ["lotus-land-story:22", "mountain-of-faith:22", "mountain-of-faith:9000"],
         },
         {
