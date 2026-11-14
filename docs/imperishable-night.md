@@ -5,11 +5,10 @@ running NixOS from the flake in `imperishable-night/`. Services are
 moving here from lotus-land-story one at a time; the
 [migration plan](imperishable-night/2026-10-16-migrating-from-lotus-land-story.md)
 tracks the order. Today it runs the base system, Tailscale,
-node-exporter, cadvisor, restic, PostgreSQL, Caddy, Vector, authelia,
-calibre-web, gotosocial, homebox, ketchup, miniflux, paperless-ngx with
-redis, irc (soju, with gamja served by Caddy), pro-tacts, and quire.
-Grafana, VictoriaMetrics, VictoriaLogs, and VictoriaTraces are defined
-but not started until their data moves.
+node-exporter, cadvisor, restic, PostgreSQL, Caddy, Vector, Grafana,
+VictoriaMetrics, VictoriaLogs, VictoriaTraces, authelia, calibre-web,
+gotosocial, homebox, ketchup, miniflux, paperless-ngx with redis, irc
+(soju, with gamja served by Caddy), pro-tacts, and quire.
 
 For first-time setup, see the [bootstrap README][readme].
 
@@ -64,10 +63,30 @@ password for Lish.
 
 ## Observability
 
-node-exporter listens on `:9100`. VictoriaMetrics on lotus-land-story
-scrapes it through the `linode` job in [scrape.yml][scrape], which
-discovers every running Linode instance and scrapes `<label>:9100` over
-the tailnet, so adding the host needed no scrape config change. The
+The fleet's observability stack runs here as four containers, each with
+its data in `/var/lib/<name>`:
+
+- VictoriaMetrics, at `https://metrics`, scrapes the targets in
+  [scrape.yml][scrape] and takes `backup_*` pushes from both hosts'
+  backups.
+- VictoriaLogs, at `https://logs`, takes logs from every host's Vector
+  or journal-upload.
+- VictoriaTraces, at `https://traces`, takes OpenTelemetry traces.
+- Grafana, at `https://grafana`, reads all three over `observability`.
+  Caddy signs users in with `tailscale_auth` and passes the Tailscale
+  user as `X-WEBAUTH-USER`, which Grafana's auth proxy takes as a login
+  only from the `grafana` subnet. `auto_sign_up` is off, so only
+  existing Grafana users get in. Its datasources and the dashboard
+  provider come from the flake, and the dashboards from
+  `lotus-land-story/templates/dashboards/`.
+
+The `logs`, `metrics`, and `traces` sites skip `tailscale_auth`, since
+the shippers and scrapers that use them run on tagged nodes, which it
+rejects.
+
+node-exporter listens on `:9100`. VictoriaMetrics scrapes it through the
+`linode` job in [scrape.yml][scrape], which discovers every running
+Linode instance and scrapes `<label>:9100` over the tailnet. The
 firewall keeps the port closed publicly.
 
 An hourly `update-metrics` timer, from
@@ -84,13 +103,15 @@ cadvisor runs from NixOS's `services.cadvisor` module rather than as a
 container, so it needs no host mounts, and its version comes from
 nixpkgs instead of lotus-land-story's pin. It listens on `:8080`, also
 closed publicly, and finds containers through podman's socket. The
-`cadvisor` job in the same scrape.yml lists `imperishable-night:8080` as
-a target. That address is already the instance label, so only
-lotus-land-story's in-network target needs relabeling.
+`cadvisor` job in the same scrape.yml scrapes `imperishable-night:8080`.
+lotus-land-story's cadvisor publishes no port, so the
+`cadvisor-lotus-land-story` job reaches it through lotus-land-story's
+`https://cadvisor` site and relabels it to the `cadvisor` job and the
+`lotus-land-story:8080` instance.
 
 Vector runs from NixOS's `services.vector` module and reads container
 logs from journald, where podman writes them. It ships them to
-VictoriaLogs on lotus-land-story at `https://logs`, verifying the
+VictoriaLogs at `https://logs`, verifying the
 certificate against the shared Caddy root. Entries carry the same
 `container_id` and `container_name` fields as lotus-land-story's, plus
 `host` to tell the two hosts apart. Other journald entries stay on the
@@ -100,13 +121,14 @@ The `miniflux` job in the same scrape.yml reaches miniflux at
 `https://rss/metrics` through Caddy. miniflux allows the request because
 it arrives from Caddy's address on the `rss` network. The `rss` site
 serves `/metrics` outside `tailscale_auth`, which rejects tagged nodes
-such as lotus-land-story, so any tailnet node can read the metrics.
+such as imperishable-night itself, so any tailnet node can read the
+metrics.
 
 gotosocial still exports metrics on `gotosocial:9464`, and authelia on
-`authelia:9959`, but nothing scrapes them until VictoriaMetrics moves
-here, since each port is reachable only on its app's network.
+`authelia:9959`, but nothing scrapes them, since each port is reachable
+only on its app's network, which VictoriaMetrics isn't on.
 
-[scrape]: ../lotus-land-story/templates/scrape.yml
+[scrape]: ../imperishable-night/scrape.yml
 
 ## Containers and Caddy
 

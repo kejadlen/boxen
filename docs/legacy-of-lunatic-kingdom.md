@@ -59,7 +59,7 @@ can scrape caddy's metrics endpoint.
 | syncthing | Debian package, `syncthing@syncthing.service` | [syncthing.yml][syncthing] |
 | restic repository | sftp-only `restic` user | [main.yml][main] |
 | node-exporter | Debian package, with apt and systemd collectors | [main.yml][main] |
-| journal-upload | ships journald to VictoriaLogs on lotus-land-story | [journal-upload.yml][journal] |
+| journal-upload | ships journald to VictoriaLogs at `https://logs` | [journal-upload.yml][journal] |
 | unattended-upgrades | Debian package, security updates nightly, and Debian, Syncthing, and Tailscale updates weekly, rebooting at 05:00 when an upgrade needs it | [unattended-upgrades.yml][upgrades] |
 | tailscale | Debian package | [tailscale.yml][tailscale] |
 
@@ -72,12 +72,12 @@ can scrape caddy's metrics endpoint.
 
 ## Observability
 
-VictoriaMetrics on lotus-land-story scrapes lolk over the tailnet:
+VictoriaMetrics on imperishable-night scrapes lolk over the tailnet:
 node-exporter on `:9100`, syncthing on `:8384`, and caddy on `:2019`
 (see [scrape.yml][scrape]). journald ships to VictoriaLogs through
 journal-upload, which carries caddy's JSON access logs.
 
-[scrape]: ../lotus-land-story/templates/scrape.yml
+[scrape]: ../imperishable-night/scrape.yml
 
 ## Backup role
 

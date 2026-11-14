@@ -117,8 +117,6 @@ in
 
   virtualisation.oci-containers.containers.grafana = {
     image = "docker.io/grafana/grafana:${versions.grafana}";
-    # Stays stopped until its data is copied from lotus-land-story.
-    autoStart = false;
     environment.GF_PLUGINS_PREINSTALL = "victoriametrics-logs-datasource, victoriametrics-metrics-datasource";
     volumes = [
       "${grafanaIni}:/etc/grafana/grafana.ini:ro"
@@ -137,8 +135,6 @@ in
 
   virtualisation.oci-containers.containers.victoria-metrics = {
     image = "quay.io/victoriametrics/victoria-metrics:${versions.victoria-metrics}";
-    # Stays stopped until its data is copied from lotus-land-story.
-    autoStart = false;
     cmd = [
       "-selfScrapeInterval=5s"
       "-storageDataPath=/victoria-metrics-data"
@@ -161,8 +157,6 @@ in
 
   virtualisation.oci-containers.containers.victoria-logs = {
     image = "quay.io/victoriametrics/victoria-logs:${versions.victoria-logs}";
-    # Stays stopped until its data is copied from lotus-land-story.
-    autoStart = false;
     cmd = [ "-storageDataPath=/data" ];
     volumes = [ "/var/lib/victoria-logs:/data" ];
     networks = [
@@ -173,8 +167,6 @@ in
 
   virtualisation.oci-containers.containers.victoria-traces = {
     image = "quay.io/victoriametrics/victoria-traces:${versions.victoria-traces}";
-    # Stays stopped until its data is copied from lotus-land-story.
-    autoStart = false;
     cmd = [ "-storageDataPath=/data" ];
     volumes = [ "/var/lib/victoria-traces:/data" ];
     networks = [
@@ -190,7 +182,7 @@ in
     9100 # node-exporter
   ];
 
-  # lotus-land-story scrapes :8080 over the tailnet; the port stays closed publicly.
+  # VictoriaMetrics scrapes :8080 over the tailnet; the port stays closed publicly.
   services.cadvisor = {
     enable = true;
     listenAddress = "0.0.0.0";
@@ -203,7 +195,7 @@ in
     ];
   };
 
-  # Ships container logs, which podman writes to journald, to lotus-land-story's VictoriaLogs.
+  # Ships container logs, which podman writes to journald, to VictoriaLogs.
   services.vector = {
     enable = true;
     journaldAccess = true;
@@ -258,7 +250,7 @@ in
         compression = "gzip";
         encoding.codec = "json";
         framing.method = "newline_delimited";
-        # lotus-land-story's Caddy signs logs' certificate with the shared local root.
+        # Caddy signs logs' certificate with the shared local root.
         tls.ca_file = "${../modules/nixos/caddy-root.crt}";
         healthcheck.enabled = false;
       };
