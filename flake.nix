@@ -36,6 +36,7 @@
               opentofu
               python
               rumdl
+              shellcheck
               sops
               ssh-to-age
             ];
