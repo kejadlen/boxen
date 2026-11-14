@@ -26,20 +26,14 @@ Each run:
    from one that never fired.
 2. Removes stale locks from the repository, so a run killed mid-flight
    (for example, by the OOM killer) doesn't block every later prune.
-3. Snapshots VictoriaMetrics into `victoria-metrics/backup/` with
-   `vmbackup`.
-4. Backs up `/mnt/lotus-land-story/`, tagged `long-term`. It excludes
-   `docker/`; the live `postgresql*` cluster, whose dump step 5 backs
-   up; all of `victoria-metrics/`, `victoria-logs/`, and
-   `victoria-traces/`; and `gotosocial/`, the stale copy left behind
-   when gotosocial moved to imperishable-night.
-5. Backs up `pg_dumpall` output via stdin as `lotus-land-story.sql`,
+3. Backs up `/mnt/lotus-land-story/`, tagged `long-term`. It excludes
+   `docker/`; the live `postgresql*` cluster, whose dump step 4 backs
+   up; and the stale copies that `gotosocial/`, `victoria-metrics/`,
+   `victoria-logs/`, and `victoria-traces/` left behind when they moved
+   to imperishable-night.
+4. Backs up `pg_dumpall` output via stdin as `lotus-land-story.sql`,
    tagged `long-term`.
-6. Backs up `victoria-metrics/backup/`, tagged `victoria-metrics`.
-7. Forgets this host's `victoria-metrics` snapshots older than 7 days.
-   `vmbackup` rewrites as many parts as VictoriaMetrics merges, so a
-   longer retention would keep gigabytes of churn.
-8. Runs `forget --prune` on this host's `long-term` snapshots, keeping
+5. Runs `forget --prune` on this host's `long-term` snapshots, keeping
    daily for one month, weekly for three months, monthly for two years,
    and yearly forever.
 

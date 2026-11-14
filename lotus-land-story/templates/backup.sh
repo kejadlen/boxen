@@ -94,20 +94,9 @@ ping_healthcheck /start
 # which blocks every later prune. unlock only removes stale locks.
 phase unlock restic unlock
 
-# A copy of the live data directory isn't guaranteed consistent; a snapshot is.
-phase victoria-metrics-snapshot docker run --rm \
-  --network lotus_land_story \
-  --volume /mnt/lotus-land-story/victoria-metrics/data:/storage:ro \
-  --volume /mnt/lotus-land-story/victoria-metrics/backup:/backup \
-  quay.io/victoriametrics/vmbackup:{{ versions.victoria_metrics }} \
-  -storageDataPath=/storage \
-  -snapshot.createURL=http://victoria-metrics:8428/snapshot/create \
-  -dst=fs:///backup
-
 # A file-level copy of the running cluster isn't restorable; the postgres
-# phase's pg_dumpall is. victoria-logs and victoria-traces are telemetry
-# that churns too much to keep. gotosocial's copy here is stale and mostly
-# remote media; imperishable-night backs up the live one.
+# phase's pg_dumpall is. gotosocial and the Victorias left stale copies
+# here when they moved to imperishable-night.
 phase files restic --verbose backup \
   --tag long-term \
   /mnt/lotus-land-story/ \
@@ -124,17 +113,6 @@ phase postgres restic --verbose backup \
   --stdin-from-command \
   -- \
   sudo -iu postgres pg_dumpall
-
-# vmbackup rewrites as many parts as VictoriaMetrics merges, so its snapshots
-# get their own short retention.
-phase victoria-metrics restic --verbose backup \
-  --tag victoria-metrics \
-  /mnt/lotus-land-story/victoria-metrics/backup
-
-phase forget-victoria-metrics restic --verbose forget \
-  --host lotus-land-story \
-  --tag victoria-metrics \
-  --keep-within-daily 7d
 
 phase forget restic --verbose forget \
   --host lotus-land-story \
