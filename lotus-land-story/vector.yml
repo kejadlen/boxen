@@ -27,6 +27,7 @@
           - /mnt/lotus-land-story/vector:/etc/vector:ro
           - /var/log:/var/log
           - /var/run/docker.sock:/var/run/docker.sock
+          - /mnt/lotus-land-story/caddy/data/caddy/pki/authorities/local/root.crt:/caddy-root.crt:ro
         restart_policy: unless-stopped
         networks:
           - name: lotus_land_story

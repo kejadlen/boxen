@@ -56,7 +56,9 @@ sinks:
       - docker_parsed
       - varlogs_parsed
     type: http
-    uri: http://victoria-logs:9428/insert/jsonline?_stream_fields=container_id,container_name,file
+    uri: https://logs/insert/jsonline?_stream_fields=container_id,container_name,file
+    tls:
+      ca_file: /caddy-root.crt
     compression: gzip
     encoding:
       codec: json

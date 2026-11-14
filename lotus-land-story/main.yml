@@ -57,6 +57,7 @@
 
 - import_playbook: ../playbooks/tailscale.yml # noqa: name[play]
 - import_playbook: ../playbooks/docker.yml    # noqa: name[play]
+- import_playbook: ../playbooks/journal-upload.yml # noqa: name[play]
 
 - import_playbook: docker.yml                 # noqa: name[play]
 
