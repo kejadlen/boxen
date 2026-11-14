@@ -5,3 +5,4 @@ disable = ["MD041"]
 [MD013]
 line-length = 72
 reflow = true
+code-blocks = false
