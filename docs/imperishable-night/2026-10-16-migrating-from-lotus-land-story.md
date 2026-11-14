@@ -167,8 +167,9 @@ breakage costs least:
    moving (see
    [Retiring gitea](../lotus-land-story/2026-11-01-retiring-gitea.md)).
 5. authelia.
-6. Observability: VictoriaMetrics, VictoriaLogs, VictoriaTraces,
-   Grafana, Vector, and the OpenTelemetry collector.
+6. Observability: VictoriaMetrics, VictoriaLogs, VictoriaTraces, and
+   Grafana (see
+   [Move the observability stack](#move-the-observability-stack)).
 7. Sites that only Caddy serves: `setup`, `gists`, `files`, `birbs`,
    `pihole`, and the `home-assistant-5119` proxy. The file-serving sites
    need their directories under `/mnt/lotus-land-story/caddy/data`
@@ -334,6 +335,105 @@ Follow these steps for the move:
 7. Remove the bridge an hour after the records change, once their TTL
    has passed, and remove authelia from lotus-land-story.
 
+## Move the observability stack
+
+VictoriaMetrics, VictoriaLogs, VictoriaTraces, and Grafana move
+together, since Grafana reads all three and VictoriaMetrics scrapes
+Grafana and VictoriaLogs. `lotus-land-story/otel.yml` runs only
+VictoriaTraces, so there is no OpenTelemetry collector to move. Vector
+stays put, since each host runs its own. All four data directories,
+about 930 MiB in all, move intact, so the dashboards keep their history.
+
+### Networks
+
+Grafana takes `X-WEBAUTH-USER` as a login
+([risk 6](../threat-model.md#6-header-trust-apps-on-a-shared-network)),
+so it shares the `grafana` network only with Caddy. That network has a
+fixed subnet, which `[auth.proxy]`'s `whitelist` names. Caddy reaches
+the three Victorias over `metrics`, `logs`, and `traces`, one network
+each, named after their sites. Grafana and the Victorias share
+`observability`, which Caddy isn't on. If Caddy and Grafana shared a
+second network, Caddy's requests could arrive from an address the
+whitelist rejects.
+
+`observability` is internal, so VictoriaMetrics' only route out is
+`metrics`, and Grafana's is `grafana`, for SMTP and plugin installs.
+VictoriaMetrics reaches imperishable-night's own node-exporter and
+cadvisor by their tailnet names, but those packets arrive on the
+`metrics` bridge instead of `tailscale0`, so the firewall opens 9100 and
+8080 on that bridge alone.
+
+### Scrape config
+
+`scrape.yml` moves into the flake. Its three secrets, the Home
+Assistant token, the Linode API token, and lolk's Syncthing API key,
+become sops secrets mounted as files, which the jobs read with
+`credentials_file` and `bearer_token_file`. Targets that VictoriaMetrics
+reached over lotus-land-story's docker network change:
+
+| Job | Today | After the move |
+|---|---|---|
+| `cadvisor` | `cadvisor:8080` | `https://cadvisor`, lotus-land-story's tailnet site, still labeled `lotus-land-story:8080` |
+| `caddy` | `caddy:2019` | `lotus-land-story:2019`, which its Caddy publishes |
+| `docker` | `host.docker.internal:9323` | Dropped, since dockerd listens only on `docker0` |
+| `postgres` | `host.docker.internal:9187` | Dropped, since lotus-land-story's cluster has held nothing since miniflux moved |
+
+VictoriaLogs drops `-syslog.listenAddr.tcp`, whose only sender was
+lotus-land-story's rsyslog over localhost.
+
+### Log shippers
+
+Before the stack moves, every log shipper switches to `https://logs`:
+hopeless-masquerade's Vector, lolk's journal-upload in
+`playbooks/journal-upload.yml`, and lotus-land-story's own Vector and
+journal-upload. Each one trusts the shared Caddy root. lotus-land-story's
+Caddy serves `logs` today, so the switch works ahead of the move, and
+the URL survives it. lotus-land-story's rsyslog forwarding goes away,
+since journald carries the same messages. `tag:birdnet`'s grant moves
+from `lotus-land-story:9428` to `logs:443`. The `logs` node's address
+changes when it registers on imperishable-night, so tofu applies again
+after the move.
+
+### Backups
+
+imperishable-night's restic job takes over lotus-land-story's
+VictoriaMetrics phases. `vmbackup` takes a snapshot, which gets its own
+`victoria-metrics` tag and seven days of retention, and the long-term
+backup excludes all three Victorias' data directories. lotus-land-story's
+`backup.sh` drops those phases when its VictoriaMetrics stops.
+
+### Steps
+
+Follow these steps for the move:
+
+1. Copy `grafana.smtp_password`, `home_assistant.access_token`,
+   `linode.api_token`, and `syncthing.legacy_of_lunatic_kingdom.api_key`
+   into `imperishable-night/secrets.sops.yml`. Then deploy
+   imperishable-night with the four containers stopped and their sites
+   left out.
+2. Stop VictoriaMetrics, VictoriaLogs, VictoriaTraces, and Grafana on
+   lotus-land-story. Deploy its Caddy without the `grafana`, `logs`,
+   `metrics`, and `traces` sites, and its `backup.sh` without the
+   VictoriaMetrics phases. Delete those four machines in the Tailscale
+   console. Metrics and logs don't land from here until step 4.
+3. Rsync each data directory with `--delete`:
+   `victoria-metrics/data/`, `victoria-logs/`, `victoria-traces/`, and
+   `grafana/data/` under `/mnt/lotus-land-story/` to
+   `/var/lib/victoria-metrics/`, `/var/lib/victoria-logs/`,
+   `/var/lib/victoria-traces/`, and `/var/lib/grafana/`. Then
+   `chown -R 472:0 /var/lib/grafana`, since the image runs as uid 472
+   and lotus-land-story ran it as its own `grafana` user.
+4. Deploy imperishable-night with the containers started and their
+   sites.
+5. Apply tofu, so `tag:birdnet`'s grant follows the new `logs` node.
+6. Sign in to Grafana, check that the personal dashboard shows the old
+   history, check that `https://metrics/targets` shows every target up,
+   and check that VictoriaLogs receives logs from every host.
+7. Remove the stack from lotus-land-story's playbooks.
+
+Until step 4, starting the containers on lotus-land-story and restoring
+its sites is the rollback.
+
 ## Back up both hosts
 
 lotus-land-story's daily restic run covers only its own volume. Before
@@ -348,8 +448,9 @@ same phases as `lotus-land-story/templates/backup.sh`, with
 
 Until the observability stack moves, imperishable-night's Vector ships
 logs to VictoriaLogs on lotus-land-story, and lotus-land-story's
-VictoriaMetrics scrapes imperishable-night. When the stack moves, either
-copy the VictoriaMetrics data directory or let the old history age out.
+VictoriaMetrics scrapes imperishable-night. The data moves with the
+stack (see
+[Move the observability stack](#move-the-observability-stack)).
 
 ## Retire lotus-land-story
 
