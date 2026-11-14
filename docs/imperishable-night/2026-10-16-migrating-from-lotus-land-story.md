@@ -386,21 +386,22 @@ lotus-land-story's rsyslog over localhost.
 Before the stack moves, every log shipper switches to `https://logs`:
 hopeless-masquerade's Vector, lolk's journal-upload in
 `playbooks/journal-upload.yml`, and lotus-land-story's own Vector and
-journal-upload. Each one trusts the shared Caddy root. lotus-land-story's
-Caddy serves `logs` today, so the switch works ahead of the move, and
-the URL survives it. lotus-land-story's rsyslog forwarding goes away,
-since journald carries the same messages. `tag:birdnet`'s grant moves
-from `lotus-land-story:9428` to `logs:443`. The `logs` node's address
-changes when it registers on imperishable-night, so tofu applies again
-after the move.
+journal-upload. Each one trusts the shared Caddy root.
+lotus-land-story's Caddy serves `logs` today, so the switch works ahead
+of the move, and the URL survives it. lotus-land-story's rsyslog
+forwarding goes away, since journald carries the same messages.
+`tag:birdnet`'s grant moves from `lotus-land-story:9428` to `logs:443`.
+The `logs` node's address changes when it registers on
+imperishable-night, so tofu applies again after the move.
 
 ### Backups
 
 imperishable-night's restic job takes over lotus-land-story's
 VictoriaMetrics phases. `vmbackup` takes a snapshot, which gets its own
 `victoria-metrics` tag and seven days of retention, and the long-term
-backup excludes all three Victorias' data directories. lotus-land-story's
-`backup.sh` drops those phases when its VictoriaMetrics stops.
+backup excludes all three Victorias' data directories.
+lotus-land-story's `backup.sh` drops those phases when its
+VictoriaMetrics stops.
 
 ### Steps
 
