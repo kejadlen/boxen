@@ -6,4 +6,6 @@
   rss = "10.89.255.0/24";
   # Fixed so gotosocial can trust Caddy's address on it.
   gotosocial = "10.89.254.0/24";
+  # Fixed so Grafana's auth proxy can trust Caddy's address on it.
+  grafana = "10.89.253.0/24";
 }

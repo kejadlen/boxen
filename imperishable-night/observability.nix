@@ -1,4 +1,195 @@
 {
+  config,
+  pkgs,
+  ...
+}:
+
+let
+  subnets = import ./subnets.nix;
+
+  caddyRoot = ../modules/nixos/caddy-root.crt;
+
+  versions = {
+    grafana = "12.4.3";
+    victoria-logs = "v1.44.0";
+    victoria-metrics = "v1.155.0";
+    victoria-traces = "v0.9.0";
+  };
+
+  # The image runs as grafana's uid, with root's group.
+  grafanaUid = 472;
+
+  grafanaIni = (pkgs.formats.ini { }).generate "grafana.ini" {
+    metrics = {
+      enabled = true;
+      disable_total_stats = false;
+    };
+    server = {
+      domain = "grafana";
+      http_addr = "0.0.0.0";
+      root_url = "https://grafana";
+    };
+    # https://grafana.com/docs/grafana/latest/setup-grafana/configure-security/configure-authentication/auth-proxy/
+    auth.disable_signout_menu = true;
+    "auth.proxy" = {
+      enabled = true;
+      header_name = "X-WEBAUTH-USER";
+      header_property = "email";
+      auto_sign_up = false;
+      whitelist = subnets.grafana;
+    };
+    smtp = {
+      enabled = true;
+      host = "smtp.sendgrid.net:465";
+      user = "apikey";
+      password = "$__file{/secrets/smtp_password}";
+      from_address = "grafana@kejadlen.dev";
+    };
+    plugins.plugin_admin_enabled = true;
+  };
+
+  grafanaDatasources = (pkgs.formats.yaml { }).generate "datasources.yml" {
+    apiVersion = 1;
+    datasources = [
+      {
+        name = "VictoriaLogs";
+        type = "victoriametrics-logs-datasource";
+        access = "proxy";
+        url = "http://victoria-logs:9428";
+      }
+      {
+        name = "VictoriaMetrics";
+        type = "victoriametrics-metrics-datasource";
+        access = "proxy";
+        url = "http://victoria-metrics:8428";
+        isDefault = true;
+      }
+      # Jaeger rather than Tempo: VictoriaTraces' Tempo API needs v0.9.4+.
+      {
+        name = "VictoriaTraces";
+        type = "jaeger";
+        access = "proxy";
+        url = "http://victoria-traces:10428/select/jaeger";
+      }
+    ];
+  };
+
+  # allowUiUpdates is false so the repository stays the source of truth.
+  grafanaDashboards = (pkgs.formats.yaml { }).generate "dashboards.yml" {
+    apiVersion = 1;
+    providers = [
+      {
+        name = "default";
+        type = "file";
+        allowUiUpdates = false;
+        updateIntervalSeconds = 30;
+        options.path = "/etc/grafana/dashboards";
+      }
+    ];
+  };
+
+  scrapeSecrets = [
+    "home_assistant/access_token"
+    "linode/api_token"
+    "syncthing/legacy_of_lunatic_kingdom/api_key"
+  ];
+in
+{
+  systemd.tmpfiles.rules = [
+    "d /var/lib/grafana 0755 ${toString grafanaUid} 0 -"
+    "d /var/lib/victoria-logs 0755 root root -"
+    "d /var/lib/victoria-metrics 0755 root root -"
+    "d /var/lib/victoria-traces 0755 root root -"
+  ];
+
+  sops.secrets = {
+    "grafana/smtp_password" = {
+      uid = grafanaUid;
+      restartUnits = [ "podman-grafana.service" ];
+    };
+  }
+  // builtins.listToAttrs (
+    map (name: {
+      inherit name;
+      value.restartUnits = [ "podman-victoria-metrics.service" ];
+    }) scrapeSecrets
+  );
+
+  virtualisation.oci-containers.containers.grafana = {
+    image = "docker.io/grafana/grafana:${versions.grafana}";
+    # Stays stopped until its data is copied from lotus-land-story.
+    autoStart = false;
+    environment.GF_PLUGINS_PREINSTALL = "victoriametrics-logs-datasource, victoriametrics-metrics-datasource";
+    volumes = [
+      "${grafanaIni}:/etc/grafana/grafana.ini:ro"
+      "${grafanaDatasources}:/etc/grafana/provisioning/datasources/datasources.yml:ro"
+      "${grafanaDashboards}:/etc/grafana/provisioning/dashboards/dashboards.yml:ro"
+      "${../lotus-land-story/templates/dashboards}:/etc/grafana/dashboards:ro"
+      "${config.sops.secrets."grafana/smtp_password".path}:/secrets/smtp_password:ro"
+      "/var/lib/grafana:/var/lib/grafana"
+    ];
+    # observability has no route out, so SMTP and plugin installs leave by grafana.
+    networks = [
+      "grafana"
+      "observability"
+    ];
+  };
+
+  virtualisation.oci-containers.containers.victoria-metrics = {
+    image = "quay.io/victoriametrics/victoria-metrics:${versions.victoria-metrics}";
+    # Stays stopped until its data is copied from lotus-land-story.
+    autoStart = false;
+    cmd = [
+      "-selfScrapeInterval=5s"
+      "-storageDataPath=/victoria-metrics-data"
+      "-promscrape.config=/scrape.yml"
+    ];
+    volumes = [
+      "/var/lib/victoria-metrics:/victoria-metrics-data"
+      "${./scrape.yml}:/scrape.yml:ro"
+      "${caddyRoot}:/caddy-root.crt:ro"
+    ]
+    ++ map (
+      name: "${config.sops.secrets.${name}.path}:/secrets/${builtins.replaceStrings [ "/" ] [ "_" ] name}:ro"
+    ) scrapeSecrets;
+    # observability has no route out, so scrapes of the tailnet leave by metrics.
+    networks = [
+      "metrics"
+      "observability"
+    ];
+  };
+
+  virtualisation.oci-containers.containers.victoria-logs = {
+    image = "quay.io/victoriametrics/victoria-logs:${versions.victoria-logs}";
+    # Stays stopped until its data is copied from lotus-land-story.
+    autoStart = false;
+    cmd = [ "-storageDataPath=/data" ];
+    volumes = [ "/var/lib/victoria-logs:/data" ];
+    networks = [
+      "logs"
+      "observability"
+    ];
+  };
+
+  virtualisation.oci-containers.containers.victoria-traces = {
+    image = "quay.io/victoriametrics/victoria-traces:${versions.victoria-traces}";
+    # Stays stopped until its data is copied from lotus-land-story.
+    autoStart = false;
+    cmd = [ "-storageDataPath=/data" ];
+    volumes = [ "/var/lib/victoria-traces:/data" ];
+    networks = [
+      "traces"
+      "observability"
+    ];
+  };
+
+  # VictoriaMetrics' scrapes of the host's tailnet name arrive on the metrics
+  # bridge, not tailscale0.
+  networking.firewall.interfaces.podman-metrics.allowedTCPPorts = [
+    8080 # cadvisor
+    9100 # node-exporter
+  ];
+
   # lotus-land-story scrapes :8080 over the tailnet; the port stays closed publicly.
   services.cadvisor = {
     enable = true;

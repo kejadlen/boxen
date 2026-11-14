@@ -16,14 +16,21 @@ let
     books = "";
     docs = "";
     gotosocial = "--subnet ${subnets.gotosocial}";
+    grafana = "--subnet ${subnets.grafana}";
     homebox = "";
     irc = "";
     ketchup = "";
+    logs = "";
+    # Named so the firewall can open the host's exporters to VictoriaMetrics.
+    metrics = "--interface-name podman-metrics";
     quire = "";
     rss = "--subnet ${subnets.rss}";
+    traces = "";
     # paperless-ngx's other network is its way out, so redis gets none.
     paperless = "--internal";
     pro-tacts = "";
+    # Grafana and the Victorias reach each other here, out of Caddy's reach.
+    observability = "--internal";
   };
 
   versions = {
@@ -104,12 +111,16 @@ in
       "books"
       "docs"
       "gotosocial"
+      "grafana"
       "homebox"
       "irc"
       "ketchup"
+      "logs"
+      "metrics"
       "pro-tacts"
       "quire"
       "rss"
+      "traces"
     ];
     # Unbounded, caddy takes the host down with it. Equal memory-swap denies swap.
     extraOptions = [

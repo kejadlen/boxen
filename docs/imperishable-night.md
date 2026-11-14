@@ -8,6 +8,8 @@ tracks the order. Today it runs the base system, Tailscale,
 node-exporter, cadvisor, restic, PostgreSQL, Caddy, Vector, authelia,
 calibre-web, gotosocial, homebox, ketchup, miniflux, paperless-ngx with
 redis, irc (soju, with gamja served by Caddy), pro-tacts, and quire.
+Grafana, VictoriaMetrics, VictoriaLogs, and VictoriaTraces are defined
+but not started until their data moves.
 
 For first-time setup, see the [bootstrap README][readme].
 
@@ -112,18 +114,26 @@ Services run as podman containers through
 `virtualisation.oci-containers`. Containers reach each other by name
 over podman networks, and each app gets a network that it shares only
 with Caddy: `authelia`, `books` for calibre-web, `docs` for
-paperless-ngx, `gotosocial`, `homebox`, `irc` for soju, `ketchup`,
-`pro-tacts`, `quire`, and `rss` for miniflux. No app can reach another
-app, so none can forge the login headers that paperless-ngx, ketchup,
-quire, and miniflux trust, and none can reach authelia except through
-Caddy. paperless-ngx and redis also share `paperless`, an
-internal network with no route out. Caddy alone is on `caddy`, whose
+paperless-ngx, `gotosocial`, `grafana`, `homebox`, `irc` for soju,
+`ketchup`, `logs` for VictoriaLogs, `metrics` for VictoriaMetrics,
+`pro-tacts`, `quire`, `rss` for miniflux, and `traces` for
+VictoriaTraces. No app can reach another app, so none can forge the
+login headers that paperless-ngx, ketchup, quire, miniflux, and Grafana
+trust, and none can reach authelia except through Caddy. paperless-ngx
+and redis also share `paperless`, an internal network with no route out.
+Grafana and the three Victorias share `observability`, another internal
+network, which Caddy isn't on. Caddy alone is on `caddy`, whose
 fixed subnet, `10.89.0.0/24`, the Caddyfile lists in `trusted_proxies`.
 `rss` also has a fixed subnet, `10.89.255.0/24`, which miniflux trusts
 for its login header and its metrics endpoint, and `gotosocial` has
-`10.89.254.0/24`, which gotosocial trusts for `X-Forwarded-For`.
-Netavark publishes Caddy's ports on every network it joins and DNATs
-them to whichever network's rule comes first, while the reply leaves by
+`10.89.254.0/24`, which gotosocial trusts for `X-Forwarded-For`, and
+`grafana` has `10.89.253.0/24`, which Grafana's auth proxy whitelists.
+`metrics`' bridge is named `podman-metrics`, and the firewall opens
+cadvisor's and node-exporter's ports on it, since VictoriaMetrics'
+scrapes of the host's tailnet name arrive there instead of on
+`tailscale0`. Netavark publishes Caddy's ports on every network it
+joins and DNATs them to whichever network's rule comes first, while the
+reply leaves by
 whichever default route Caddy picks. The host's reverse-path filter is
 loose so those replies aren't dropped. A oneshot unit creates each
 network, and each container's unit requires the units for its networks.
@@ -186,7 +196,10 @@ included, into its runtime spec and database under
 `/var/lib/containers/storage`. authelia reads four secrets through its
 `_FILE` variables, and the template filter fills in the SMTP username
 and OIDC signing key, which have no such variable, from a second config
-file. miniflux reads `ADMIN_PASSWORD_FILE`.
+file. Grafana reads its SMTP password through `$__file{}` in
+`grafana.ini`, and VictoriaMetrics reads the scrape config's tokens
+through `credentials_file` and `bearer_token_file`. miniflux reads
+`ADMIN_PASSWORD_FILE`.
 gotosocial reads all of its settings, the OIDC client secret included,
 from a config file that sops-nix renders, at `GTS_CONFIG_PATH`. Only
 OpenTelemetry's variables and `TZ` stay in its environment.
@@ -208,11 +221,14 @@ The file holds the following values:
 | `docket.fastmail_tokens.<name>` | `docket.fastmail_tokens.<name>` in `host_vars/lotus-land-story.sops.yml`; unused until docket deploys |
 | `docket.sentry_dsn` | `docket.sentry_dsn` in `host_vars/lotus-land-story.sops.yml`; unused until docket deploys |
 | `gotosocial.oidc_client_secret` | `gotosocial.oidc_client_secret` in `host_vars/lotus-land-story.sops.yml` |
+| `grafana.smtp_password` | `grafana.smtp_password` in `host_vars/lotus-land-story.sops.yml` |
+| `home_assistant.access_token` | `home_assistant.access_token` in `host_vars/lotus-land-story.sops.yml` |
 | `homebox.api_key_pepper` | `openssl rand -base64 48`; rotating it invalidates homebox's API keys |
 | `homebox.mailer.username` | `homebox.mailer.username` in `host_vars/lotus-land-story.sops.yml` |
 | `homebox.mailer.password` | `homebox.mailer.password` in `host_vars/lotus-land-story.sops.yml` |
 | `ketchup.session_secret` | `ketchup.session_secret` in `host_vars/lotus-land-story.sops.yml` |
 | `ketchup.otel_exporter_otlp_headers` | `ketchup.otel_exporter_otlp_headers` in `host_vars/lotus-land-story.sops.yml` |
+| `linode.api_token` | `linode.api_token` in `host_vars/lotus-land-story.sops.yml` |
 | `miniflux.password` | `miniflux.password` in `host_vars/lotus-land-story.sops.yml`; `alpha`'s login, which `CREATE_ADMIN` sets only if the user doesn't exist |
 | `paperless_ngx.secret` | `paperless_ngx.secret` in `host_vars/lotus-land-story.sops.yml` |
 | `quire.github_mirror` | `quire.github_mirror` in `host_vars/lotus-land-story.sops.yml` |
@@ -220,6 +236,7 @@ The file holds the following values:
 | `quire.sentry_dsn` | `quire.sentry_dsn` in `host_vars/lotus-land-story.sops.yml` |
 | `restic.password` | `restic.password` in `host_vars/lotus-land-story.sops.yml` |
 | `restic.healthcheck` | The UUID of imperishable-night's healthchecks.io backup check |
+| `syncthing.legacy_of_lunatic_kingdom.api_key` | `syncthing.legacy_of_lunatic_kingdom.api_key` in `host_vars/lotus-land-story.sops.yml` |
 
 Edit it with `sops imperishable-night/secrets.sops.yml`. Nix only sees
 files that git tracks, so commit a new or changed secrets file before
