@@ -67,6 +67,9 @@ in
     settings.Upload = {
       URL = "https://logs/insert/journald";
       TrustedCertificateFile = "${caddyRoot}";
+      # Without "-" for both, an https URL loads a client key and certificate from /etc/ssl.
+      ServerKeyFile = "-";
+      ServerCertificateFile = "-";
     };
   };
 
