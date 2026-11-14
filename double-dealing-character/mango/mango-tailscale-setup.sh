@@ -276,7 +276,7 @@ EOF
     sleep 1
     fs=$(usb_fs_type)
     [ "$fs" = "ext4" ] || die "USB did not mount as ext4 (got '$fs')"
-    log "USB mounted: $(df -h $USB_MOUNT | awk 'NR==2 {print $2 " total, " $4 " free"}')"
+    log "USB mounted: $(df -h "$USB_MOUNT" | awk 'NR==2 {print $2 " total, " $4 " free"}')"
 }
 
 # Install OpenWrt-side prerequisites and turn on IP forwarding.
@@ -366,7 +366,7 @@ cmd_install_tailscale() {
     ln -sf "$TS_BASE/bin/tailscale"  /usr/sbin/tailscale
     ln -sf "$TS_BASE/bin/tailscaled" /usr/sbin/tailscaled
 
-    log "Tailscale binary: $($TS_BASE/bin/tailscale version | head -1)"
+    log "Tailscale binary: $("$TS_BASE/bin/tailscale" version | head -1)"
 }
 
 # Set up OpenWrt firewall to forward tailnet traffic out to WAN.
