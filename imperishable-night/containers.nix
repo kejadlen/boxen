@@ -246,11 +246,9 @@ in
   };
 
   sops.secrets."ketchup/session_secret" = { };
-  sops.secrets."ketchup/otel_exporter_otlp_headers" = { };
   sops.templates."ketchup.env" = {
     content = ''
       SESSION_SECRET=${config.sops.placeholder."ketchup/session_secret"}
-      OTEL_EXPORTER_OTLP_HEADERS=${config.sops.placeholder."ketchup/otel_exporter_otlp_headers"}
     '';
     restartUnits = [ "podman-ketchup.service" ];
   };
@@ -261,11 +259,16 @@ in
       AUTH_HEADER = "Tailscale-User-Login";
       DATABASE_URL = "/data/ketchup.db";
       OTEL_EXPORTER_OTLP_PROTOCOL = "http/protobuf";
-      OTEL_EXPORTER_OTLP_ENDPOINT = "https://api.honeycomb.io";
+      # A base URL: the exporter appends v1/traces.
+      OTEL_EXPORTER_OTLP_ENDPOINT = "https://traces/insert/opentelemetry";
+      OTEL_EXPORTER_OTLP_CERTIFICATE = "/caddy-root.crt";
       TZ = "America/Los_Angeles";
     };
     environmentFiles = [ config.sops.templates."ketchup.env".path ];
-    volumes = [ "/var/lib/ketchup:/data" ];
+    volumes = [
+      "/var/lib/ketchup:/data"
+      "${../modules/nixos/caddy-root.crt}:/caddy-root.crt:ro"
+    ];
     networks = [ "ketchup" ];
   };
 

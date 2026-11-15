@@ -72,8 +72,9 @@ its data in `/var/lib/<name>`:
 - VictoriaLogs, at `https://logs`, takes logs from every host's Vector
   or journal-upload.
 - VictoriaTraces, at `https://traces`, takes OpenTelemetry traces.
-  pro-tacts sends its traces there over the tailnet, trusting the Caddy
-  root, rather than sharing a network with VictoriaTraces.
+  pro-tacts and ketchup send their traces there over the tailnet,
+  trusting the Caddy root, rather than sharing a network with
+  VictoriaTraces.
 - Grafana, at `https://grafana`, reads all three over `observability`.
   Caddy signs users in with `tailscale_auth` and passes the Tailscale
   user as `X-WEBAUTH-USER`, which Grafana's auth proxy takes as a login
@@ -262,7 +263,6 @@ The file holds the following values:
 | `homebox.mailer.username` | `homebox.mailer.username` in `host_vars/lotus-land-story.sops.yml` |
 | `homebox.mailer.password` | `homebox.mailer.password` in `host_vars/lotus-land-story.sops.yml` |
 | `ketchup.session_secret` | `ketchup.session_secret` in `host_vars/lotus-land-story.sops.yml` |
-| `ketchup.otel_exporter_otlp_headers` | `ketchup.otel_exporter_otlp_headers` in `host_vars/lotus-land-story.sops.yml` |
 | `linode.api_token` | `linode.api_token` in `host_vars/lotus-land-story.sops.yml` |
 | `miniflux.password` | `miniflux.password` in `host_vars/lotus-land-story.sops.yml`; `alpha`'s login, which `CREATE_ADMIN` sets only if the user doesn't exist |
 | `paperless_ngx.secret` | `paperless_ngx.secret` in `host_vars/lotus-land-story.sops.yml` |
