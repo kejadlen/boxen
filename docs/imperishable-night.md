@@ -153,7 +153,9 @@ for its login header and its metrics endpoint, and `gotosocial` has
 `metrics`' bridge is named `podman-metrics`, and the firewall opens
 cadvisor's and node-exporter's ports on it, since VictoriaMetrics'
 scrapes of the host's tailnet name arrive there instead of on
-`tailscale0`. Netavark publishes Caddy's ports on every network it
+`tailscale0`. VictoriaMetrics' `/etc/hosts` starts empty, because
+podman otherwise copies the host's, which maps `imperishable-night` to
+`127.0.0.2`. Netavark publishes Caddy's ports on every network it
 joins and DNATs them to whichever network's rule comes first, while the
 reply leaves by
 whichever default route Caddy picks. The host's reverse-path filter is

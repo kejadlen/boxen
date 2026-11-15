@@ -153,6 +153,8 @@ in
       "metrics"
       "observability"
     ];
+    # The host's /etc/hosts, podman's default base, maps imperishable-night to 127.0.0.2.
+    extraOptions = [ "--hosts-file=none" ];
   };
 
   virtualisation.oci-containers.containers.victoria-logs = {
