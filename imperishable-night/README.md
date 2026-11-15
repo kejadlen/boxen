@@ -70,6 +70,35 @@ mints. The key expires a day after it's minted.
 
 For later deploys, see the [root README](../README.md).
 
+## Update nixpkgs
+
+The personal dashboard's update tiles count the commits that the
+`nixos-26.05` branch has gained since the deployed revision. The branch
+takes dozens of backports a day, so a host a few days behind shows
+hundreds of commits, not hundreds of package upgrades.
+
+To catch up, run the following from the repository root:
+
+1. Bump the nixpkgs input:
+
+   ```sh
+   nix flake update nixpkgs --flake ./imperishable-night
+   ```
+
+2. Commit `imperishable-night/flake.lock`.
+3. Deploy with `just imperishable-night`.
+4. If the security updates tile asks for a reboot, which happens when
+   the bump changes the kernel or initrd, reboot the host:
+
+   ```sh
+   ssh imperishable-night sudo reboot
+   ```
+
+The tiles refresh within the hour, when the `update-metrics` timer next
+runs. If you plan to reboot anyway, deploy with
+`just imperishable-night boot` instead, so the new system activates
+once, at boot.
+
 ## Rex
 
 The
