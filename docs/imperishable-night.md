@@ -143,8 +143,11 @@ VictoriaTraces. No app can reach another app, so none can forge the
 login headers that paperless-ngx, ketchup, quire, miniflux, and Grafana
 trust, and none can reach authelia except through Caddy. paperless-ngx
 and redis also share `paperless`, an internal network with no route out.
-Grafana and the three Victorias share `observability`, another internal
-network, which Caddy isn't on. Caddy alone is on `caddy`, whose
+Grafana and the three Victorias share `observability`, which Caddy
+isn't on. It isn't internal, because an internal network's resolver
+never answers for outside names, and Go's resolver waits 5 seconds on
+it before asking the next one, which timed out VictoriaMetrics'
+scrapes. Caddy alone is on `caddy`, whose
 fixed subnet, `10.89.0.0/24`, the Caddyfile lists in `trusted_proxies`.
 `rss` also has a fixed subnet, `10.89.255.0/24`, which miniflux trusts
 for its login header and its metrics endpoint, and `gotosocial` has

@@ -126,7 +126,6 @@ in
       "${config.sops.secrets."grafana/smtp_password".path}:/secrets/smtp_password:ro"
       "/var/lib/grafana:/var/lib/grafana"
     ];
-    # observability has no route out, so SMTP and plugin installs leave by grafana.
     networks = [
       "grafana"
       "observability"
@@ -148,7 +147,6 @@ in
     ++ map (
       name: "${config.sops.secrets.${name}.path}:/secrets/${builtins.replaceStrings [ "/" ] [ "_" ] name}:ro"
     ) scrapeSecrets;
-    # observability has no route out, so scrapes of the tailnet leave by metrics.
     networks = [
       "metrics"
       "observability"
