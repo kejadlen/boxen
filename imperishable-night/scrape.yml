@@ -184,7 +184,8 @@ scrape_configs:
       - targets: ["mountain-of-faith:10009"]
 
   - job_name: syncthing-legacy-of-lunatic-kingdom
-    bearer_token_file: /secrets/syncthing_legacy_of_lunatic_kingdom_api_key
+    authorization:
+      credentials_file: /secrets/syncthing_legacy_of_lunatic_kingdom_api_key
     static_configs:
       - targets:
         - legacy-of-lunatic-kingdom:8384

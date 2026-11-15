@@ -222,7 +222,7 @@ included, into its runtime spec and database under
 and OIDC signing key, which have no such variable, from a second config
 file. Grafana reads its SMTP password through `$__file{}` in
 `grafana.ini`, and VictoriaMetrics reads the scrape config's tokens
-through `credentials_file` and `bearer_token_file`. miniflux reads
+through `credentials_file`. miniflux reads
 `ADMIN_PASSWORD_FILE`.
 gotosocial reads all of its settings, the OIDC client secret included,
 from a config file that sops-nix renders, at `GTS_CONFIG_PATH`. Only
