@@ -26,8 +26,6 @@ let
     quire = "";
     rss = "--subnet ${subnets.rss}";
     traces = "";
-    # paperless-ngx's other network is its way out, so redis gets none.
-    paperless = "--internal";
     pro-tacts = "";
     # Grafana and the Victorias reach each other here, out of Caddy's reach.
     # Not internal: that resolver ignores outside names, and Go waits 5 s on it.

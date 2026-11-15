@@ -108,6 +108,8 @@ in
     "d /var/lib/paperless-ngx/data 0700 1000 1000 -"
     "d /var/lib/paperless-ngx/export 0700 1000 1000 -"
     "d /var/lib/paperless-ngx/media 0700 1000 1000 -"
+    # redis's image runs as 999 and creates the socket; paperless-ngx's group reaches it.
+    "d /run/paperless-redis 0750 999 1000 -"
     "d /var/lib/pro-tacts 0755 root root -"
     "d /var/lib/soju 0755 root root -"
     "d /var/lib/quire 0755 quire quire -"
@@ -328,7 +330,17 @@ in
   # paperless-ngx's Celery broker; nothing in it is worth persisting.
   virtualisation.oci-containers.containers.redis = {
     image = "docker.io/library/redis:${versions.redis}";
-    networks = [ "paperless" ];
+    # The socket's directory keeps everyone but paperless-ngx out.
+    cmd = [
+      "--port"
+      "0"
+      "--unixsocket"
+      "/socket/redis.sock"
+      "--unixsocketperm"
+      "777"
+    ];
+    volumes = [ "/run/paperless-redis:/socket" ];
+    extraOptions = [ "--network=none" ];
   };
 
   sops.secrets."paperless_ngx/secret".restartUnits = [ "podman-paperless-ngx.service" ];
@@ -341,7 +353,7 @@ in
       PAPERLESS_ENABLE_FLOWER = "true";
       PAPERLESS_ENABLE_HTTP_REMOTE_USER = "true";
       PAPERLESS_OCR_USER_ARGS = ''{"continue_on_soft_render_error": true}'';
-      PAPERLESS_REDIS = "redis://redis:6379";
+      PAPERLESS_REDIS = "unix:///socket/redis.sock";
       PAPERLESS_SECRET_KEY_FILE = "/etc/paperless/secret_key";
       PAPERLESS_TASK_WORKERS = "1";
       PAPERLESS_THREADS_PER_WORKER = "1";
@@ -357,14 +369,12 @@ in
       "/var/lib/paperless-ngx/media:/usr/src/paperless/media"
       "/var/lib/paperless-ngx/export:/usr/src/paperless/export"
       "/var/lib/paperless-ngx/consume:/usr/src/paperless/consume"
+      "/run/paperless-redis:/socket"
       "${pkgs.writeText "flowerconfig.py" ''
         url_prefix = "/flower/"
       ''}:/usr/src/paperless/src/paperless/flowerconfig.py:ro"
     ];
-    networks = [
-      "docs"
-      "paperless"
-    ];
+    networks = [ "docs" ];
     # s6 copies the environment into /run and runs services from it.
     extraOptions = [ "--tmpfs=/run:rw,exec,nosuid,nodev" ];
   };

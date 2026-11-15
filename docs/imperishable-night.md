@@ -141,8 +141,12 @@ paperless-ngx, `gotosocial`, `grafana`, `homebox`, `irc` for soju,
 `pro-tacts`, `quire`, `rss` for miniflux, and `traces` for
 VictoriaTraces. No app can reach another app, so none can forge the
 login headers that paperless-ngx, ketchup, quire, miniflux, and Grafana
-trust, and none can reach authelia except through Caddy. paperless-ngx
-and redis also share `paperless`, an internal network with no route out.
+trust, and none can reach authelia except through Caddy. redis has no
+network at all: paperless-ngx reaches it through a Unix socket in
+`/run/paperless-redis`, which both containers mount. The two used to
+share an internal network, but its resolver never answered a lookup it
+couldn't satisfy, which added 5 seconds to nearly every paperless-ngx
+request.
 Grafana and the three Victorias share `observability`, which Caddy
 isn't on. It isn't internal, because an internal network's resolver
 never answers for outside names, and Go's resolver waits 5 seconds on
