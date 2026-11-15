@@ -25,13 +25,14 @@
       notify: Restart journal-upload
 
     # Without "-" for both Server keys, an https URL loads a client key and certificate from /etc/ssl.
+    # Without a port, journal-upload appends :19532 to the whole URL, path included.
     - name: Configure journal-upload
       ansible.builtin.lineinfile:
         path: /etc/systemd/journal-upload.conf
         regexp: "^#?{{ item.key }}="
         line: "{{ item.key }}={{ item.value }}"
       loop:
-        - { key: URL, value: "https://logs/insert/journald" }
+        - { key: URL, value: "https://logs:443/insert/journald" }
         - { key: TrustedCertificateFile, value: /etc/systemd/caddy-root.crt }
         - { key: ServerKeyFile, value: "-" }
         - { key: ServerCertificateFile, value: "-" }
