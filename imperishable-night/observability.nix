@@ -122,7 +122,7 @@ in
       "${grafanaIni}:/etc/grafana/grafana.ini:ro"
       "${grafanaDatasources}:/etc/grafana/provisioning/datasources/datasources.yml:ro"
       "${grafanaDashboards}:/etc/grafana/provisioning/dashboards/dashboards.yml:ro"
-      "${../lotus-land-story/templates/dashboards}:/etc/grafana/dashboards:ro"
+      "${./dashboards}:/etc/grafana/dashboards:ro"
       "${config.sops.secrets."grafana/smtp_password".path}:/secrets/smtp_password:ro"
       "/var/lib/grafana:/var/lib/grafana"
     ];
