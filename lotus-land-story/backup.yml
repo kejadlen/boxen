@@ -12,12 +12,6 @@
     - name: Update Restic
       ansible.builtin.command: restic self-update
 
-    - name: Make a directory for VictoriaMetrics snapshots
-      ansible.builtin.file:
-        path: /mnt/lotus-land-story/victoria-metrics/backup
-        state: directory
-        mode: "0700"
-
     - name: Generate SSH key
       community.crypto.openssh_keypair:
         path: ~/.ssh/id_ed25519

@@ -1,0 +1,27 @@
+- name: Set up cAdvisor
+  hosts: lotus-land-story
+  vars:
+    version: "{{ versions.cadvisor }}"
+  tasks:
+
+    - name: Run cAdvisor
+      community.docker.docker_container:
+        name: cadvisor
+        image: ghcr.io/google/cadvisor:{{ version }}
+        restart: true
+        command:
+          # https://github.com/google/cadvisor/issues/2523#issuecomment-2258042352
+          - "--housekeeping_interval=30s"
+          - "--docker_only=true"
+          - "--store_container_labels=false"
+        volumes:
+          - /:/rootfs:ro
+          - /var/run:/var/run:rw
+          - /sys:/sys:ro
+          - /var/lib/docker/:/var/lib/docker:ro
+          # - /etc/machine-id:/etc/machine-id:ro
+        restart_policy: unless-stopped
+        networks:
+          - name: lotus_land_story
+
+# vim: ft=yaml.ansible
