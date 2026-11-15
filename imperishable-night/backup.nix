@@ -1,13 +1,21 @@
 {
   config,
+  lib,
   pkgs,
   ...
 }:
 
+let
+  # vmbackup matches VictoriaMetrics' version.
+  vmbackupImage =
+    lib.replaceStrings [ "/victoria-metrics:" ] [ "/vmbackup:" ]
+      config.virtualisation.oci-containers.containers.victoria-metrics.image;
+in
 {
   systemd.tmpfiles.rules = [
     "d /var/lib/gotosocial/backup 0700 root root -"
     "d /var/lib/postgresql-dump 0700 root root -"
+    "d /var/lib/victoria-metrics-backup 0700 root root -"
   ];
 
   sops.secrets."restic/password" = { };
@@ -37,9 +45,15 @@
       ];
       paths = [ "/var/lib" ];
       # A file-level copy of the running cluster isn't restorable; the dump is.
+      # The Victorias' telemetry churns too much to keep, apart from
+      # VictoriaMetrics' snapshot, which has its own job.
       exclude = [
         "/var/lib/containers"
         "/var/lib/postgresql"
+        "/var/lib/victoria-logs"
+        "/var/lib/victoria-metrics"
+        "/var/lib/victoria-metrics-backup"
+        "/var/lib/victoria-traces"
       ];
       # Waits out the other host's prune, which locks the shared repository.
       extraBackupArgs = [
@@ -112,4 +126,39 @@
         fi
       '';
     };
+
+  # vmbackup rewrites as many parts as VictoriaMetrics merges, so its snapshots
+  # get their own tag and a week of retention.
+  services.restic.backups.victoria-metrics = {
+    inherit (config.services.restic.backups.daily) repository passwordFile extraOptions;
+    paths = [ "/var/lib/victoria-metrics-backup" ];
+    extraBackupArgs = [
+      "--retry-lock=30m"
+      "--tag=victoria-metrics"
+    ];
+    pruneOpts = [
+      "--retry-lock=30m"
+      "--host=imperishable-night"
+      "--tag=victoria-metrics"
+      "--keep-within-daily=7d"
+    ];
+    # The daily job pulls it in.
+    timerConfig = null;
+    # A copy of the live data directory isn't guaranteed consistent; a snapshot is.
+    backupPrepareCommand = ''
+      ${config.virtualisation.podman.package}/bin/podman run --rm --network observability \
+        --volume /var/lib/victoria-metrics:/storage:ro \
+        --volume /var/lib/victoria-metrics-backup:/backup \
+        ${vmbackupImage} \
+        -storageDataPath=/storage \
+        -snapshot.createURL=http://victoria-metrics:8428/snapshot/create \
+        -dst=fs:///backup
+    '';
+  };
+
+  # A failed snapshot fails the whole run, which healthchecks.io reports as a missed ping.
+  systemd.services.restic-backups-daily = {
+    requires = [ "restic-backups-victoria-metrics.service" ];
+    after = [ "restic-backups-victoria-metrics.service" ];
+  };
 }

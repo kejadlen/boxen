@@ -46,8 +46,19 @@ exit status.
 
 NixOS's `services.restic.backups.daily` runs as the
 `restic-backups-daily` service at 03:00 UTC, and catches up on boot if
-the host was down then. Before backing up, the unit runs the following
-steps, and any failure fails the run:
+the host was down then.
+
+The unit first runs `restic-backups-victoria-metrics`, which has no
+timer of its own. That unit snapshots VictoriaMetrics with `vmbackup`
+into `/var/lib/victoria-metrics-backup`, backs the snapshot up tagged
+`victoria-metrics`, and forgets this host's `victoria-metrics` snapshots
+older than 7 days. `vmbackup` rewrites as many parts as VictoriaMetrics
+merges, so a longer retention would keep gigabytes of churn. If the
+unit fails, `restic-backups-daily` doesn't start, and healthchecks.io
+reports the missed ping.
+
+Before backing up, the daily unit runs the following steps, and any
+failure fails the run:
 
 1. Dumps pro-tacts' database with `podman exec pro-tacts rake db:dump`.
 2. Dumps gotosocial's SQLite database with `VACUUM INTO` into a
@@ -65,7 +76,9 @@ steps, and any failure fails the run:
 
 The unit then backs up `/var/lib`, tagged `long-term`, excluding
 podman's `/var/lib/containers`, the live PostgreSQL cluster in
-`/var/lib/postgresql`, and gotosocial's remote media. Then it runs
+`/var/lib/postgresql`, gotosocial's remote media, and the data
+directories of VictoriaMetrics, VictoriaLogs, and VictoriaTraces, along
+with the VictoriaMetrics snapshot. Then it runs
 `unlock` and `forget --prune` with the same `long-term` retention as
 lotus-land-story, limited to `--host=imperishable-night` so the policy
 never touches lotus-land-story's snapshots. Backup and prune both pass
