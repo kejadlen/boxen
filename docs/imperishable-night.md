@@ -72,6 +72,8 @@ its data in `/var/lib/<name>`:
 - VictoriaLogs, at `https://logs`, takes logs from every host's Vector
   or journal-upload.
 - VictoriaTraces, at `https://traces`, takes OpenTelemetry traces.
+  pro-tacts sends its traces there over the tailnet, trusting the Caddy
+  root, rather than sharing a network with VictoriaTraces.
 - Grafana, at `https://grafana`, reads all three over `observability`.
   Caddy signs users in with `tailscale_auth` and passes the Tailscale
   user as `X-WEBAUTH-USER`, which Grafana's auth proxy takes as a login

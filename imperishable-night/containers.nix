@@ -386,8 +386,14 @@ in
     environment = {
       PRO_TACTS_DATA_DIR = "/data";
       PRO_TACTS_DEBUG = "true";
+      # A full URL: pro-tacts passes it to the exporter as is.
+      OTEL_EXPORTER_OTLP_TRACES_ENDPOINT = "https://traces/insert/opentelemetry/v1/traces";
+      OTEL_EXPORTER_OTLP_TRACES_CERTIFICATE = "/caddy-root.crt";
     };
-    volumes = [ "/var/lib/pro-tacts:/data" ];
+    volumes = [
+      "/var/lib/pro-tacts:/data"
+      "${../modules/nixos/caddy-root.crt}:/caddy-root.crt:ro"
+    ];
     networks = [ "pro-tacts" ];
   };
 
