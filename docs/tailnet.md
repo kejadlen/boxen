@@ -172,7 +172,6 @@ Servers reach each other on the following ports:
 | 9100 | node-exporter |
 | 9115 | blackbox-exporter on mountain-of-faith |
 | 9130 | unpoller on mountain-of-faith |
-| 9428 | VictoriaLogs ingestion |
 | 10009 | Prusa exporter |
 
 A future grant would let your phone reach Rex on your Mac, from the

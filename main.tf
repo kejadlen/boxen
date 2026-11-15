@@ -282,7 +282,7 @@ resource "tailscale_acl" "policy" {
         {
           "action": "accept",
           "src":    ["tag:birdnet"],
-          "dst":    ["logs:443", "lotus-land-story:9428", "mountain-of-faith:53"],
+          "dst":    ["logs:443", "mountain-of-faith:53"],
         },
       ],
 
@@ -298,7 +298,7 @@ resource "tailscale_acl" "policy" {
       "tests": [
         {
           "src":    "tag:birdnet",
-          "accept": ["logs:443", "lotus-land-story:9428", "mountain-of-faith:53"],
+          "accept": ["logs:443", "mountain-of-faith:53"],
           "deny":   ["lotus-land-story:22", "mountain-of-faith:22", "mountain-of-faith:9000"],
         },
         {
