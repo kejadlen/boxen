@@ -41,8 +41,10 @@
               ssh-to-age
             ];
 
-            # Keeps collections in ~/.ansible from shadowing the bundle.
+            # Collections come only from the bundle, not ~/.ansible or the
+            # second copy that ansible-lint's dependencies put on sys.path.
             ANSIBLE_COLLECTIONS_PATH = "${python}/${python.sitePackages}";
+            ANSIBLE_COLLECTIONS_SCAN_SYS_PATH = "False";
           };
         }
       );
