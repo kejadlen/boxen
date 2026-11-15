@@ -66,6 +66,15 @@ docs {
 	}
 }
 
+# Metrics only, for VictoriaMetrics; the public site 404s /metrics.
+gotosocial {
+	import ts gotosocial
+	handle /metrics {
+		reverse_proxy gotosocial:9464
+	}
+	respond 404
+}
+
 grafana {
 	import ts grafana
 	tailscale_auth
