@@ -18,7 +18,6 @@ resource "dnsimple_zone_record" "chislan_family_subdomains" {
     auth     = { zone = dnsimple_zone.zones["chislan_family"], ip = one(linode_instance.imperishable_night.ipv4) }
     birbs    = { zone = dnsimple_zone.zones["chislan_family"], ip = local.lotus_land_story.ip_address }
     contacts = { zone = dnsimple_zone.zones["chislan_family"], ip = data.tailscale_device.pro_tacts.addresses.0 }
-    docs     = { zone = dnsimple_zone.zones["chislan_family"], ip = local.lotus_land_story.ip_address }
     files    = { zone = dnsimple_zone.zones["chislan_family"], ip = local.lotus_land_story.ip_address }
   }
 
