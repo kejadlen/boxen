@@ -145,7 +145,8 @@ in
       "${caddyRoot}:/caddy-root.crt:ro"
     ]
     ++ map (
-      name: "${config.sops.secrets.${name}.path}:/secrets/${builtins.replaceStrings [ "/" ] [ "_" ] name}:ro"
+      name:
+      "${config.sops.secrets.${name}.path}:/secrets/${builtins.replaceStrings [ "/" ] [ "_" ] name}:ro"
     ) scrapeSecrets;
     networks = [
       "metrics"
