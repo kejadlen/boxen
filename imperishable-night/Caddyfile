@@ -40,6 +40,15 @@
 	log
 }
 
+# Metrics only, for VictoriaMetrics.
+authelia {
+	import ts authelia
+	handle /metrics {
+		reverse_proxy authelia:9959
+	}
+	respond 404
+}
+
 books {
 	import ts books
 	tailscale_auth

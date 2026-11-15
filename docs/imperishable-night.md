@@ -129,14 +129,12 @@ serves `/metrics` outside `tailscale_auth`, which rejects tagged nodes
 such as imperishable-night itself, so any tailnet node can read the
 metrics.
 
-The `gotosocial` job reaches gotosocial's `:9464` at
-`https://gotosocial/metrics`, a tailnet site that serves only that path
-and skips `tailscale_auth` for the same reason. The public
+The `authelia` and `gotosocial` jobs reach authelia's `:9959` and
+gotosocial's `:9464` at `https://authelia/metrics` and
+`https://gotosocial/metrics`. Each is a tailnet site that serves only
+that path and skips `tailscale_auth` for the same reason, so
+VictoriaMetrics shares no network with either app. The public
 `hey.kejadlen.dev` answers `/metrics` with a 404.
-
-authelia still exports metrics on `authelia:9959`, but nothing scrapes
-them, since the port is reachable only on authelia's network, which
-VictoriaMetrics isn't on.
 
 [scrape]: ../imperishable-night/scrape.yml
 

@@ -1,5 +1,12 @@
 scrape_configs:
 
+  - job_name: authelia
+    scheme: https
+    tls_config:
+      ca_file: /caddy-root.crt
+    static_configs:
+      - targets: ['authelia']
+
   - job_name: blackbox-exporter-dns
     metrics_path: /probe
     params:
