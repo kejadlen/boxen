@@ -14,6 +14,10 @@
   and `docs/research/YYYY-MM-DD-slug.md` for an evaluation of options
   that isn't tied to one host. The living document that the evaluation
   informed links to it and carries the outcome.
+- Read a dated document only when the task is the work it plans or
+  records, or needs history the living documents leave out. Where things
+  stand is in the living documents and ranger tasks, and a link to a
+  dated document isn't a reason to open it.
 - ranger's `boxen` backlog is the near-term work queue, not a record of
   every TODO. Add a task when the work is ready to implement. When work
   lands or a plan changes, update the affected tasks' state, order, and
