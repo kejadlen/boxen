@@ -112,10 +112,6 @@ container, so it needs no host mounts, and its version comes from
 nixpkgs instead of lotus-land-story's pin. It listens on `:8080`, also
 closed publicly, and finds containers through podman's socket. The
 `cadvisor` job in the same scrape.yml scrapes `imperishable-night:8080`.
-lotus-land-story's cadvisor publishes no port, so the
-`cadvisor-lotus-land-story` job reaches it through lotus-land-story's
-`https://cadvisor` site and relabels it to the `cadvisor` job and the
-`lotus-land-story:8080` instance.
 
 Vector runs from NixOS's `services.vector` module and reads container
 logs from journald, where podman writes them. It ships them to
