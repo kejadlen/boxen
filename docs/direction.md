@@ -27,9 +27,8 @@ and deploying. Pending updates show which hosts are behind, but not
 which known vulnerabilities they're exposed to. Measuring that, for
 example by diffing vulnix reports against the branch head, comes later.
 
-Backups are verified, not assumed. lotus-land-story and
-imperishable-night back up nightly with restic to lolk, ping
-healthchecks.io, and push metrics to
+Backups are verified, not assumed. imperishable-night backs up nightly
+with restic to lolk, pings healthchecks.io, and pushes metrics to
 VictoriaMetrics. See [backups](backup.md). mountain-of-faith and
 hopeless-masquerade don't back up. The servers' backups don't
 leave home, though: the restic repository and lolk's own data have no
@@ -59,8 +58,7 @@ opens no ports.
 
 Memory doesn't drive placement. All the containers together averaged
 about 2.8 GB over October 2026, against imperishable-night's 8 GB and
-lolk's 12 GB, of which lolk used 17%. One Linode is enough once
-lotus-land-story retires.
+lolk's 12 GB, of which lolk used 17%. One Linode is enough.
 
 Access goes through the tailnet. SSH is tailnet-only on NixOS hosts,
 private sites are their own Tailscale nodes through caddy-tailscale, and
@@ -88,8 +86,7 @@ The following table lists each host and where it's headed:
 
 | Host | Today | Heading |
 |---|---|---|
-| lotus-land-story | Linode, Debian bullseye, Docker, Ansible | Retires once its services [move to imperishable-night](imperishable-night/2026-10-16-migrating-from-lotus-land-story.md) |
-| imperishable-night | Linode, NixOS | Takes over lotus-land-story's services, including observability |
+| imperishable-night | Linode, NixOS | Runs the services [moved from lotus-land-story](imperishable-night/2026-10-16-migrating-from-lotus-land-story.md), including observability |
 | legacy-of-lunatic-kingdom | Home NAS, Debian trixie, Quadlet, Ansible | [Reinstalls with NixOS](legacy-of-lunatic-kingdom/2026-11-01-migrating-to-nixos.md), then runs immich and jellyfin |
 | mountain-of-faith | Raspberry Pi running pihole, probes, exporters, and NUT, Docker, Ansible | Stays on Ansible |
 | hopeless-masquerade | Raspberry Pi running BirdNET-Pi, Ansible | Stays on Ansible |
@@ -97,12 +94,10 @@ The following table lists each host and where it's headed:
 
 ## Order of work
 
-1. Move lotus-land-story's remaining services to imperishable-night.
-2. Retire lotus-land-story.
-3. Reinstall lolk with NixOS. Its configuration shares `modules/nixos/`
+1. Reinstall lolk with NixOS. Its configuration shares `modules/nixos/`
    with imperishable-night.
-4. [Copy the restic repository offsite](legacy-of-lunatic-kingdom/2026-11-01-shrinking-and-offsiting-backups.md),
+2. [Copy the restic repository offsite](legacy-of-lunatic-kingdom/2026-11-01-shrinking-and-offsiting-backups.md),
    along with lolk's own data, to Backblaze B2.
-5. Add immich and jellyfin to lolk, once their data has an offsite
+3. Add immich and jellyfin to lolk, once their data has an offsite
    backup.
-6. Add alerting.
+4. Add alerting.

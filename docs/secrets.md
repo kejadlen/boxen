@@ -55,7 +55,6 @@ following:
 - `legacy-of-lunatic-kingdom.sops.yml`
 - `legacy-of-lunatic-kingdom.yml`
 - `lotus-land-story.sops.yml`
-- `lotus-land-story.yml`
 - `mountain-of-faith.sops.yml`
 
 ## What loads which file
