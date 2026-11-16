@@ -68,36 +68,17 @@ docket {
 
 ### External
 
-# synced from quire/gists
-gists.kejadlen.dev {
+# Carries clients still resolving the old address to imperishable-night,
+# until the A records' TTL has passed.
+gists.kejadlen.dev, birbs.chislan.family, files.chislan.family {
 	log
 
-	root * /data/gists
-	encode zstd gzip
-
-	# raw markdown, like GitHub's raw view
-	@raw path *.md
-	handle @raw {
-		file_server
+	reverse_proxy https://imperishable-night {
+		header_up Host {host}
+		transport http {
+			tls_server_name {host}
+		}
 	}
-
-	# rendered views; templates stays scoped here so raw .md is never evaluated
-	handle {
-		rewrite * /_render.html
-		templates
-		file_server
-	}
-}
-
-birbs.chislan.family {
-	log
-
-	reverse_proxy hopeless-masquerade:80
-}
-
-files.chislan.family {
-	root /data/files
-	file_server
 }
 
 # vim: ts=4
