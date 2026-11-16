@@ -32,12 +32,11 @@ resource "dnsimple_zone_record" "chislan_family_subdomains" {
 # - mitmproxy?
 resource "dnsimple_zone_record" "kejadlen_dev_subdomains" {
   for_each = {
-    auth    = one(linode_instance.imperishable_night.ipv4)
-    gists   = one(linode_instance.imperishable_night.ipv4)
-    git     = one(linode_instance.imperishable_night.ipv4)
-    grafana = local.lotus_land_story.ip_address
-    hey     = one(linode_instance.imperishable_night.ipv4)
-    quire   = one(linode_instance.imperishable_night.ipv4)
+    auth  = one(linode_instance.imperishable_night.ipv4)
+    gists = one(linode_instance.imperishable_night.ipv4)
+    git   = one(linode_instance.imperishable_night.ipv4)
+    hey   = one(linode_instance.imperishable_night.ipv4)
+    quire = one(linode_instance.imperishable_night.ipv4)
   }
 
   zone_name = dnsimple_zone.zones["kejadlen_dev"].name
