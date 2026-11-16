@@ -66,19 +66,4 @@ docket {
 	reverse_proxy docket:3000
 }
 
-### External
-
-# Carries clients still resolving the old address to imperishable-night,
-# until the A records' TTL has passed.
-gists.kejadlen.dev, birbs.chislan.family, files.chislan.family {
-	log
-
-	reverse_proxy https://imperishable-night {
-		header_up Host {host}
-		transport http {
-			tls_server_name {host}
-		}
-	}
-}
-
 # vim: ts=4
