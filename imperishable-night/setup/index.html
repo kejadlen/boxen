@@ -36,12 +36,21 @@
   </head>
   <body>
     <h1>Chislan Family Setup</h1>
+    <h2>iPhone and iPad</h2>
     <ol>
-      <li>Download <a href="root.pem">root.pem</a></li>
+      <li>Download <a href="root.pem">root.pem</a> and allow the configuration profile</li>
       <li>Open Settings -&gt; Profile Downloaded</li>
       <li>Install the profile</li>
       <li>Open Settings -&gt; General -&gt; About -&gt; Certificate Trust Settings</li>
       <li>Enable full trust for the Caddy Local Authority root certificate</li>
+    </ol>
+    <h2>Mac</h2>
+    <ol>
+      <li>Download <a href="root.pem">root.pem</a></li>
+      <li>Open root.pem from Downloads and add it to the login keychain</li>
+      <li>In Keychain Access, double-click the Caddy Local Authority root certificate</li>
+      <li>Expand Trust and set "When using this certificate" to Always Trust</li>
+      <li>Close the window and enter your password to save the change</li>
     </ol>
   </body>
 </html>
