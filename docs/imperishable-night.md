@@ -1,10 +1,10 @@
 # imperishable-night
 
 A shared Linode 8 GB (4 vCPU, 8 GB RAM, 160 GB disk) in `us-west`,
-running NixOS from the flake in `imperishable-night/`. Services are
-moving here from lotus-land-story one at a time; the
-[migration plan](imperishable-night/2026-10-16-migrating-from-lotus-land-story.md)
-tracks the order. Today it runs the base system, Tailscale,
+running NixOS from the flake in `imperishable-night/`. Every service
+that outlives lotus-land-story has moved here, following the
+[migration plan](imperishable-night/2026-10-16-migrating-from-lotus-land-story.md).
+It runs the base system, Tailscale,
 node-exporter, cadvisor, restic, PostgreSQL, Caddy, Vector, Grafana,
 VictoriaMetrics, VictoriaLogs, VictoriaTraces, authelia, calibre-web,
 gotosocial, homebox, ketchup, miniflux, paperless-ngx with redis, irc
