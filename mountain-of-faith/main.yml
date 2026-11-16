@@ -108,8 +108,15 @@
         user: restic
         key: "{{ item }}"
       loop:
-        - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILrlVay1GlpCuhYSUup/K/gRYmltycViPBAdZ8t9OKtu # lotus-land-story
         - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPgX0tA28NO3djYaV++JxggR0t47xou+R0HQVwVjzj8s # 1password
+
+    - name: Remove retired hosts' SSH keys for restic user
+      ansible.posix.authorized_key:
+        user: restic
+        key: "{{ item }}"
+        state: absent
+      loop:
+        - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILrlVay1GlpCuhYSUup/K/gRYmltycViPBAdZ8t9OKtu # lotus-land-story
 
     - name: Create Restic directory
       ansible.builtin.file:
