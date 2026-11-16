@@ -48,14 +48,6 @@
 	import tsident
 }
 
-http://setup {
-	bind tailscale/setup
-	log
-	file_server {
-		root /data/setup
-	}
-}
-
 ### Monitoring
 
 cadvisor {
@@ -72,20 +64,6 @@ cadvisor {
 docket {
 	import tsauth docket
 	reverse_proxy docket:3000
-}
-
-### Internal
-
-home-assistant-5119 {
-	import ts home-assistant-5119
-	reverse_proxy homeassistant-5119:8123
-}
-
-pihole {
-	import ts pihole
-
-	redir / /admin/
-	reverse_proxy mountain-of-faith:80
 }
 
 ### External
