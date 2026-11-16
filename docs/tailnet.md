@@ -28,15 +28,15 @@ The following diagram shows the trust zones and the connections that
 carry data or control between them under the target policy. Arrows point
 from the side that opens the connection. Two kinds of traffic are left
 out to keep it readable: your Mac, which reaches everything, and
-monitoring and DNS. For monitoring, the Linodes scrape every node, every
-node ships logs to the Linodes, and mountain-of-faith probes the private
-sites. For DNS, everything resolves through pi-hole on
+monitoring and DNS. For monitoring, imperishable-night scrapes every
+node, every node ships logs to it, and mountain-of-faith probes the
+private sites. For DNS, everything resolves through pi-hole on
 mountain-of-faith.
 
 ```mermaid
 flowchart LR
   accTitle: Tailnet trust zones and flows
-  accDescr: Public visitors on the internet reach only the Linodes, for public sites and SSH. The Linodes back up to lolk, proxy to pi-hole's admin page on mountain-of-faith, and proxy birbs to the BirdNET-Pi. Phones, the Apple TV, and Lydia's devices reach the private sites and Home Assistant.
+  accDescr: Public visitors on the internet reach only the Linode, imperishable-night, for public sites and SSH. It backs up to lolk, proxies to pi-hole's admin page on mountain-of-faith, and proxies birbs to the BirdNET-Pi. Phones, the Apple TV, and Lydia's devices reach the private sites and Home Assistant.
 
   subgraph internet [Internet: untrusted]
     visitors(["Public visitors"])
@@ -47,7 +47,7 @@ flowchart LR
   end
 
   subgraph servers [tag:server]
-    linodes["Linodes<br>lotus-land-story, imperishable-night"]
+    linodes["Linode<br>imperishable-night"]
     lolk["lolk<br>NAS, backups"]
     mof["mountain-of-faith<br>pi-hole, probes"]
   end
@@ -67,12 +67,13 @@ flowchart LR
   linodes -->|birbs proxy| birdnet
 ```
 
-Public visitors reach only the Linodes, so a public attack lands there
-first. Anything it does next has to cross the tailnet, which is what the
-policy controls. The most valuable crossing is the Linodes' restic
-backups to lolk. Private sites run inside Caddy on the Linodes and open
-no connections of their own. Exit-node traffic from people's devices
-leaves for the internet and isn't drawn.
+Public visitors reach only imperishable-night, so a public attack lands
+there first. Anything it does next has to cross the tailnet, which is
+what the policy controls. The most valuable crossing is
+imperishable-night's restic backups to lolk. Private sites run inside
+Caddy on imperishable-night and open no connections of their own.
+Exit-node traffic from people's devices leaves for the internet and
+isn't drawn.
 
 ## Footholds
 
@@ -96,15 +97,15 @@ lolk removes backup deletion. Open means the risk is accepted.
 
 Two findings make the Linode row the worst one:
 
-- The entry point has the most reach. The Linodes take all public
-  traffic, and they're also the monitoring hub, the source of every
-  proxy into the home network, and the backup clients. The monitoring
+- The entry point has the most reach. imperishable-night takes all
+  public traffic, and it's also the monitoring hub, the source of every
+  proxy into the home network, and the backup client. The monitoring
   reach is only to read-only metrics ports, so it matters less than the
   backups below. Push-based collection would remove it, but needs an
   agent on every host and still needs a scraper for pull-only endpoints.
-- The backup clients can destroy the backups. lolk's `restic` user is
-  confined to SFTP, but SFTP can delete, and both Linodes back up to one
-  shared repository as that user and prune it themselves. A compromised
+- The backup client can destroy the backups. lolk's `restic` user is
+  confined to SFTP, but SFTP can delete, and imperishable-night backs up
+  to the repository as that user and prunes it itself. A compromised
   Linode can delete or read every server's backups, and no offsite copy
   exists yet. An append-only rest-server on lolk, with pruning run on
   lolk, would close this.
@@ -148,7 +149,7 @@ The target policy identifies devices as follows:
 |---|---|---|
 | Your Mac | The owner's macOS devices | `autogroup:owner` plus `posture:mac` (`node:os` is `macos`) |
 | Other member devices | Your phones and Apple TV, Lydia's devices | `autogroup:member` |
-| Servers | lotus-land-story, lolk, imperishable-night, mountain-of-faith | `tag:server` |
+| Servers | lolk, imperishable-night, mountain-of-faith | `tag:server` |
 | Sites | The nodes caddy-tailscale registers per private site | `tag:site` |
 | BirdNET-Pi | hopeless-masquerade | `tag:birdnet` |
 | Home Assistant | home-assistant-5119 | Not decided |
@@ -188,8 +189,7 @@ Each step can be rolled back, and access only narrows in the last one:
 3. Tag the servers `tag:server` with `tailscale_device_tags`, one host
    at a time, and check scrapes, backups, and logs after each.
 4. Mint the Caddy auth key with `tag:site`, and retag the site nodes.
-   lotus-land-story's site nodes are user-owned, so they need retagging
-   or replacing when their services move. Replacing the key with
+   Replacing the key with
    [Tailscale Services](imperishable-night/2026-11-11-tailscale-services.md)
    was dropped, since a service gets HTTPS only on its `ts.net` name.
 5. Replace the members' allow-all rule with the owner grant and the

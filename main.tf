@@ -107,17 +107,6 @@ provider "tailscale" {
   oauth_client_secret = ephemeral.onepassword_item.tailscale.credential
 }
 
-data "linode_instances" "lotus_land_story" {
-  filter {
-    name   = "label"
-    values = ["lotus-land-story"]
-  }
-}
-
-data "tailscale_device" "lotus_land_story" {
-  hostname = "lotus-land-story"
-}
-
 data "tailscale_device" "mountain_of_faith" {
   hostname = "mountain-of-faith"
 }
@@ -137,8 +126,6 @@ data "tailscale_device" "hopeless_masquerade" {
 }
 
 locals {
-  lotus_land_story = data.linode_instances.lotus_land_story.instances.0
-
   linode_inbound = [
     { label = "web", protocol = "TCP", ports = "80,443" },
     { label = "http3", protocol = "UDP", ports = "443" },
@@ -146,28 +133,6 @@ locals {
     { label = "tailscale", protocol = "UDP", ports = "41641" },
     { label = "icmp", protocol = "ICMP", ports = null },
   ]
-}
-
-# Docker-published ports skip ufw, so the host's own firewall can't close them.
-resource "linode_firewall" "lotus_land_story" {
-  label = "lotus-land-story"
-
-  dynamic "inbound" {
-    for_each = local.linode_inbound
-    content {
-      label    = inbound.value.label
-      action   = "ACCEPT"
-      protocol = inbound.value.protocol
-      ports    = inbound.value.ports
-      ipv4     = ["0.0.0.0/0"]
-      ipv6     = ["::/0"]
-    }
-  }
-
-  inbound_policy  = "DROP"
-  outbound_policy = "ACCEPT"
-
-  linodes = [local.lotus_land_story.id]
 }
 
 # Nobody has checked whether podman-published ports skip the NixOS firewall,
@@ -267,7 +232,6 @@ resource "tailscale_acl" "policy" {
 
       "hosts": {
         "logs":              "${data.tailscale_device.logs.addresses[0]}",
-        "lotus-land-story":  "${data.tailscale_device.lotus_land_story.addresses[0]}",
         "mountain-of-faith": "${data.tailscale_device.mountain_of_faith.addresses[0]}",
       },
 
@@ -299,7 +263,7 @@ resource "tailscale_acl" "policy" {
         {
           "src":    "tag:birdnet",
           "accept": ["logs:443", "mountain-of-faith:53"],
-          "deny":   ["lotus-land-story:22", "mountain-of-faith:22", "mountain-of-faith:9000"],
+          "deny":   ["mountain-of-faith:22", "mountain-of-faith:9000"],
         },
         {
           "src":    "tag:server",
