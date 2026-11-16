@@ -19,10 +19,6 @@ each service gets a subdirectory there.
 Containers run under Podman, managed by Quadlet: systemd generates a
 service from each `.container` file in `/etc/containers/systemd/`, named
 after the file (`caddy.container` becomes `caddy.service`).
-lotus-land-story runs Docker until it [retires][migration], so container
-conventions differ between the two hosts for now.
-
-[migration]: imperishable-night/2026-10-16-migrating-from-lotus-land-story.md
 
 Containers that talk to each other join the `legacy_of_lunatic_kingdom`
 podman network, so they address each other by container name — caddy
@@ -81,9 +77,10 @@ journal-upload, which carries caddy's JSON access logs.
 
 ## Backup role
 
-lotus-land-story and imperishable-night back up daily into one shared
-restic repository on lolk, over SFTP as the `restic` user, and each
-prunes its own snapshots. It's the only long-term copy of their backups.
+imperishable-night backs up daily into a restic repository on lolk,
+over SFTP as the `restic` user, and prunes its own snapshots. The
+repository also keeps lotus-land-story's snapshots from before it
+retired. It's the only long-term copy of either host's backups.
 The full flow lives in [backup.md][backup].
 
 [backup]: backup.md

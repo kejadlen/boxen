@@ -152,8 +152,6 @@ in
     group = "restic";
     # restrict also kills forwarding and pty at the auth layer.
     openssh.authorizedKeys.keys = map (key: "restrict ${key}") [
-      # lotus-land-story
-      "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILrlVay1GlpCuhYSUup/K/gRYmltycViPBAdZ8t9OKtu"
       # imperishable-night
       "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIO+vpLtHN3CxcPFsp1IWzM9FKWMr1dBnZuPsjqC6d2te"
       # 1Password

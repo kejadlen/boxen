@@ -101,8 +101,8 @@ there. The password and check UUID come from
 `sftp:restic@legacy-of-lunatic-kingdom:/mnt/data/restic`, defined as a
 play var in `lotus-land-story/backup.yml` and templated into the script,
 and in imperishable-night's configuration. It lives under a `restic`
-system user, reachable by SSH keys for lotus-land-story (the backup),
-imperishable-night (its SSH host key), and 1password (manual restores).
+system user, reachable by SSH keys for imperishable-night (its SSH host
+key) and 1password (manual restores).
 The password is stored in `host_vars/lotus-land-story.sops.yml`, with a
 copy in `imperishable-night/secrets.sops.yml`.
 
