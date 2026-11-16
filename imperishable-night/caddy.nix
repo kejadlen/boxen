@@ -42,6 +42,13 @@ let
     url = "https://github.com/kejadlen/gamja-build/releases/download/gamja-${versions.gamja}/gamja.tar.gz";
     hash = "sha256-Pv12p9VDkWMAz/qfTEjIXQrNglMVXC3jBn3wLpYXSbQ=";
   };
+
+  # Copies, not symlinks, since the container can't follow links into the Nix store.
+  setup = pkgs.runCommand "setup" { } ''
+    mkdir $out
+    cp ${./setup/index.html} $out/index.html
+    cp ${../modules/nixos/caddy-root.crt} $out/root.pem
+  '';
 in
 {
   # Containers reach each other by name only on a user-defined network.
@@ -86,6 +93,9 @@ in
   systemd.tmpfiles.rules = [
     "d /var/lib/caddy/data 0755 root root -"
     "d /var/lib/caddy/config 0755 root root -"
+    # alpha's, so rsyncing content in needs no sudo.
+    "d /var/lib/gists 0755 alpha users -"
+    "d /var/lib/files 0755 alpha users -"
   ];
 
   virtualisation.oci-containers.containers.caddy = {
@@ -103,6 +113,9 @@ in
       "/var/lib/caddy/data:/data"
       "/var/lib/caddy/config:/config"
       "${gamja}:/srv/gamja:ro"
+      "${setup}:/srv/setup:ro"
+      "/var/lib/gists:/srv/gists:ro"
+      "/var/lib/files:/srv/files:ro"
     ];
     networks = [
       "caddy"

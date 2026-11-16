@@ -8,7 +8,8 @@ tracks the order. Today it runs the base system, Tailscale,
 node-exporter, cadvisor, restic, PostgreSQL, Caddy, Vector, Grafana,
 VictoriaMetrics, VictoriaLogs, VictoriaTraces, authelia, calibre-web,
 gotosocial, homebox, ketchup, miniflux, paperless-ngx with redis, irc
-(soju, with gamja served by Caddy), pro-tacts, and quire.
+(soju, with gamja served by Caddy), pro-tacts, quire, and the sites
+that only Caddy serves.
 
 For first-time setup, see the [bootstrap README][readme].
 
@@ -194,6 +195,17 @@ lotus-land-story's root, so devices that already trust that root also
 trust imperishable-night's sites. The root certificate is
 `modules/nixos/caddy-root.crt`, and its key is a sops secret. Caddy
 signs and renews its own intermediate from them.
+
+Some sites have no container behind them. `setup` serves, over plain
+HTTP, a page that walks a device through trusting that root, along with
+the root itself as `root.pem`; both come from the flake. `pihole`,
+`home-assistant-5119`, and `birbs.chislan.family` proxy to devices at
+home over the tailnet: mountain-of-faith, Home Assistant, and
+hopeless-masquerade. `gists.kejadlen.dev` and `files.chislan.family`
+serve `/var/lib/gists` and `/var/lib/files`, which `alpha` owns so that
+rsync over SSH can write to them. The gists repository's `bin/sync`
+fills `/var/lib/gists`, and Caddy renders its Markdown with
+`_render.html`.
 
 ## PostgreSQL
 

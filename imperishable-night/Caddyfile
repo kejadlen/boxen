@@ -92,6 +92,11 @@ grafana {
 	}
 }
 
+home-assistant-5119 {
+	import ts home-assistant-5119
+	reverse_proxy homeassistant-5119:8123
+}
+
 irc {
 	import ts irc
 	tailscale_auth
@@ -122,6 +127,13 @@ https://metrics {
 	reverse_proxy victoria-metrics:8428
 }
 
+pihole {
+	import ts pihole
+
+	redir / /admin/
+	reverse_proxy mountain-of-faith:80
+}
+
 quire {
 	import ts quire
 	tailscale_auth
@@ -145,6 +157,15 @@ rss {
 		reverse_proxy miniflux:8080 {
 			header_up Remote-User {http.auth.user.tailscale_login}
 		}
+	}
+}
+
+# Plain HTTP, since it hands out the root that a device needs before it trusts tls internal.
+http://setup {
+	bind tailscale/setup
+	log
+	file_server {
+		root /srv/setup
 	}
 }
 
@@ -210,5 +231,37 @@ git.kejadlen.dev {
 		redir @repo https://quire.kejadlen.dev/{re.repo.1} permanent
 
 		redir * https://quire.kejadlen.dev permanent
+	}
+}
+
+birbs.chislan.family {
+	log
+
+	reverse_proxy hopeless-masquerade:80
+}
+
+files.chislan.family {
+	root /srv/files
+	file_server
+}
+
+# synced from quire/gists
+gists.kejadlen.dev {
+	log
+
+	root * /srv/gists
+	encode zstd gzip
+
+	# raw markdown, like GitHub's raw view
+	@raw path *.md
+	handle @raw {
+		file_server
+	}
+
+	# rendered views; templates stays scoped here so raw .md is never evaluated
+	handle {
+		rewrite * /_render.html
+		templates
+		file_server
 	}
 }
