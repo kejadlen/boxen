@@ -16,9 +16,9 @@ resource "dnsimple_zone" "zones" {
 resource "dnsimple_zone_record" "chislan_family_subdomains" {
   for_each = {
     auth     = { zone = dnsimple_zone.zones["chislan_family"], ip = one(linode_instance.imperishable_night.ipv4) }
-    birbs    = { zone = dnsimple_zone.zones["chislan_family"], ip = local.lotus_land_story.ip_address }
+    birbs    = { zone = dnsimple_zone.zones["chislan_family"], ip = one(linode_instance.imperishable_night.ipv4) }
     contacts = { zone = dnsimple_zone.zones["chislan_family"], ip = data.tailscale_device.pro_tacts.addresses.0 }
-    files    = { zone = dnsimple_zone.zones["chislan_family"], ip = local.lotus_land_story.ip_address }
+    files    = { zone = dnsimple_zone.zones["chislan_family"], ip = one(linode_instance.imperishable_night.ipv4) }
   }
 
   zone_name = each.value.zone.name
@@ -33,7 +33,7 @@ resource "dnsimple_zone_record" "chislan_family_subdomains" {
 resource "dnsimple_zone_record" "kejadlen_dev_subdomains" {
   for_each = {
     auth    = one(linode_instance.imperishable_night.ipv4)
-    gists   = local.lotus_land_story.ip_address
+    gists   = one(linode_instance.imperishable_night.ipv4)
     git     = one(linode_instance.imperishable_night.ipv4)
     grafana = local.lotus_land_story.ip_address
     hey     = one(linode_instance.imperishable_night.ipv4)
