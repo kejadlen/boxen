@@ -27,7 +27,7 @@ in
   programs.ssh.knownHosts.legacy-of-lunatic-kingdom.publicKey =
     "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIG/+SIFLbFe3hXp3l0dJSE7J4DpQkEEk//62kMiQsWOZ";
 
-  # Shares lotus-land-story's repository; restic's hostname keeps the snapshots apart.
+  # The repository still holds lotus-land-story's snapshots; restic's hostname keeps them apart.
   services.restic.backups.daily =
     let
       ping = path: ''
@@ -55,7 +55,7 @@ in
         "/var/lib/victoria-metrics-backup"
         "/var/lib/victoria-traces"
       ];
-      # Waits out the other host's prune, which locks the shared repository.
+      # Waits out another client's exclusive lock, such as a manual prune.
       extraBackupArgs = [
         "--retry-lock=30m"
         "--tag=long-term"
@@ -103,7 +103,7 @@ in
           > /var/lib/postgresql-dump/pg_dumpall.sql.tmp &&
           mv /var/lib/postgresql-dump/pg_dumpall.sql.tmp /var/lib/postgresql-dump/pg_dumpall.sql
       '';
-      # Pushes the same backup_* series as lotus-land-story's backup.sh.
+      # Pushes the backup_* series the personal dashboard reads.
       backupCleanupCommand = ''
         push() {
           ${pkgs.curl}/bin/curl --fail --silent --show-error --max-time 10 \
