@@ -237,6 +237,14 @@ git.kejadlen.dev {
 birbs.chislan.family {
 	log
 
+	# BirdNET-Pi answers every path with a page of relative links, an endless
+	# URL space for crawlers.
+	handle /robots.txt {
+		respond "User-agent: *
+Disallow: /
+"
+	}
+
 	reverse_proxy hopeless-masquerade:80
 }
 

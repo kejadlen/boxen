@@ -201,11 +201,13 @@ HTTP, a page that walks a device through trusting that root, along with
 the root itself as `root.pem`; both come from the flake. `pihole`,
 `home-assistant-5119`, and `birbs.chislan.family` proxy to devices at
 home over the tailnet: mountain-of-faith, Home Assistant, and
-hopeless-masquerade. `gists.kejadlen.dev` and `files.chislan.family`
-serve `/var/lib/gists` and `/var/lib/files`, which `alpha` owns so that
-rsync over SSH can write to them. The gists repository's `bin/sync`
-fills `/var/lib/gists`, and Caddy renders its Markdown with
-`_render.html`.
+hopeless-masquerade. `birbs.chislan.family` serves its own `robots.txt`
+that disallows all crawling, since BirdNET-Pi answers every path with
+links that lead crawlers in circles. `gists.kejadlen.dev` and
+`files.chislan.family` serve `/var/lib/gists` and `/var/lib/files`,
+which `alpha` owns so that rsync over SSH can write to them. The gists
+repository's `bin/sync` fills `/var/lib/gists`, and Caddy renders its
+Markdown with `_render.html`.
 
 ## PostgreSQL
 
