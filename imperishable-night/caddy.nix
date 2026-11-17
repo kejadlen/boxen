@@ -29,7 +29,8 @@ let
     pro-tacts = "";
     # Grafana and the Victorias reach each other here, out of Caddy's reach.
     # Not internal: that resolver ignores outside names, and Go waits 5 s on it.
-    observability = "";
+    # No default route, so VictoriaMetrics' scrapes of the host leave by metrics.
+    observability = "--opt no_default_route=true";
   };
 
   versions = {
