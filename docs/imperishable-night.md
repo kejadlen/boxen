@@ -84,9 +84,7 @@ its data in `/var/lib/<name>`:
   only from the `grafana` subnet. `auto_sign_up` is off, so only
   existing Grafana users get in. Its datasources and the dashboard
   provider come from the flake, and the dashboards from
-  `imperishable-night/dashboards/`. The Uptime library panel lives only
-  in Grafana's database; `imperishable-night/library-panels/` holds a
-  copy that nothing deploys.
+  `imperishable-night/dashboards/`.
 
 The `logs`, `metrics`, and `traces` sites skip `tailscale_auth`, since
 the shippers and scrapers that use them run on tagged nodes, which it
