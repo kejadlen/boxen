@@ -657,10 +657,8 @@
           "refId": "A"
         }
       ],
-      "timeFrom": "24h",
       "title": "cpu",
-      "type": "stat",
-      "hideTimeOverride": true
+      "type": "stat"
     },
     {
       "datasource": {
@@ -729,11 +727,9 @@
           "refId": "A"
         }
       ],
-      "timeFrom": "24h",
       "title": "load per core",
       "type": "stat",
-      "description": "5-minute load average divided by the number of cores.",
-      "hideTimeOverride": true
+      "description": "5-minute load average divided by the number of cores."
     },
     {
       "datasource": {
@@ -802,10 +798,8 @@
           "refId": "A"
         }
       ],
-      "timeFrom": "24h",
       "title": "memory used",
-      "type": "stat",
-      "hideTimeOverride": true
+      "type": "stat"
     },
     {
       "datasource": {
@@ -840,7 +834,6 @@
         "y": 6
       },
       "id": 47,
-      "interval": "1d",
       "options": {
         "colorMode": "none",
         "graphMode": "area",
@@ -867,7 +860,7 @@
           },
           "editorMode": "code",
           "exemplar": false,
-          "expr": "label_replace(\n  sum by (instance) (increase(node_network_receive_bytes_total{device!~\"lo|veth.*|docker.*|br-.*|podman.*|tailscale.*|cni.*|wg.*\"}[1d]))\n    and on (instance) (up{job=\"node-exporter\"} @ end()),\n  \"instance\", \"$1\", \"instance\", \"(.*):\\\\d+\"\n)",
+          "expr": "label_replace(\n  sum by (instance) (increase(node_network_receive_bytes_total{device!~\"lo|veth.*|docker.*|br-.*|podman.*|tailscale.*|cni.*|wg.*\"}[$__interval]))\n    and on (instance) (up{job=\"node-exporter\"} @ end()),\n  \"instance\", \"$1\", \"instance\", \"(.*):\\\\d+\"\n)",
           "format": "time_series",
           "instant": false,
           "legendFormat": "{{instance}}",
@@ -875,11 +868,9 @@
           "refId": "A"
         }
       ],
-      "timeFrom": "30d",
       "title": "network in",
       "type": "stat",
-      "description": "Bytes received over the last 30 days; the sparkline is per UTC day. Physical interfaces only, so tunnel and container traffic isn't counted twice.",
-      "hideTimeOverride": true
+      "description": "Bytes received over the dashboard's time range. Physical interfaces only, so tunnel and container traffic isn't counted twice."
     },
     {
       "datasource": {
@@ -914,7 +905,6 @@
         "y": 6
       },
       "id": 48,
-      "interval": "1d",
       "options": {
         "colorMode": "none",
         "graphMode": "area",
@@ -941,7 +931,7 @@
           },
           "editorMode": "code",
           "exemplar": false,
-          "expr": "label_replace(\n  sum by (instance) (increase(node_network_transmit_bytes_total{device!~\"lo|veth.*|docker.*|br-.*|podman.*|tailscale.*|cni.*|wg.*\"}[1d]))\n    and on (instance) (up{job=\"node-exporter\"} @ end()),\n  \"instance\", \"$1\", \"instance\", \"(.*):\\\\d+\"\n)",
+          "expr": "label_replace(\n  sum by (instance) (increase(node_network_transmit_bytes_total{device!~\"lo|veth.*|docker.*|br-.*|podman.*|tailscale.*|cni.*|wg.*\"}[$__interval]))\n    and on (instance) (up{job=\"node-exporter\"} @ end()),\n  \"instance\", \"$1\", \"instance\", \"(.*):\\\\d+\"\n)",
           "format": "time_series",
           "instant": false,
           "legendFormat": "{{instance}}",
@@ -949,11 +939,9 @@
           "refId": "A"
         }
       ],
-      "timeFrom": "30d",
       "title": "network out",
       "type": "stat",
-      "description": "Bytes sent over the last 30 days; the sparkline is per UTC day. Physical interfaces only, so tunnel and container traffic isn't counted twice.",
-      "hideTimeOverride": true
+      "description": "Bytes sent over the dashboard's time range. Physical interfaces only, so tunnel and container traffic isn't counted twice."
     },
     {
       "datasource": {
@@ -1425,7 +1413,6 @@
         "x": 0,
         "y": 36
       },
-      "hideTimeOverride": false,
       "id": 12,
       "options": {
         "colorMode": "value",
@@ -1457,7 +1444,6 @@
           "refId": "A"
         }
       ],
-      "timeFrom": "7d",
       "title": "last backup",
       "type": "stat"
     },
@@ -3713,7 +3699,7 @@
         "type": "victoriametrics-metrics-datasource",
         "uid": "P4169E866C3094E38"
       },
-      "description": "Posts on the GoToSocial instance and the other instances it knows about, over the last 30 days.",
+      "description": "Posts on the GoToSocial instance and the other instances it knows about.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -3790,17 +3776,15 @@
           "refId": "B"
         }
       ],
-      "timeFrom": "30d",
       "title": "fediverse",
-      "type": "stat",
-      "hideTimeOverride": true
+      "type": "stat"
     },
     {
       "datasource": {
         "type": "victoriametrics-metrics-datasource",
         "uid": "P4169E866C3094E38"
       },
-      "description": "Requests through Caddy over the last 30 days; the sparkline is per UTC day. Counts each site's top-level route once, leaving out metrics scrapes and HTTPS redirects.",
+      "description": "Requests through Caddy over the dashboard's time range. Counts each site's top-level route once, leaving out metrics scrapes and HTTPS redirects.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -3855,7 +3839,7 @@
           },
           "editorMode": "code",
           "exemplar": false,
-          "expr": "sum(increase(caddy_http_requests_total{handler=\"subroute\"}[1d]))",
+          "expr": "sum(increase(caddy_http_requests_total{handler=\"subroute\"}[$__interval]))",
           "format": "time_series",
           "instant": false,
           "legendFormat": "requests",
@@ -3863,11 +3847,8 @@
           "refId": "A"
         }
       ],
-      "timeFrom": "30d",
       "title": "requests served",
-      "type": "stat",
-      "hideTimeOverride": true,
-      "interval": "1d"
+      "type": "stat"
     },
     {
       "datasource": {
@@ -3951,17 +3932,15 @@
           "refId": "B"
         }
       ],
-      "timeFrom": "30d",
       "title": "rss",
-      "type": "stat",
-      "hideTimeOverride": true
+      "type": "stat"
     },
     {
       "datasource": {
         "type": "victoriametrics-metrics-datasource",
         "uid": "P4169E866C3094E38"
       },
-      "description": "Automations fired and entity state changes over the last 30 days; the sparkline is per UTC day.",
+      "description": "Automations fired and entity state changes over the dashboard's time range.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -4016,7 +3995,7 @@
           },
           "editorMode": "code",
           "exemplar": false,
-          "expr": "sum(increase(homeassistant_automation_triggered_count_total[1d]))",
+          "expr": "sum(increase(homeassistant_automation_triggered_count_total[$__interval]))",
           "format": "time_series",
           "instant": false,
           "legendFormat": "automations",
@@ -4030,7 +4009,7 @@
           },
           "editorMode": "code",
           "exemplar": false,
-          "expr": "sum(increase(homeassistant_state_change_total[1d]))",
+          "expr": "sum(increase(homeassistant_state_change_total[$__interval]))",
           "format": "time_series",
           "instant": false,
           "legendFormat": "state changes",
@@ -4038,18 +4017,15 @@
           "refId": "B"
         }
       ],
-      "timeFrom": "30d",
       "title": "home assistant",
-      "type": "stat",
-      "hideTimeOverride": true,
-      "interval": "1d"
+      "type": "stat"
     },
     {
       "datasource": {
         "type": "victoriametrics-metrics-datasource",
         "uid": "P4169E866C3094E38"
       },
-      "description": "Bytes legacy-of-lunatic-kingdom's Syncthing pulled into its folders over the last 30 days; the sparkline is per UTC day.",
+      "description": "Bytes legacy-of-lunatic-kingdom's Syncthing pulled into its folders over the dashboard's time range.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -4104,7 +4080,7 @@
           },
           "editorMode": "code",
           "exemplar": false,
-          "expr": "sum(increase(syncthing_model_folder_processed_bytes_total[1d]))",
+          "expr": "sum(increase(syncthing_model_folder_processed_bytes_total[$__interval]))",
           "format": "time_series",
           "instant": false,
           "legendFormat": "synced",
@@ -4112,11 +4088,8 @@
           "refId": "A"
         }
       ],
-      "timeFrom": "30d",
       "title": "syncthing",
-      "type": "stat",
-      "hideTimeOverride": true,
-      "interval": "1d"
+      "type": "stat"
     },
     {
       "datasource": {
@@ -4200,10 +4173,8 @@
           "refId": "B"
         }
       ],
-      "timeFrom": "30d",
       "title": "metrics",
-      "type": "stat",
-      "hideTimeOverride": true
+      "type": "stat"
     }
   ],
   "preload": false,
