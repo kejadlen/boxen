@@ -261,32 +261,33 @@ so the container gets one explicitly, with `exec` because s6 runs its
 services from there. Caddy, homebox, and ketchup still take environment
 files, so their secrets are on disk while they run.
 
-The file holds the following values:
+The file holds the following values. Those carried over came from
+lotus-land-story, which is gone, so this file holds their only copy.
 
 | Key | Source |
 |---|---|
-| `authelia.<name>` | `authelia.<name>` in `host_vars/lotus-land-story.sops.yml`, for `jwt_secret`, `session_secret`, `storage_encryption_key`, `smtp_username`, `smtp_password`, and `oidc_private_key` |
+| `authelia.<name>` | Carried over, for `jwt_secret`, `session_secret`, `storage_encryption_key`, `smtp_username`, `smtp_password`, and `oidc_private_key` |
 | `caddy.ts_authkey` | `tofu output -raw imperishable_night_caddy_auth_key` |
 | `caddy.dnsimple_token` | An account access token minted in DNSimple |
-| `caddy.ca_root_key` | `caddy/pki/authorities/local/root.key` in lotus-land-story's Caddy data directory |
-| `docket.fastmail_tokens.<name>` | `docket.fastmail_tokens.<name>` in `host_vars/lotus-land-story.sops.yml`; unused until docket deploys |
-| `docket.sentry_dsn` | `docket.sentry_dsn` in `host_vars/lotus-land-story.sops.yml`; unused until docket deploys |
-| `gotosocial.oidc_client_secret` | `gotosocial.oidc_client_secret` in `host_vars/lotus-land-story.sops.yml` |
-| `grafana.smtp_password` | `grafana.smtp_password` in `host_vars/lotus-land-story.sops.yml` |
-| `home_assistant.access_token` | `home_assistant.access_token` in `host_vars/lotus-land-story.sops.yml` |
+| `caddy.ca_root_key` | Carried over, from `caddy/pki/authorities/local/root.key` in its Caddy data directory |
+| `docket.fastmail_tokens.<name>` | Carried over; unused until docket deploys |
+| `docket.sentry_dsn` | Carried over; unused until docket deploys |
+| `gotosocial.oidc_client_secret` | Carried over |
+| `grafana.smtp_password` | Carried over |
+| `home_assistant.access_token` | Carried over |
 | `homebox.api_key_pepper` | `openssl rand -base64 48`; rotating it invalidates homebox's API keys |
-| `homebox.mailer.username` | `homebox.mailer.username` in `host_vars/lotus-land-story.sops.yml` |
-| `homebox.mailer.password` | `homebox.mailer.password` in `host_vars/lotus-land-story.sops.yml` |
-| `ketchup.session_secret` | `ketchup.session_secret` in `host_vars/lotus-land-story.sops.yml` |
-| `linode.api_token` | `linode.api_token` in `host_vars/lotus-land-story.sops.yml` |
-| `miniflux.password` | `miniflux.password` in `host_vars/lotus-land-story.sops.yml`; `alpha`'s login, which `CREATE_ADMIN` sets only if the user doesn't exist |
-| `paperless_ngx.secret` | `paperless_ngx.secret` in `host_vars/lotus-land-story.sops.yml` |
-| `quire.github_mirror` | `quire.github_mirror` in `host_vars/lotus-land-story.sops.yml` |
-| `quire.github_auth_header` | `quire.github_auth_header` in `host_vars/lotus-land-story.sops.yml` |
-| `quire.sentry_dsn` | `quire.sentry_dsn` in `host_vars/lotus-land-story.sops.yml` |
-| `restic.password` | `restic.password` in `host_vars/lotus-land-story.sops.yml` |
+| `homebox.mailer.username` | Carried over |
+| `homebox.mailer.password` | Carried over |
+| `ketchup.session_secret` | Carried over |
+| `linode.api_token` | Carried over |
+| `miniflux.password` | Carried over; `alpha`'s login, which `CREATE_ADMIN` sets only if the user doesn't exist |
+| `paperless_ngx.secret` | Carried over |
+| `quire.github_mirror` | Carried over |
+| `quire.github_auth_header` | Carried over |
+| `quire.sentry_dsn` | Carried over |
+| `restic.password` | Carried over |
 | `restic.healthcheck` | The UUID of imperishable-night's healthchecks.io backup check |
-| `syncthing.legacy_of_lunatic_kingdom.api_key` | `syncthing.legacy_of_lunatic_kingdom.api_key` in `host_vars/lotus-land-story.sops.yml` |
+| `syncthing.legacy_of_lunatic_kingdom.api_key` | Carried over |
 
 Edit it with `sops imperishable-night/secrets.sops.yml`. Nix only sees
 files that git tracks, so commit a new or changed secrets file before

@@ -54,7 +54,6 @@ following:
 
 - `legacy-of-lunatic-kingdom.sops.yml`
 - `legacy-of-lunatic-kingdom.yml`
-- `lotus-land-story.sops.yml`
 - `mountain-of-faith.sops.yml`
 
 ## What loads which file
@@ -72,7 +71,7 @@ Open the file with sops, which decrypts it into `$EDITOR` and
 re-encrypts on save:
 
 ```sh
-sops host_vars/lotus-land-story.sops.yml
+sops host_vars/mountain-of-faith.sops.yml
 ```
 
 The same command creates a new `host_vars/<host>.sops.yml`, encrypted
