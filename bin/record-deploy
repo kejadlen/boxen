@@ -1,0 +1,72 @@
+#!/usr/bin/env bash
+
+# Runs a deploy command, then pushes deploy_* series for it to VictoriaMetrics,
+# where Grafana's dashboards annotate them.
+
+set -euo pipefail
+if [[ "${TRACE-0}" == "1" ]]; then
+    set -o xtrace
+fi
+
+usage() {
+    echo "usage: record-deploy <target> <command> [<arg>...]" >&2
+    exit 2
+}
+
+# Escapes a Prometheus label value.
+escape() {
+    local value=${1//\\/\\\\}
+    printf '%s' "${value//\"/\\\"}"
+}
+
+main() {
+    if [[ $# -lt 2 ]]; then
+        usage
+    fi
+    local target=$1
+    shift
+
+    # The working copy is usually an empty change on top of what's deployed.
+    local rev=@ suffix=''
+    if [[ $(jj log --no-graph --revisions @ --template 'empty') == true ]]; then
+        rev=@-
+    else
+        suffix=' (uncommitted)'
+    fi
+    local change description
+    change=$(jj log --no-graph --revisions "$rev" --template 'change_id.shortest(8)')
+    description=$(jj log --no-graph --revisions "$rev" --template 'description.first_line()')$suffix
+
+    local start
+    start=$(date +%s)
+
+    # A trap, unlike an ignored signal, still lets Ctrl-C stop the command,
+    # and an interrupted deploy may have half-applied, so it's recorded too.
+    trap ':' INT
+    local status=0
+    "$@" || status=$?
+    trap - INT
+
+    local end success=1
+    end=$(date +%s)
+    if [[ $status -ne 0 ]]; then
+        success=0
+    fi
+
+    local labels ts=${end}000 root
+    labels="{job=\"deploy\",target=\"$(escape "$target")\",change=\"$(escape "$change")\",description=\"$(escape "$description")\"}"
+    root=$(dirname "${BASH_SOURCE[0]}")/..
+    if ! curl --fail --silent --show-error --max-time 10 --retry 3 \
+        --cacert "$root/modules/nixos/caddy-root.crt" \
+        --data-binary "$(printf '%s\n' \
+            "deploy_success$labels $success $ts" \
+            "deploy_duration_seconds$labels $((end - start)) $ts" \
+            "deploy_completed_timestamp$labels $end $ts")" \
+        https://metrics/api/v1/import/prometheus; then
+        echo "record-deploy: couldn't push the deploy to VictoriaMetrics; the command exited $status" >&2
+    fi
+
+    exit "$status"
+}
+
+main "$@"

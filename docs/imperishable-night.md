@@ -69,7 +69,9 @@ its data in `/var/lib/<name>`:
 
 - VictoriaMetrics, at `https://metrics`, scrapes the targets in
   [scrape.yml][scrape] and takes `backup_*` pushes from both hosts'
-  backups.
+  backups and `deploy_*` pushes from the deploy recipes. It keeps a
+  year of data, so deploy markers outlast the default month, at about
+  1 GB a month.
 - VictoriaLogs, at `https://logs`, takes logs from every host's Vector
   or journal-upload.
 - VictoriaTraces, at `https://traces`, takes OpenTelemetry traces.

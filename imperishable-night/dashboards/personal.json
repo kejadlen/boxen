@@ -12,6 +12,36 @@
         "iconColor": "rgba(0, 211, 255, 1)",
         "name": "Annotations & Alerts",
         "type": "dashboard"
+      },
+      {
+        "datasource": {
+          "type": "victoriametrics-metrics-datasource",
+          "uid": "P4169E866C3094E38"
+        },
+        "enable": true,
+        "hide": false,
+        "iconColor": "blue",
+        "name": "Deploys",
+        "expr": "deploy_completed_timestamp{job=\"deploy\"} * 1000 and deploy_success{job=\"deploy\"} == 1",
+        "useValueForTime": true,
+        "titleFormat": "deploy {{target}}",
+        "textFormat": "{{change}} {{description}}",
+        "tagKeys": "target"
+      },
+      {
+        "datasource": {
+          "type": "victoriametrics-metrics-datasource",
+          "uid": "P4169E866C3094E38"
+        },
+        "enable": true,
+        "hide": false,
+        "iconColor": "red",
+        "name": "Failed deploys",
+        "expr": "deploy_completed_timestamp{job=\"deploy\"} * 1000 and deploy_success{job=\"deploy\"} == 0",
+        "useValueForTime": true,
+        "titleFormat": "deploy {{target}}",
+        "textFormat": "{{change}} {{description}}",
+        "tagKeys": "target"
       }
     ]
   },

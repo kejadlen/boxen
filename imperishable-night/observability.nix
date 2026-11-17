@@ -136,6 +136,8 @@ in
     image = "quay.io/victoriametrics/victoria-metrics:${versions.victoria-metrics}";
     cmd = [
       "-selfScrapeInterval=5s"
+      # Keeps a year of deploy markers, rather than the default month.
+      "-retentionPeriod=1y"
       "-storageDataPath=/victoria-metrics-data"
       "-promscrape.config=/scrape.yml"
     ];
