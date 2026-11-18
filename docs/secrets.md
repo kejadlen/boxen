@@ -81,7 +81,8 @@ through the creation rule.
 
 OpenTofu keeps state in the gitignored `terraform.tfstate` and encrypts
 it with AES-GCM. The key is 32 random bytes, base64-encoded, in the
-`tofu-state-key` item in the Private vault. `bin/tofu-state-key` is an
+`boxen-tofu-state-key` item in the Arbitrary Definitions vault, which
+the keyholders share. `bin/tofu-state-key` is an
 [external key provider][external] that reads it with `op read`, so each
 `tofu` command that touches state asks 1Password for it.
 

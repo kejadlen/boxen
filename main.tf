@@ -60,31 +60,31 @@ provider "onepassword" {
 
 # Items are looked up by UUID: lookups by title fail with SDK return code -4.
 locals {
-  op_private_vault = "7escx6csroqkgfrmkpdubfrqoa"
+  op_vault = "hpvuefukftjzxq2zy3zoeri2my"
 }
 
 # boxen-dnsimple
 ephemeral "onepassword_item" "dnsimple" {
-  vault = local.op_private_vault
-  uuid  = "urxqkxvbav5m2trwhzgwkg43pu"
+  vault = local.op_vault
+  uuid  = "ehtyzzvmiq4xusxr7zftyi3a5e"
 }
 
 # boxen-linode
 ephemeral "onepassword_item" "linode" {
-  vault = local.op_private_vault
-  uuid  = "wgyjufgbnzfv6h6jvqy7g632ma"
+  vault = local.op_vault
+  uuid  = "jkchzchszcthjn42ags4nxe4ve"
 }
 
 # boxen-pihole
 ephemeral "onepassword_item" "pihole" {
-  vault = local.op_private_vault
-  uuid  = "xpf55644ii3azfcl74tywiagb4"
+  vault = local.op_vault
+  uuid  = "2gz25tvkxp67qazbxf5gxf5os4"
 }
 
 # boxen-tailscale
 ephemeral "onepassword_item" "tailscale" {
-  vault = local.op_private_vault
-  uuid  = "zoaigxq4d3kg3heqgobxlg4hdu"
+  vault = local.op_vault
+  uuid  = "uizpogzldaivzqmki3u3nvvw64"
 }
 
 provider "dnsimple" {
