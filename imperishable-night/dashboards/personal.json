@@ -1451,7 +1451,7 @@
       },
       "gridPos": {
         "h": 6,
-        "w": 8,
+        "w": 12,
         "x": 0,
         "y": 43
       },
@@ -1484,130 +1484,6 @@
         }
       ],
       "title": "Requests by host",
-      "type": "timeseries"
-    },
-    {
-      "datasource": {
-        "type": "victoriametrics-metrics-datasource",
-        "uid": "P4169E866C3094E38"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
-          "custom": {
-            "axisBorderShow": false,
-            "axisCenteredZero": false,
-            "axisColorMode": "text",
-            "axisLabel": "",
-            "axisPlacement": "auto",
-            "barAlignment": 0,
-            "barWidthFactor": 0.6,
-            "drawStyle": "line",
-            "fillOpacity": 0,
-            "gradientMode": "none",
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            },
-            "insertNulls": false,
-            "lineInterpolation": "linear",
-            "lineWidth": 1,
-            "pointSize": 5,
-            "scaleDistribution": {
-              "type": "linear"
-            },
-            "showPoints": "auto",
-            "showValues": false,
-            "spanNulls": false,
-            "stacking": {
-              "group": "A",
-              "mode": "none"
-            },
-            "thresholdsStyle": {
-              "mode": "off"
-            }
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": 0
-              },
-              {
-                "color": "red",
-                "value": 80
-              }
-            ]
-          }
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 6,
-        "w": 8,
-        "x": 8,
-        "y": 43
-      },
-      "id": 9,
-      "interval": "10m",
-      "options": {
-        "legend": {
-          "calcs": [],
-          "displayMode": "list",
-          "placement": "bottom",
-          "showLegend": true
-        },
-        "tooltip": {
-          "hideZeros": false,
-          "mode": "single",
-          "sort": "none"
-        }
-      },
-      "pluginVersion": "12.4.3",
-      "targets": [
-        {
-          "datasource": {
-            "type": "victoriametrics-metrics-datasource",
-            "uid": "P4169E866C3094E38"
-          },
-          "editorMode": "code",
-          "expr": "histogram_quantile(0.95, sum(rate(caddy_http_request_duration_seconds_bucket[$__rate_interval])) by (le))",
-          "format": "time_series",
-          "legendFormat": "p95",
-          "range": true,
-          "refId": "B"
-        },
-        {
-          "datasource": {
-            "type": "victoriametrics-metrics-datasource",
-            "uid": "P4169E866C3094E38"
-          },
-          "editorMode": "code",
-          "expr": "histogram_quantile(0.9, sum(rate(caddy_http_request_duration_seconds_bucket[$__rate_interval])) by (le))",
-          "format": "time_series",
-          "legendFormat": "p90",
-          "range": true,
-          "refId": "A"
-        },
-        {
-          "datasource": {
-            "type": "victoriametrics-metrics-datasource",
-            "uid": "P4169E866C3094E38"
-          },
-          "editorMode": "code",
-          "expr": "histogram_quantile(0.5, sum(rate(caddy_http_request_duration_seconds_bucket[$__rate_interval])) by (le))",
-          "format": "time_series",
-          "legendFormat": "p50",
-          "range": true,
-          "refId": "C"
-        }
-      ],
-      "title": "",
       "type": "timeseries"
     },
     {
@@ -1674,8 +1550,8 @@
       },
       "gridPos": {
         "h": 6,
-        "w": 8,
-        "x": 16,
+        "w": 12,
+        "x": 12,
         "y": 43
       },
       "id": 21,
@@ -2333,7 +2209,7 @@
       },
       "gridPos": {
         "h": 6,
-        "w": 4,
+        "w": 5,
         "x": 0,
         "y": 15
       },
@@ -2394,77 +2270,6 @@
         "type": "victoriametrics-metrics-datasource",
         "uid": "P4169E866C3094E38"
       },
-      "description": "Requests through Caddy over the dashboard's time range. Counts each site's top-level route once, leaving out metrics scrapes and HTTPS redirects.",
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "fixedColor": "blue",
-            "mode": "fixed"
-          },
-          "decimals": 0,
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "blue",
-                "value": null
-              }
-            ]
-          },
-          "unit": "short"
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 6,
-        "w": 4,
-        "x": 4,
-        "y": 15
-      },
-      "id": 53,
-      "options": {
-        "colorMode": "none",
-        "graphMode": "area",
-        "justifyMode": "auto",
-        "orientation": "horizontal",
-        "percentChangeColorMode": "standard",
-        "reduceOptions": {
-          "calcs": [
-            "sum"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "showPercentChange": false,
-        "textMode": "value_and_name",
-        "wideLayout": true
-      },
-      "pluginVersion": "12.4.3",
-      "targets": [
-        {
-          "datasource": {
-            "type": "victoriametrics-metrics-datasource",
-            "uid": "P4169E866C3094E38"
-          },
-          "editorMode": "code",
-          "exemplar": false,
-          "expr": "sum(increase(caddy_http_requests_total{handler=\"subroute\"}[$__interval]))",
-          "format": "time_series",
-          "instant": false,
-          "legendFormat": "requests",
-          "range": true,
-          "refId": "A"
-        }
-      ],
-      "title": "requests served",
-      "type": "stat"
-    },
-    {
-      "datasource": {
-        "type": "victoriametrics-metrics-datasource",
-        "uid": "P4169E866C3094E38"
-      },
       "description": "Feeds Miniflux follows and entries waiting to be read.",
       "fieldConfig": {
         "defaults": {
@@ -2489,8 +2294,8 @@
       },
       "gridPos": {
         "h": 6,
-        "w": 4,
-        "x": 8,
+        "w": 5,
+        "x": 5,
         "y": 15
       },
       "id": 54,
@@ -2574,8 +2379,8 @@
       },
       "gridPos": {
         "h": 6,
-        "w": 4,
-        "x": 12,
+        "w": 5,
+        "x": 10,
         "y": 15
       },
       "id": 55,
@@ -2660,7 +2465,7 @@
       "gridPos": {
         "h": 6,
         "w": 4,
-        "x": 16,
+        "x": 15,
         "y": 15
       },
       "id": 56,
@@ -2730,8 +2535,8 @@
       },
       "gridPos": {
         "h": 6,
-        "w": 4,
-        "x": 20,
+        "w": 5,
+        "x": 19,
         "y": 15
       },
       "id": 57,
