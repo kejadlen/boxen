@@ -14,6 +14,8 @@ in
 {
   systemd.tmpfiles.rules = [
     "d /var/lib/gotosocial/backup 0700 root root -"
+    # Outside /var/lib/grafana, which the container mounts.
+    "d /var/lib/grafana-backup 0700 root root -"
     "d /var/lib/postgresql-dump 0700 root root -"
     "d /var/lib/victoria-metrics-backup 0700 root root -"
   ];
@@ -49,6 +51,7 @@ in
       # VictoriaMetrics' snapshot, which has its own job.
       exclude = [
         "/var/lib/containers"
+        "/var/lib/grafana/grafana.db*"
         "/var/lib/postgresql"
         "/var/lib/victoria-logs"
         "/var/lib/victoria-metrics"
@@ -99,6 +102,11 @@ in
           echo '/var/lib/gotosocial/data/*'
           for id in $ids; do echo "!/var/lib/gotosocial/data/$id"; done
         } > /run/restic-backups-daily/gotosocial-excludes
+        # Grafana's database isn't in WAL mode, so the copy waits out its writes.
+        rm -f /var/lib/grafana-backup/grafana.db.tmp
+        ${pkgs.sqlite}/bin/sqlite3 -cmd '.timeout 30000' /var/lib/grafana/grafana.db \
+          "VACUUM INTO '/var/lib/grafana-backup/grafana.db.tmp'" &&
+          mv /var/lib/grafana-backup/grafana.db.tmp /var/lib/grafana-backup/grafana.db || exit
         ${pkgs.util-linux}/bin/runuser -u postgres -- ${config.services.postgresql.package}/bin/pg_dumpall \
           > /var/lib/postgresql-dump/pg_dumpall.sql.tmp &&
           mv /var/lib/postgresql-dump/pg_dumpall.sql.tmp /var/lib/postgresql-dump/pg_dumpall.sql

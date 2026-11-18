@@ -40,13 +40,19 @@ failure fails the run:
    `/var/lib/gotosocial/data/` except the local accounts', since the
    rest is remote media that gotosocial re-fetches. The run fails if the
    dump lists no local accounts.
-4. Writes `pg_dumpall` output to
+4. Copies Grafana's SQLite database with `VACUUM INTO` into a temporary
+   file, then moves it over `/var/lib/grafana-backup/grafana.db`. The
+   database uses a rollback journal rather than WAL, so the copy blocks
+   Grafana's writes while it runs, and waits up to 30 seconds for a
+   write in progress to finish.
+5. Writes `pg_dumpall` output to
    `/var/lib/postgresql-dump/pg_dumpall.sql`. A failed dump leaves the
    previous dump in place.
 
 The unit then backs up `/var/lib`, tagged `long-term`, excluding
 podman's `/var/lib/containers`, the live PostgreSQL cluster in
-`/var/lib/postgresql`, gotosocial's remote media, and the data
+`/var/lib/postgresql`, Grafana's live `grafana.db` and its journal,
+gotosocial's remote media, and the data
 directories of VictoriaMetrics, VictoriaLogs, and VictoriaTraces, along
 with the VictoriaMetrics snapshot. Then it runs
 `unlock` and `forget --prune` on its `long-term` snapshots, keeping
