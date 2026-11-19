@@ -206,6 +206,8 @@ hey.kejadlen.dev {
 }
 
 quire.kejadlen.dev {
+	log
+
 	# quire trusts Remote-User as proof of login.
 	reverse_proxy quire:3000 {
 		header_up -Remote-User
@@ -249,6 +251,8 @@ Disallow: /
 }
 
 files.chislan.family {
+	log
+
 	root /srv/files
 	file_server
 }
