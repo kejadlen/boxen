@@ -148,6 +148,21 @@
         name: vector
         state: restarted
 
+- name: BirdNET-Pi
+  tags: birdnet
+  hosts: hopeless-masquerade
+  become: true
+  tasks:
+
+    # BirdNET-Pi ignores cache files past 6h but never deletes them, and /tmp
+    # is RAM-backed. "e" skips creating the directory so PHP keeps ownership.
+    - name: Expire the BirdNET-Pi cache
+      ansible.builtin.copy:
+        content: |
+          e /tmp/birdnet_cache - - - 6h
+        dest: /etc/tmpfiles.d/birdnet-cache.conf
+        mode: '0644'
+
 # - name: birbnet
 #   tags: birbnet
 #   hosts: hopeless-masquerade
