@@ -13,7 +13,7 @@ let
     calibre-web = "0.6.26-ls383";
     gotosocial = "0.22.3";
     homebox = "0.27.1";
-    ketchup = "20260525-e75f249";
+    ketchup = "20261118-3234507-nix";
     miniflux = "2.3.5";
     paperless-ngx = "3.4.2";
     pro-tacts = "ruby-head-zjit"; # Pin once it's out of active development.
