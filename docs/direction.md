@@ -18,7 +18,8 @@ too small for one configuration model to be worth forcing.
 The fleet runs fewer things. A service nobody uses gets dropped rather
 than migrated: monica, ramble-hard, dockhand, and gitea are gone, with
 quire replacing gitea. What remains moves as-is, with
-upgrades kept out of the move so that a failure has one cause.
+upgrades kept out of the move so that a failure has one cause. How a
+service earns its place is in [self-hosting](self-hosting.md).
 
 Every host stays on a supported OS and takes updates. lotus-land-story's
 bullseye went out of support with no clean upgrade path, which is what

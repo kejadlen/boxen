@@ -7,6 +7,8 @@
 - Deploying changes — running playbooks, applying tofu — is human-only.
   Prepare the change, then hand it off.
 - Don't run ad-hoc commands against hosts. Ask for the fact instead.
+- Weigh a proposed service, or a replacement for one, against
+  `docs/self-hosting.md`.
 - Keep evergreen documentation, meaning how things work now, in `docs/`.
   Update it in the same change that makes it stale. Prefer living
   documents over dated write-ups; `docs/<host>/YYYY-MM-DD-slug.md` is
